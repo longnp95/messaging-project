@@ -19,4 +19,4 @@ const RoleAccountGroup = sequelize.define('role_account_group', {
   }
 });
 
-module.exports = RoleGroup;
+module.exports = RoleAccountGroup;

@@ -75,7 +75,7 @@ sequelize
         console.log(err);
       });
 
-    return app.listen(3000);
+    return app.listen(8080);
   })
   .catch(err => {
     console.log(err);
