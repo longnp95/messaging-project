@@ -3,7 +3,7 @@ const Sequelize = require('sequelize');
 const sequelize = require('../config/db');
 
 // Create database with define model of Sequelize
-const Account = sequelize.define('account', {
+const User_Account = sequelize.define('user_account', {
   // field primary key and type is INTEGER
   id: {
     type: Sequelize.INTEGER,
@@ -30,7 +30,13 @@ const Account = sequelize.define('account', {
   },
 
   // field cannot be null and type is String
-  full_name: {
+  firstName: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+  
+  // field cannot be null and type is String
+  lastName: {
     type: Sequelize.STRING,
     allowNull: false
   },
@@ -73,4 +79,4 @@ const Account = sequelize.define('account', {
   }
 });
 
-module.exports = Account;
+module.exports = User_Account;

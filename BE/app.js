@@ -6,11 +6,13 @@ const bodyParser = require('body-parser');
 // Call database and models
 const sequelize = require('./config/db');
 
-const Account = require('./models/account');
+const User_Account = require('./models/user_account');
 const Group = require('./models/group');
-const Account_Group = require('./models/account_group');
-const Role_Account = require('./models/role_account');
-const Role_Account_Group = require('./models/role_account_group');
+const Group_Member = require('./models/group_member');
+const Role = require('./models/role');
+const Chat = require('./models/chat');
+const Admin_Account = require('./models/admin_account');
+const Permission = require('./models/permission');
 
 const app = express();
 
@@ -37,38 +39,38 @@ app.use((req, res, next) => {
 app.use(errorController.get404);
 
 // Relationship mysql
-Account.belongsTo(Role_Account, { constraints: true, onDelete: 'CASCADE' });
-Role_Account.hasMany(Account);
-Account_Group.belongsTo(Role_Account_Group, { constraints: true, onDelete: 'CASCADE' });
-Role_Account_Group.hasMany(Account_Group);
-Account.belongsToMany(Group, { through: Account_Group });
-Group.belongsToMany(Account, { through: Account_Group });
+Group_Member.belongsTo(Role, { constraints: true, onDelete: 'CASCADE' });
+Role.hasMany(Group_Member);
+User_Account.belongsToMany(Group, { through: Group_Member });
+Group.belongsToMany(User_Account, { through: Group_Member });
+User_Account.belongsToMany(Group, { through: Chat });
+Group.belongsToMany(User_Account, { through: Chat });
+Admin_Account.belongsTo(Permission, { constraints: true, onDelete: 'CASCADE' });
+Permission.hasMany(Admin_Account);
 
 // Run database and run server
 sequelize
   .sync({ force: true })
   // .sync()
   .then(() => {
-    // init data of role in account table
-    Role_Account.findAll()
+    // init data for permission table
+    Permission.findAll()
       .then((roleAccounts) => {
         if (roleAccounts) {
-          createRoleAccount('Admin');
-
-          createRoleAccount('User');
+          createPermission('Owner');
         }
       })
       .catch(err => {
         console.log(err);
       });
 
-    // init data of role in account_group table
-    Role_Account_Group.findAll()
-      .then((roleAccountGroup) => {
-        if (roleAccountGroup) {
-          createRoleAccountGroup('Leader');
+    // init data of role in group_members table
+    Role.findAll()
+      .then((role) => {
+        if (role) {
+          createRole('Leader');
 
-          createRoleAccountGroup('Member');
+          createRole('Member');
         }
       })
       .catch(err => {
@@ -81,29 +83,29 @@ sequelize
     console.log(err);
   });
 
-function createRoleAccount(name) {
-  return Role_Account.create({
+function createRole(name) {
+  return Role.create({
     name: name
   })
-    .then(roleAccount => {
-      if (roleAccount) {
-        console.log('Create Role Account with name: ' + name + ' successfully!');
+    .then(role => {
+      if (role) {
+        console.log('Create Role with name: ' + name + ' successfully!');
       } else {
-        console.log('Create Role Account: \'' + name + '\' fail!');
+        console.log('Create Role with name: \'' + name + '\' fail!');
       }
     })
     .catch(err => console.log(err));
 }
 
-function createRoleAccountGroup(name) {
-  return Role_Account_Group.create({
+function createPermission(name) {
+  return Permission.create({
     name: name
   })
-    .then(roleInGroup => {
-      if (roleInGroup) {
-        console.log('Create Role Account with name: ' + name + ' successfully!');
+    .then(permission => {
+      if (permission) {
+        console.log('Create Permission with name: ' + name + ' successfully!');
       } else {
-        console.log('Create Role Account In Group: \'' + name + '\' fail!');
+        console.log('Create Permission with name: \'' + name + '\' fail!');
       }
     })
     .catch(err => console.log(err));
