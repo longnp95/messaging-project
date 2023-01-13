@@ -8,9 +8,9 @@ const sequelize = require('./config/db');
 
 const Account = require('./models/account');
 const Group = require('./models/group');
-const AccountGroup = require('./models/account_group');
-const RoleAccount = require('./models/role_account');
-const RoleAccountGroup = require('./models/role_account_group');
+const Account_Group = require('./models/account_group');
+const Role_Account = require('./models/role_account');
+const Role_Account_Group = require('./models/role_account_group');
 
 const app = express();
 
@@ -37,12 +37,12 @@ app.use((req, res, next) => {
 app.use(errorController.get404);
 
 // Relationship mysql
-Account.belongsTo(RoleAccount, { constraints: true, onDelete: 'CASCADE' });
-RoleAccount.hasMany(Account);
-AccountGroup.belongsTo(RoleAccountGroup, { constraints: true, onDelete: 'CASCADE' });
-RoleAccountGroup.hasMany(AccountGroup);
-Account.belongsToMany(AccountGroup, { through: AccountGroup });
-Group.belongsToMany(Group, { through: AccountGroup });
+Account.belongsTo(Role_Account, { constraints: true, onDelete: 'CASCADE' });
+Role_Account.hasMany(Account);
+Account_Group.belongsTo(Role_Account_Group, { constraints: true, onDelete: 'CASCADE' });
+Role_Account_Group.hasMany(Account_Group);
+Account.belongsToMany(Group, { through: Account_Group });
+Group.belongsToMany(Account, { through: Account_Group });
 
 // Run database and run server
 sequelize
@@ -50,7 +50,7 @@ sequelize
   // .sync()
   .then(() => {
     // init data of role in account table
-    RoleAccount.findAll()
+    Role_Account.findAll()
       .then((roleAccounts) => {
         if (roleAccounts) {
           createRoleAccount('Admin');
@@ -63,7 +63,7 @@ sequelize
       });
 
     // init data of role in account_group table
-    RoleAccountGroup.findAll()
+    Role_Account_Group.findAll()
       .then((roleAccountGroup) => {
         if (roleAccountGroup) {
           createRoleAccountGroup('Leader');
@@ -82,7 +82,7 @@ sequelize
   });
 
 function createRoleAccount(name) {
-  return RoleAccount.create({
+  return Role_Account.create({
     name: name
   })
     .then(roleAccount => {
@@ -96,7 +96,7 @@ function createRoleAccount(name) {
 }
 
 function createRoleAccountGroup(name) {
-  return RoleAccountGroup.create({
+  return Role_Account_Group.create({
     name: name
   })
     .then(roleInGroup => {

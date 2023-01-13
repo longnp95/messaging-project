@@ -3,7 +3,7 @@ const Sequelize = require('sequelize');
 const sequelize = require('../config/db');
 
 // Create database with define model of Sequelize
-const RoleAccount = sequelize.define('role_account', {
+const Role_Account = sequelize.define('role_account', {
   // field primary key and type is INTEGER
   id: {
     type: Sequelize.INTEGER,
@@ -19,4 +19,4 @@ const RoleAccount = sequelize.define('role_account', {
   }
 });
 
-module.exports = RoleAccount;
+module.exports = Role_Account;
