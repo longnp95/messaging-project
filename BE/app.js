@@ -50,13 +50,13 @@ Permission.hasMany(Admin);
 
 // Run database and run server
 sequelize
-  .sync({ force: true })
-  // .sync()
+  // .sync({ force: true })
+  .sync()
   .then(() => {
     // init data for permission table
     Permission.findAll()
       .then((permission) => {
-        if (permission) {
+        if (permission.length < 1) {
           createPermission('Owner');
         }
       })
@@ -67,7 +67,7 @@ sequelize
     // init data of role in group_members table
     Role.findAll()
       .then((role) => {
-        if (role) {
+        if (role.length < 1) {
           createRole('Leader');
 
           createRole('Member');
