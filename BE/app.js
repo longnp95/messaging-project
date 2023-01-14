@@ -84,6 +84,7 @@ sequelize
     // Test connection
     const server = app.listen(8080);
     const io = require('./socket').init(server);
+    
     io.on('connection', socket => {
       console.log('Client connected');
     });
