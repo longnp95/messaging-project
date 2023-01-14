@@ -88,9 +88,7 @@ sequelize
       console.log('Client connected');
     });
   })
-  .catch(err => {
-    console.log(err);
-  });
+  .catch(err => console.log(err));
 
 function initDataForTable(table, arrayObject) {
   return table.findAll()
