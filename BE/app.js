@@ -42,9 +42,9 @@ app.use(errorController.get404);
 Group_Member.belongsTo(Role, { constraints: true, onDelete: 'CASCADE' });
 Role.hasMany(Group_Member);
 User.belongsToMany(Group, { through: Group_Member });
-Group.belongsToMany(User_Account, { through: Group_Member });
+Group.belongsToMany(User, { through: Group_Member });
 User.belongsToMany(Group, { through: Chat });
-Group.belongsToMany(User_Account, { through: Chat });
+Group.belongsToMany(User, { through: Chat });
 Admin.belongsTo(Permission, { constraints: true, onDelete: 'CASCADE' });
 Permission.hasMany(Admin);
 
@@ -55,8 +55,8 @@ sequelize
   .then(() => {
     // init data for permission table
     Permission.findAll()
-      .then((roleAccounts) => {
-        if (roleAccounts) {
+      .then((permission) => {
+        if (permission) {
           createPermission('Owner');
         }
       })
@@ -81,8 +81,6 @@ sequelize
     io.on('connection', socket => {
       console.log('Client connected');
     });
-
-    return app.listen(8080);
   })
   .catch(err => {
     console.log(err);
