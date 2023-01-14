@@ -6,12 +6,12 @@ const bodyParser = require('body-parser');
 // Call database and models
 const sequelize = require('./config/db');
 
-const User_Account = require('./models/user_account');
+const User = require('./models/user');
 const Group = require('./models/group');
 const Group_Member = require('./models/group_member');
 const Role = require('./models/role');
 const Chat = require('./models/chat');
-const Admin_Account = require('./models/admin_account');
+const Admin = require('./models/admin');
 const Permission = require('./models/permission');
 
 const app = express();
@@ -41,12 +41,12 @@ app.use(errorController.get404);
 // Relationship mysql
 Group_Member.belongsTo(Role, { constraints: true, onDelete: 'CASCADE' });
 Role.hasMany(Group_Member);
-User_Account.belongsToMany(Group, { through: Group_Member });
+User.belongsToMany(Group, { through: Group_Member });
 Group.belongsToMany(User_Account, { through: Group_Member });
-User_Account.belongsToMany(Group, { through: Chat });
+User.belongsToMany(Group, { through: Chat });
 Group.belongsToMany(User_Account, { through: Chat });
-Admin_Account.belongsTo(Permission, { constraints: true, onDelete: 'CASCADE' });
-Permission.hasMany(Admin_Account);
+Admin.belongsTo(Permission, { constraints: true, onDelete: 'CASCADE' });
+Permission.hasMany(Admin);
 
 // Run database and run server
 sequelize
@@ -76,6 +76,11 @@ sequelize
       .catch(err => {
         console.log(err);
       });
+    const server = app.listen(8080);
+    const io = require('./socket').init(server);
+    io.on('connection', socket => {
+      console.log('Client connected');
+    });
 
     return app.listen(8080);
   })

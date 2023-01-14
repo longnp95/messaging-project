@@ -3,7 +3,7 @@ const Sequelize = require('sequelize');
 const sequelize = require('../config/db');
 
 // Create database with define model of Sequelize
-const User_Account = sequelize.define('user_account', {
+const User = sequelize.define('user', {
   // field primary key and type is INTEGER
   id: {
     type: Sequelize.INTEGER,
@@ -79,4 +79,4 @@ const User_Account = sequelize.define('user_account', {
   }
 });
 
-module.exports = User_Account;
+module.exports = User;
