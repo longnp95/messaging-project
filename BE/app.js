@@ -75,6 +75,7 @@ sequelize
         status: 1
       }
     ];
+
     // init data for option table and option datas
     initDataForTable(Permission, permissions);
     initDataForTable(Role, roles);
@@ -99,7 +100,7 @@ function initDataForTable(table, arrayObject) {
           table.create(object)
             .then(newData => {
               if (newData) {
-                console.log('Init Data for table: ' + table.name + ' Successfully!');
+                console.log('Init Data: ' + JSON.stringify(object) + ' for table: ' + table.name + ' Successfully!');
               }
             })
             .catch(err => console.log(err));
