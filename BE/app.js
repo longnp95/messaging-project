@@ -39,44 +39,47 @@ app.use((req, res, next) => {
 app.use(errorController.get404);
 
 // Relationship mysql
-Group_Member.belongsTo(Role, { constraints: true, onDelete: 'CASCADE' });
+Permission.hasMany(Admin);
+Admin.belongsTo(Permission, { constraints: true, onDelete: 'CASCADE' });
 Role.hasMany(Group_Member);
+Group_Member.belongsTo(Role, { constraints: true, onDelete: 'CASCADE' });
 User.belongsToMany(Group, { through: Group_Member });
 Group.belongsToMany(User, { through: Group_Member });
 User.belongsToMany(Group, { through: Chat });
 Group.belongsToMany(User, { through: Chat });
-Admin.belongsTo(Permission, { constraints: true, onDelete: 'CASCADE' });
-Permission.hasMany(Admin);
 
 // Run database and run server
 sequelize
-  // .sync({ force: true })
-  .sync()
+  .sync({ force: true })
+  // .sync()
   .then(() => {
-    // init data for permission table
-    Permission.findAll()
-      .then((permission) => {
-        if (permission.length < 1) {
-          createPermission('Owner');
-        }
-      })
-      .catch(err => {
-        console.log(err);
-      });
+    const permissions = [
+      {
+        name: 'Owner'
+      }
+    ];
 
-    // init data of role in group_members table
-    Role.findAll()
-      .then((role) => {
-        if (role.length < 1) {
-          createRole('Leader');
+    const roles = [
+      {
+        name: 'Leader'
+      },
+      {
+        name: 'Member'
+      }
+    ];
 
-          createRole('Member');
-        }
-      })
-      .catch(err => {
-        console.log(err);
-      });
-    
+    const admins = [
+      {
+        username: 'admin001@gmail.com',
+        password: 'admin001',
+        status: 1
+      }
+    ];
+    // init data for option table and option datas
+    initDataForTable(Permission, permissions);
+    initDataForTable(Role, roles);
+    initDataForTable(Admin, admins);
+
     // Test connection
     const server = app.listen(8080);
     const io = require('./socket').init(server);
@@ -88,29 +91,19 @@ sequelize
     console.log(err);
   });
 
-function createRole(name) {
-  return Role.create({
-    name: name
-  })
-    .then(role => {
-      if (role) {
-        console.log('Create Role with name: ' + name + ' successfully!');
-      } else {
-        console.log('Create Role with name: \'' + name + '\' fail!');
-      }
-    })
-    .catch(err => console.log(err));
-}
-
-function createPermission(name) {
-  return Permission.create({
-    name: name
-  })
-    .then(permission => {
-      if (permission) {
-        console.log('Create Permission with name: ' + name + ' successfully!');
-      } else {
-        console.log('Create Permission with name: \'' + name + '\' fail!');
+function initDataForTable(table, arrayObject) {
+  return table.findAll()
+    .then(data => {
+      if (data.length < 1) {
+        for (let object of arrayObject) {
+          table.create(object)
+            .then(newData => {
+              if (newData) {
+                console.log('Init Data for table: ' + table.name + ' Successfully!');
+              }
+            })
+            .catch(err => console.log(err));
+        }
       }
     })
     .catch(err => console.log(err));
