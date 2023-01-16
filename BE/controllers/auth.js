@@ -52,54 +52,47 @@ exports.postSignUp = (async (req, res, next) => {
               message: 'Create account successfully!'
             },
             data: {
-              user: user,
-              path: '/user/home'
+              user: user
             }
           });
         } else {
           return res.status(200).json({
             error: {
-              status: 401,
+              status: 500,
               message: 'Create account faild!'
             },
             data: {
-              body: JSON.stringify(body),
-              path: '/auth/signin'
+              body: JSON.stringify(body)
             }
           });
         }
       } else {
         return res.status(200).json({
           error: {
-            status: 401,
+            status: 500,
             message: 'This username is already exists!'
           },
           data: {
-            body: JSON.stringify(body),
-            path: '/auth/signin'
+            body: JSON.stringify(body)
           }
         });
       }
     } else {
       return res.status(200).json({
         error: {
-          status: 401,
+          status: 500,
           message: 'Where your feild ?'
         },
-        data: {
-          path: '/auth/signin'
-        }
+        data: {}
       });
     }
   } else {
     return res.status(200).json({
       error: {
-        status: 401,
+        status: 500,
         message: 'Where your body ?'
       },
-      data: {
-        path: '/auth/signin'
-      }
+      data: {}
     });
   }
 });
