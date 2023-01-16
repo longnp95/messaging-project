@@ -2,6 +2,7 @@
 const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser');
+const bcrypt = require('bcryptjs');
 
 // Call database and models
 const sequelize = require('./config/db');
@@ -70,10 +71,12 @@ sequelize
       }
     ];
 
+    const hashPassword = bcrypt.hashSync('admin001', 12);
+    
     const admins = [
       {
         username: 'admin001@gmail.com',
-        password: 'admin001',
+        password: hashPassword,
         status: 1
       }
     ];
@@ -86,7 +89,7 @@ sequelize
     // Test connection
     const server = app.listen(8080);
     const io = require('./socket').init(server);
-    
+
     io.on('connection', socket => {
       console.log('Client connected');
     });
