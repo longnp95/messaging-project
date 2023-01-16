@@ -24,15 +24,9 @@ const Auth = () => {
     e.preventDefault();
     const { username, password, avatarUrl} = form;
 
-    const URL = 'https://localhost:3000';
+    const URL = 'https://localhost:8080';
 
-    const {data: { 
-      token, 
-      userId, 
-      hashedPassword, 
-      firstName, 
-      lastName } 
-    } = await axios.post(`${URL}/${isSignup ? 'signup' : 'login'}`, {
+    const response = await axios.post(`${URL}/${isSignup ? 'signup' : 'login'}`, {
       username, 
       password, 
       firstName: form.firstName,
@@ -44,6 +38,17 @@ const Auth = () => {
       email: form.email
     });
 
+    if (response.error.status == 500) {
+      alert(response.error.message);
+      return;
+    }
+    const {user: { 
+      token, 
+      userId, 
+      hashedPassword, 
+      firstName, 
+      lastName } 
+    } = response.data;
     cookie.set('token', token);
     cookie.set('userId', userId);
     cookie.set('hashedPassword', hashedPassword);
