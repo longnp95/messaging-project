@@ -23,7 +23,10 @@ exports.postSignInUser = (async (req, res, next) => {
 
           if (doMatchPass) {
             const token = jwt.sign(
-              { userId: user.id },
+              { 
+                userId: user.id,
+                role: 'user'
+              },
               'RANDOM_TOKEN_SECRET',
               { expiresIn: '24h' }
             );
@@ -113,7 +116,10 @@ exports.postSignInAdmin = (async (req, res, next) => {
 
           if (doMatchPass) {
             const token = jwt.sign(
-              { userId: admin.id },
+              { 
+                userId: admin.id,
+                role: 'admin'
+              },
               'RANDOM_TOKEN_SECRET',
               { expiresIn: '24h' }
             );
@@ -214,7 +220,10 @@ exports.postSignUp = (async (req, res, next) => {
 
         if (user) {
           const token = jwt.sign(
-            { userId: user.id },
+            { 
+              userId: user.id,
+              role: 'user'
+            },
             'RANDOM_TOKEN_SECRET',
             { expiresIn: '24h' }
           );
