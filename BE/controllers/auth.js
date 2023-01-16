@@ -1,3 +1,4 @@
+const jwt = require('jsonwebtoken');
 const Admin = require('../models/admin');
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
@@ -21,7 +22,6 @@ exports.postSignUp = (async (req, res, next) => {
     const gender = body.gender;
 
     if (username && password && firstName && lastName && gender) {
-      const hashPassword = bcrypt.hash(password, 12);
       const existsUsername = await User.findOne({
         where: {
           username: username
@@ -29,11 +29,7 @@ exports.postSignUp = (async (req, res, next) => {
       });
 
       if (!existsUsername) {
-        const token = jwt.sign(
-          { userId: account.id },
-          'RANDOM_TOKEN_SECRET',
-          { expiresIn: '24h' }
-        );
+        const hashPassword = await bcrypt.hash(password, 12);
 
         const user = await User.create({
           username: username,
@@ -41,11 +37,21 @@ exports.postSignUp = (async (req, res, next) => {
           firstName: firstName,
           lastName: lastName,
           gender: gender,
-          status: 1,
-          token: token
+          status: 1
         });
 
         if (user) {
+          const token = jwt.sign(
+            { userId: user.id },
+            'RANDOM_TOKEN_SECRET',
+            { expiresIn: '24h' }
+          );
+
+          user.update({
+            token: token
+          });
+          user.save();
+
           return res.status(200).json({
             error: {
               status: 200,
@@ -61,9 +67,7 @@ exports.postSignUp = (async (req, res, next) => {
               status: 500,
               message: 'Create account faild!'
             },
-            data: {
-              body: JSON.stringify(body)
-            }
+            data: {}
           });
         }
       } else {
@@ -72,9 +76,7 @@ exports.postSignUp = (async (req, res, next) => {
             status: 500,
             message: 'This username is already exists!'
           },
-          data: {
-            body: JSON.stringify(body)
-          }
+          data: {}
         });
       }
     } else {

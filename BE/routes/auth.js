@@ -4,3 +4,5 @@ const routes = express.Router();
 const authController = require('../controllers/auth');
 
 routes.post('/signup', authController.postSignUp);
+
+module.exports = routes;

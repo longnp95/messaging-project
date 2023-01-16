@@ -20,6 +20,7 @@ const app = express();
 const errorController = require('./controllers/error');
 
 // Call routes
+const authRoutes = require('./routes/auth');
 
 
 // Config and use extensions
@@ -36,6 +37,7 @@ app.use((req, res, next) => {
 });//cors
 
 // Use routes
+app.use('/auth', authRoutes);
 app.use(errorController.get404);
 
 // Relationship mysql
