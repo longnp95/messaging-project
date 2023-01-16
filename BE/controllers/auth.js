@@ -198,8 +198,12 @@ exports.postSignUp = (async (req, res, next) => {
     const firstName = body.firstName;
     const lastName = body.lastName;
     const gender = body.gender;
+    const avatarUrl = body.avatarUrl;
+    const dob = body.dateOfBirth;
+    const mobile = body.phoneNumber;
+    const email = body.email;
 
-    if (username && password && firstName && lastName && gender) {
+    if (username && password && firstName && lastName && gender && avatarUrl && dob && mobile && email) {
       const existsUsername = await User.findOne({
         where: {
           username: username
@@ -212,9 +216,13 @@ exports.postSignUp = (async (req, res, next) => {
         const user = await User.create({
           username: username,
           password: hashPassword,
+          avatar: avatarUrl,
           firstName: firstName,
           lastName: lastName,
           gender: gender,
+          dob: dob,
+          mobile: mobile,
+          email: email,
           status: 1
         });
 

@@ -16,6 +16,10 @@ const Group = sequelize.define('group', {
   name: {
     type: Sequelize.STRING,
     allowNull: false
+  },
+
+  avatar: {
+    type: Sequelize.STRING
   }
 });
 
