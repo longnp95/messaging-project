@@ -1,3 +1,4 @@
+const io = require('../socket');
 const User = require('../models/user');
 const Group_Member = require('../models/group_member');
 const Group = require('../models/group');
@@ -24,12 +25,21 @@ exports.postCreateGroup = (async (req, res, next) => {
       });
 
       if (group && groupMember) {
-        return res.status(200).json({
+        io.getIO().emit('group', {
+          action: 'create',
+          data: {
+            group: group,
+          }
+        });
+
+        res.status(200).json({
           error: {
             status: 200,
             message: 'Create a group member successfully!'
           },
-          data: {}
+          data: {
+            group: group,
+          }
         });
       } else {
         return res.status(200).json({
