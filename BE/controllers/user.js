@@ -18,215 +18,202 @@ const checkStatusUser = function (user) {
 
 exports.postCreateGroup = (async (req, res, next) => {
   const body = req.body;
+  const groupName = body.groupName;
+  const groupAvatarUrl = body.groupAvatarUrl;
+  const createdBy = body.createdBy;
 
-  if (body) {
-    const groupName = body.groupName;
-    const groupAvatarUrl = body.groupAvatarUrl;
-    const createdBy = body.createdBy;
-
-    if (groupName && groupAvatarUrl, createdBy) {
-      const group = await Group.create({
-        name: groupName,
-        avatar: groupAvatarUrl
-      });
-
-      const groupMember = await Group_Member.create({
-        roleId: 1,
-        userId: createdBy,
-        groupId: group.id
-      });
-
-      if (group && groupMember) {
-        io.getIO().emit('group', {
-          action: 'create',
-          data: {
-            group: group,
-          }
-        });
-
-        res.status(200).json({
-          error: {
-            status: 200,
-            message: 'Create a group member successfully!'
-          },
-          data: {
-            group: group,
-          }
-        });
-      } else {
-        return res.status(200).json({
-          error: {
-            status: 500,
-            message: 'Create a group member faild!'
-          },
-          data: {}
-        });
-      }
-    } else {
-      return res.status(200).json({
-        error: {
-          status: 500,
-          message: 'Where your feild ?'
-        },
-        data: {}
-      });
-    }
-  } else {
+  if (!(groupName && groupAvatarUrl && createdBy)) {
     return res.status(200).json({
       error: {
         status: 500,
-        message: 'Where your body ?'
+        message: 'Where your feild ?'
       },
       data: {}
     });
   }
+
+  const group = await Group.create({
+    name: groupName,
+    avatar: groupAvatarUrl
+  });
+
+  if (!group) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'Create a group member faild!'
+      },
+      data: {}
+    });
+  }
+
+  const groupMember = await Group_Member.create({
+    roleId: 1,
+    userId: createdBy,
+    groupId: group.id
+  });
+
+  if (!groupMember) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'Create a group member faild!'
+      },
+      data: {}
+    });
+  }
+
+  io.getIO().emit('group', {
+    action: 'create',
+    data: {
+      group: group,
+    }
+  });
+
+  res.status(200).json({
+    error: {
+      status: 200,
+      message: 'Create a group member successfully!'
+    },
+    data: {
+      group: group,
+    }
+  });
 });
 
 exports.postSetRole = (async (req, res, next) => {
   const body = req.body;
+  const userId = body.userId;
+  const groupId = body.groupId;
+  const memberId = body.memberId;
+  const roleId = body.roleId;
 
-  if (body) {
-    const userId = body.userId;
-    const groupId = body.groupId;
-    const memberId = body.memberId;
-    const roleId = body.roleId;
+  if (!(userId && groupId && memberId && roleId)) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'Where your feild ?'
+      },
+      data: {}
+    });
+  }
 
-    if (userId && roleId) {
-      const user = await User.findOne({
-        where: {
-          id: userId
-        }
-      });
-
-      const member = await Group.findOne({
-        where: {
-          id: memberId
-        }
-      });
-
-      const statusUser = checkStatusUser(user);
-      const statusMember = checkStatusUser(member);
-
-      if (statusUser != true) {
-        return res.status(200).json({
-          error: {
-            status: 500,
-            message: statusUser.toString()
-          },
-          data: {}
-        });
-      }
-
-      if (statusMember != true) {
-        return res.status(200).json({
-          error: {
-            status: 500,
-            message: statusMember.toString()
-          },
-          data: {}
-        });
-      }
-
-      const group = await Group.findOne({
-        where: {
-          id: groupId
-        }
-      });
-
-      if (!group) {
-        return res.status(200).json({
-          error: {
-            status: 500,
-            message: 'This group doesn\'t exists!'
-          },
-          data: {}
-        });
-      }
-
-      const userInGroup = await Group_Member.findOne({
-        where: {
-          userId: userId,
-          groupId: groupId
-        }
-      });
-
-      const memberInGroup = await Group_Member.findOne({
-        where: {
-          userId: memberId,
-          groupId: groupId
-        }
-      });
-
-      if (!userInGroup) {
-        return res.status(200).json({
-          error: {
-            status: 500,
-            message: 'You are don\'t have permission in ' + group.name + '!'
-          },
-          data: {}
-        });
-      }
-
-      if (!memberInGroup) {
-        return res.status(200).json({
-          error: {
-            status: 500,
-            message: 'This account doesn\'t exists in ' + group.name + '!'
-          },
-          data: {}
-        });
-      }
-
-      if (userInGroup.roleId < memberInGroup.roleId) {
-        io.getIO().emit('group', {
-          action: 'setRole',
-          data: {
-            memberInGroup: memberInGroup,
-          }
-        });
-
-        await Group_Member.update(
-          {
-            roleId: roleId
-          },
-          {
-            where: {
-              id: memberInGroup
-            }
-          }
-        );
-
-        res.status(200).json({
-          error: {
-            status: 500,
-            message: 'Set Role successfully'
-          },
-          data: {}
-        });
-      } else {
-        return res.status(200).json({
-          error: {
-            status: 500,
-            message: 'This account doesn\'t exists in ' + group.name + '!'
-          },
-          data: {}
-        });
-      }
-    } else {
-      return res.status(200).json({
-        error: {
-          status: 500,
-          message: 'Where your feild ?'
-        },
-        data: {}
-      });
+  const user = await User.findOne({
+    where: {
+      id: userId
     }
+  });
 
+  const member = await Group.findOne({
+    where: {
+      id: memberId
+    }
+  });
+
+  const statusUser = checkStatusUser(user);
+  const statusMember = checkStatusUser(member);
+
+  if (statusUser != true) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: statusUser.toString()
+      },
+      data: {}
+    });
+  }
+
+  if (statusMember != true) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: statusMember.toString()
+      },
+      data: {}
+    });
+  }
+
+  const group = await Group.findOne({
+    where: {
+      id: groupId
+    }
+  });
+
+  if (!group) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'This group doesn\'t exists!'
+      },
+      data: {}
+    });
+  }
+
+  const userInGroup = await Group_Member.findOne({
+    where: {
+      userId: userId,
+      groupId: groupId
+    }
+  });
+
+  const memberInGroup = await Group_Member.findOne({
+    where: {
+      userId: memberId,
+      groupId: groupId
+    }
+  });
+
+  if (!userInGroup) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'You are don\'t have permission in ' + group.name + '!'
+      },
+      data: {}
+    });
+  }
+
+  if (!memberInGroup) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'This account doesn\'t exists in ' + group.name + '!'
+      },
+      data: {}
+    });
+  }
+
+  if (userInGroup.roleId < memberInGroup.roleId) {
+    io.getIO().emit('group', {
+      action: 'setRole',
+      data: {
+        memberInGroup: memberInGroup,
+      }
+    });
+
+    await Group_Member.update(
+      {
+        roleId: roleId
+      },
+      {
+        where: {
+          id: memberInGroup
+        }
+      }
+    );
+
+    res.status(200).json({
+      error: {
+        status: 500,
+        message: 'Set Role successfully'
+      },
+      data: {}
+    });
   } else {
     return res.status(200).json({
       error: {
         status: 500,
-        message: 'Where your body ?'
+        message: 'This account doesn\'t exists in ' + group.name + '!'
       },
       data: {}
     });

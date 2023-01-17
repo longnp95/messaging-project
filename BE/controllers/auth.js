@@ -5,230 +5,23 @@ const bcrypt = require('bcryptjs');
 
 exports.postSignInUser = (async (req, res, next) => {
   const body = req.body;
+  const username = body.username;
+  const password = body.password;
 
-  if (body) {
-    const username = body.username;
-    const password = body.password;
-
-    if (username && password) {
-      const user = await User.findOne({
-        where: {
-          username: username
-        }
-      });
-
-      if (user) {
-        if (user.status == 1) {
-          const doMatchPass = await bcrypt.compare(password, user.password);
-
-          if (doMatchPass) {
-            const token = jwt.sign(
-              { 
-                userId: user.id,
-                role: 'user'
-              },
-              'RANDOM_TOKEN_SECRET',
-              { expiresIn: '24h' }
-            );
-
-            user.update({
-              token: token
-            });
-            user.save();
-
-            return res.status(200).json({
-              error: {
-                status: 200,
-                message: "Sign in successfully!"
-              },
-              data: {
-                user: user
-              }
-            });
-          } else {
-            return res.status(200).json({
-              error: {
-                status: 500,
-                message: "Wrong Username or Password!"
-              },
-              data: {}
-            });
-          }
-
-        } else {
-          return res.status(200).json({
-            error: {
-              status: 500,
-              message: "This account is block!"
-            },
-            data: {}
-          });
-        }
-
-      } else {
-        return res.status(200).json({
-          error: {
-            status: 500,
-            message: "Wrong Username or Password!"
-          },
-          data: {}
-        });
+  if (username && password) {
+    const user = await User.findOne({
+      where: {
+        username: username
       }
-
-    } else {
-      return res.status(200).json({
-        error: {
-          status: 500,
-          message: 'Where your feild ?'
-        },
-        data: {}
-      });
-    }
-
-  } else {
-    return res.status(200).json({
-      error: {
-        status: 500,
-        message: 'Where your body ?'
-      },
-      data: {}
     });
-  }
-});
 
-exports.postSignInAdmin = (async (req, res, next) => {
-  const body = req.body;
+    if (user) {
+      if (user.status == 1) {
+        const doMatchPass = await bcrypt.compare(password, user.password);
 
-  if (body) {
-    const username = body.username;
-    const password = body.password;
-
-    if (username && password) {
-      const admin = await Admin.findOne({
-        where: {
-          username: username
-        }
-      });
-
-      if (admin) {
-        if (admin.status == 1) {
-          const doMatchPass = await bcrypt.compare(password, admin.password);
-
-          if (doMatchPass) {
-            const token = jwt.sign(
-              { 
-                userId: admin.id,
-                role: 'admin'
-              },
-              'RANDOM_TOKEN_SECRET',
-              { expiresIn: '24h' }
-            );
-
-            admin.update({
-              token: token
-            });
-            admin.save();
-
-            return res.status(200).json({
-              error: {
-                status: 200,
-                message: "Sign in successfully!"
-              },
-              data: {
-                user: admin
-              }
-            });
-          } else {
-            return res.status(200).json({
-              error: {
-                status: 500,
-                message: "Wrong Username or Password!"
-              },
-              data: {}
-            });
-          }
-
-        } else {
-          return res.status(200).json({
-            error: {
-              status: 500,
-              message: "This account is block!"
-            },
-            data: {}
-          });
-        }
-
-      } else {
-        return res.status(200).json({
-          error: {
-            status: 500,
-            message: "Wrong Username or Password!"
-          },
-          data: {}
-        });
-      }
-
-    } else {
-      return res.status(200).json({
-        error: {
-          status: 500,
-          message: 'Where your feild ?'
-        },
-        data: {}
-      });
-    }
-
-  } else {
-    return res.status(200).json({
-      error: {
-        status: 500,
-        message: 'Where your body ?'
-      },
-      data: {}
-    });
-  }
-});
-
-exports.postSignUp = (async (req, res, next) => {
-  const body = req.body;
-
-  if (body) {
-    const username = body.username;
-    const password = body.password;
-    const firstName = body.firstName;
-    const lastName = body.lastName;
-    const gender = body.gender;
-    const avatarUrl = body.avatarUrl;
-    const dob = body.dateOfBirth;
-    const mobile = body.phoneNumber;
-    const email = body.email;
-
-    if (username && password && firstName && lastName && gender && avatarUrl && dob && mobile && email) {
-      const existsUsername = await User.findOne({
-        where: {
-          username: username
-        }
-      });
-
-      if (!existsUsername) {
-        const hashPassword = await bcrypt.hash(password, 12);
-
-        const user = await User.create({
-          username: username,
-          password: hashPassword,
-          avatar: avatarUrl,
-          firstName: firstName,
-          lastName: lastName,
-          gender: gender,
-          dob: dob,
-          mobile: mobile,
-          email: email,
-          status: 1
-        });
-
-        if (user) {
+        if (doMatchPass) {
           const token = jwt.sign(
-            { 
+            {
               userId: user.id,
               role: 'user'
             },
@@ -244,7 +37,7 @@ exports.postSignUp = (async (req, res, next) => {
           return res.status(200).json({
             error: {
               status: 200,
-              message: 'Create account successfully!'
+              message: "Sign in successfully!"
             },
             data: {
               user: user
@@ -254,16 +47,188 @@ exports.postSignUp = (async (req, res, next) => {
           return res.status(200).json({
             error: {
               status: 500,
-              message: 'Create account faild!'
+              message: "Wrong Username or Password!"
             },
             data: {}
           });
         }
+
       } else {
         return res.status(200).json({
           error: {
             status: 500,
-            message: 'This username is already exists!'
+            message: "This account is block!"
+          },
+          data: {}
+        });
+      }
+
+    } else {
+      return res.status(200).json({
+        error: {
+          status: 500,
+          message: "Wrong Username or Password!"
+        },
+        data: {}
+      });
+    }
+
+  } else {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'Where your feild ?'
+      },
+      data: {}
+    });
+  }
+});
+
+exports.postSignInAdmin = (async (req, res, next) => {
+  const body = req.body;
+  const username = body.username;
+  const password = body.password;
+
+  if (username && password) {
+    const admin = await Admin.findOne({
+      where: {
+        username: username
+      }
+    });
+
+    if (admin) {
+      if (admin.status == 1) {
+        const doMatchPass = await bcrypt.compare(password, admin.password);
+
+        if (doMatchPass) {
+          const token = jwt.sign(
+            {
+              userId: admin.id,
+              role: 'admin'
+            },
+            'RANDOM_TOKEN_SECRET',
+            { expiresIn: '24h' }
+          );
+
+          admin.update({
+            token: token
+          });
+          admin.save();
+
+          return res.status(200).json({
+            error: {
+              status: 200,
+              message: "Sign in successfully!"
+            },
+            data: {
+              user: admin
+            }
+          });
+        } else {
+          return res.status(200).json({
+            error: {
+              status: 500,
+              message: "Wrong Username or Password!"
+            },
+            data: {}
+          });
+        }
+
+      } else {
+        return res.status(200).json({
+          error: {
+            status: 500,
+            message: "This account is block!"
+          },
+          data: {}
+        });
+      }
+
+    } else {
+      return res.status(200).json({
+        error: {
+          status: 500,
+          message: "Wrong Username or Password!"
+        },
+        data: {}
+      });
+    }
+
+  } else {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'Where your feild ?'
+      },
+      data: {}
+    });
+  }
+});
+
+exports.postSignUp = (async (req, res, next) => {
+  const body = req.body;
+  const username = body.username;
+  const password = body.password;
+  const firstName = body.firstName;
+  const lastName = body.lastName;
+  const gender = body.gender;
+  const avatarUrl = body.avatarUrl;
+  const dob = body.dateOfBirth;
+  const mobile = body.phoneNumber;
+  const email = body.email;
+
+  if (username && password && firstName && lastName && gender && avatarUrl && dob && mobile && email) {
+    const existsUsername = await User.findOne({
+      where: {
+        username: username
+      }
+    });
+
+    if (!existsUsername) {
+      const hashPassword = await bcrypt.hash(password, 12);
+
+      const user = await User.create({
+        username: username,
+        password: hashPassword,
+        avatar: avatarUrl,
+        firstName: firstName,
+        lastName: lastName,
+        gender: gender,
+        dob: dob,
+        mobile: mobile,
+        email: email,
+        status: 1
+      });
+
+      if (user) {
+        const token = jwt.sign(
+          {
+            userId: user.id,
+            role: 'user'
+          },
+          'RANDOM_TOKEN_SECRET',
+          { expiresIn: '24h' }
+        );
+
+        user.update({
+          token: token
+        });
+        user.save();
+
+        return res.status(200).json({
+          error: {
+            status: 200,
+            message: 'Create account successfully!'
+          },
+          data: {
+            user: user
+          }
+        });
+      } else {
+        return res.status(200).json({
+          error: {
+            status: 500,
+            message: 'Create account faild!'
           },
           data: {}
         });
@@ -272,7 +237,7 @@ exports.postSignUp = (async (req, res, next) => {
       return res.status(200).json({
         error: {
           status: 500,
-          message: 'Where your feild ?'
+          message: 'This username is already exists!'
         },
         data: {}
       });
@@ -281,7 +246,7 @@ exports.postSignUp = (async (req, res, next) => {
     return res.status(200).json({
       error: {
         status: 500,
-        message: 'Where your body ?'
+        message: 'Where your feild ?'
       },
       data: {}
     });
