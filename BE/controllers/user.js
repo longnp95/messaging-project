@@ -81,6 +81,71 @@ exports.postCreateGroup = (async (req, res, next) => {
   });
 });
 
+exports.postUpdateGroup = (async (req, res, next) => {
+  const body = req.body;
+  const groupName = body.groupName;
+  const groupAvatarUrl = body.groupAvatarUrl;
+  const createdBy = body.createdBy;
+
+  if (!(groupName && groupAvatarUrl && createdBy)) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'Where your feild ?'
+      },
+      data: {}
+    });
+  }
+
+  const group = await Group.create({
+    name: groupName,
+    avatar: groupAvatarUrl
+  });
+
+  if (!group) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'Create a group member faild!'
+      },
+      data: {}
+    });
+  }
+
+  const groupMember = await Group_Member.create({
+    roleId: 1,
+    userId: createdBy,
+    groupId: group.id
+  });
+
+  if (!groupMember) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'Create a group member faild!'
+      },
+      data: {}
+    });
+  }
+
+  io.getIO().emit('group', {
+    action: 'create',
+    data: {
+      group: group,
+    }
+  });
+
+  res.status(200).json({
+    error: {
+      status: 200,
+      message: 'Create a group member successfully!'
+    },
+    data: {
+      group: group,
+    }
+  });
+});
+
 exports.postSetRole = (async (req, res, next) => {
   const body = req.body;
   const userId = body.userId;
@@ -204,7 +269,7 @@ exports.postSetRole = (async (req, res, next) => {
 
     res.status(200).json({
       error: {
-        status: 500,
+        status: 200,
         message: 'Set Role successfully'
       },
       data: {}
@@ -220,13 +285,13 @@ exports.postSetRole = (async (req, res, next) => {
   }
 });
 
-exports.getRole = (async (req, res, next) => {
+exports.getRoles = (async (req, res, next) => {
   const roles = await Role.findAll();
 
   return res.status(200).json({
     error: {
       status: 200,
-      message: OK
+      message: 'OK'
     },
     data: {
       roles: roles
@@ -234,7 +299,51 @@ exports.getRole = (async (req, res, next) => {
   });
 });
 
-exports.getMember = (async (req, res, next) => {
+exports.getGroupsByUserId = (async (req, res, next) => {
+  const userId = req.query.userId;
+
+  if (!userId) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'Where params ?'
+      },
+      data: {}
+    });
+  }
+
+  const user = await User.findOne({
+    where: {
+      id: userId
+    },
+    include: {
+      all: true,
+      nested: true
+    }
+  });
+
+  if (!user) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'This user doesn\'t exists!'
+      },
+      data: {}
+    });
+  }
+
+  return res.status(200).json({
+    error: {
+      status: 200,
+      message: 'OK'
+    },
+    data: {
+      groups: user.groups
+    }
+  });
+});
+
+exports.getMembers = (async (req, res, next) => {
   const groupId = req.query.groupId;
 
   if (!groupId) {
@@ -276,7 +385,7 @@ exports.getMember = (async (req, res, next) => {
   return res.status(200).json({
     error: {
       status: 200,
-      message: OK
+      message: 'OK'
     },
     data: {
       members: members
