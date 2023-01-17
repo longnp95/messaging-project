@@ -55,6 +55,7 @@ const Auth = () => {
     cookie.set('firstName', firstName);
     cookie.set('lastName', lastName);
     if (avatarUrl) cookie.set('avatarUrl', avatarUrl);
+    window.location.reload();
   }
 
   const handleChange = (e) => {
