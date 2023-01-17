@@ -24,7 +24,7 @@ const Auth = () => {
     e.preventDefault();
     const { username, password, avatarUrl} = form;
 
-    const URL = 'https://localhost:8080';
+    const URL = 'https://localhost:8080/auth';
 
     const response = await axios.post(`${URL}/${isSignup ? 'signup' : 'login'}`, {
       username, 
