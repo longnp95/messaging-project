@@ -6,7 +6,7 @@ import GroupSearch from './GroupSearch';
 import GroupListContent from './GroupListContent';
 
 const cookie = new Cookies();
-const GroupListContainer = ({isCreating, setIsCreating, setMenuToggle}) => {
+const GroupListContainer = ({isCreating, setIsCreating, setMenuToggle, menuToggle}) => {
 /*   const URL = 'https://localhost:8080/group';
 
   axios.post(URL, {
@@ -28,6 +28,7 @@ const GroupListContainer = ({isCreating, setIsCreating, setMenuToggle}) => {
     const menuOn = () => {
       setMenuToggle(true);
     }
+    const [searchText, setSearchText] = useState('');
     return (
       <>
         <div id="group_list-container">
@@ -35,9 +36,10 @@ const GroupListContainer = ({isCreating, setIsCreating, setMenuToggle}) => {
             <div id="group_list-container-topbar-icon-wrapper">
               <img src={MenuIcon} alt='Menu' width='30' onClick={menuOn}/>
             </div>
-            <GroupSearch />
+            <GroupSearch setSearchText={setSearchText}/>
           </div>
-
+          <p>'{menuToggle}'</p>
+          <p>{searchText}</p>
           <GroupListContent groups={groups} />
         </div>
       </>
