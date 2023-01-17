@@ -82,20 +82,6 @@ exports.postCreateGroup = (async (req, res, next) => {
   }
 });
 
-exports.getRole = (async (req, res, next) => {
-  const roles = await Role.findAll();
-
-  return res.status(200).json({
-    error: {
-      status: 200,
-      message: OK
-    },
-    data: {
-      roles: roles
-    }
-  });
-});
-
 exports.postSetRole = (async (req, res, next) => {
   const body = req.body;
 
@@ -245,4 +231,68 @@ exports.postSetRole = (async (req, res, next) => {
       data: {}
     });
   }
+});
+
+exports.getRole = (async (req, res, next) => {
+  const roles = await Role.findAll();
+
+  return res.status(200).json({
+    error: {
+      status: 200,
+      message: OK
+    },
+    data: {
+      roles: roles
+    }
+  });
+});
+
+exports.getMember = (async (req, res, next) => {
+  const groupId = req.query.groupId;
+
+  if (!groupId) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'Where params ?'
+      },
+      data: {}
+    });
+  }
+
+  const group = await Group.findOne({
+    where: {
+      id: groupId
+    }
+  });
+
+  if (!group) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'This group doesn\'t exists!'
+      },
+      data: {}
+    });
+  }
+
+  const members = await Group_Member.findAll({
+    where: {
+      groupId: groupId
+    },
+    include: {
+      all: true,
+      nested: true
+    }
+  });
+
+  return res.status(200).json({
+    error: {
+      status: 200,
+      message: OK
+    },
+    data: {
+      members: members
+    }
+  });
 });

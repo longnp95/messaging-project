@@ -9,5 +9,6 @@ const userController = require('../controllers/user');
 routes.post('/createGroup', isUser, userController.postCreateGroup);
 routes.post('/setRole', isUser, userController.postSetRole);
 routes.get('/role', isUser, userController.getRole);
+routes.get('/member', isUser, userController.getMember);
 
 module.exports = routes;
