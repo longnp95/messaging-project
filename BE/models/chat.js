@@ -17,6 +17,12 @@ const Chat = sequelize.define('chat', {
     type: Sequelize.STRING,
     allowNull: false
   },
+  
+  // field cannot be null and type is String
+  status: {
+    type: Sequelize.INTEGER,
+    allowNull: false
+  },
 });
 
 module.exports = Chat;
