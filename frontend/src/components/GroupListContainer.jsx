@@ -6,8 +6,8 @@ import GroupSearch from './GroupSearch';
 import GroupListContent from './GroupListContent';
 
 const cookie = new Cookies();
-const GroupListContainer = (isCreating, setIsCreating,) => {
-  const URL = 'https://localhost:8080/group';
+const GroupListContainer = ({isCreating, setIsCreating, setMenuToggle}) => {
+/*   const URL = 'https://localhost:8080/group';
 
   axios.post(URL, {
     token: cookie.get('token'),
@@ -16,14 +16,24 @@ const GroupListContainer = (isCreating, setIsCreating,) => {
     if (response.error.status == 500) {
       return <p>{response.error.message}</p>;
     }
-    const groups = response.data;
+    const groups = response.data; */
+    
+    const groups = [
+      {groupId:1, groupName:'asfdasdfsaf'},
+      {groupId:2, groupName:'asdf'},
+      {groupId:4, groupName:'asfdasfsadasdfsaf'},
+      {groupId:5, groupName:'Long'},
+    ]
 
+    const menuOn = () => {
+      setMenuToggle(true);
+    }
     return (
       <>
         <div id="group_list-container">
           <div id="group_list-container-topbar">
             <div id="group_list-container-topbar-icon-wrapper">
-              <img src={MenuIcon} alt='Menu' width='30'/>
+              <img src={MenuIcon} alt='Menu' width='30' onClick={menuOn}/>
             </div>
             <GroupSearch />
           </div>
@@ -32,9 +42,9 @@ const GroupListContainer = (isCreating, setIsCreating,) => {
         </div>
       </>
     )
-  }).catch((err)=>{
+/*   }).catch((err)=>{
     return <p>{err}</p>;
-  })
+  }) */
 }
 
 export default GroupListContainer;

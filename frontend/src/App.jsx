@@ -8,14 +8,14 @@ import Auth from './components/Auth';
 import serverUrl from './configs/serverUrl.config';
 
 const cookie = new Cookies();
-const authToken = cookie.get('token');
+/* const authToken = cookie.get('token');
 if (authToken) {
   const socket = io(serverUrl,{
     auth: {
       token: authToken
     }
   });
-}
+} */
 
 function App() {
   const [menuToggle, setMenuToggle] = useState(false);
@@ -23,14 +23,14 @@ function App() {
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
-  if(!authToken) return <Auth />
+  //if(!authToken) return <Auth />
 
 
   return (
     <div className="App">
       <div id='App_content'>
         <GroupListContainer
-          socket={socket}
+          //socket={socket}
           menuToggle={menuToggle}
           setMenuToggle={setMenuToggle}
           isCreating={isCreating}
@@ -40,7 +40,7 @@ function App() {
         />
 
         <GroupContentContainer
-          socket={socket}
+          //socket={socket}
           isCreating={isCreating}
           setIsCreating={setIsCreating}
           isEditing={isEditing}

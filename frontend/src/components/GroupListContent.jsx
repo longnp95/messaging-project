@@ -1,8 +1,8 @@
-const GroupListContent = (groups) => {
+const GroupListContent = ({groups}) => {
   const groupItems = groups.map((group) =>
-    <li key={group.groupId}>
+    <p key={group.groupId}>
       {group.groupName}
-    </li>
+    </p>
   );
 
 
