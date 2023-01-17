@@ -72,7 +72,7 @@ sequelize
     ];
 
     const hashPassword = bcrypt.hashSync('admin001', 12);
-    
+
     const admins = [
       {
         username: 'admin001@gmail.com',
@@ -87,11 +87,20 @@ sequelize
     initDataForTable(Admin, admins);
 
     // Test connection
+    const socketFile = require('./socket');
     const server = app.listen(8080);
-    const io = require('./socket').init(server);
+    const io = socketFile.init(server);
 
     io.on('connection', socket => {
-      console.log('Client connected');
+      const token = socket.handshake.auth.token;
+
+      if (socketFile.checkToken(token)) {
+        socket.disconnect();
+        console.log('Client connected');
+      } else {
+        socket.connect();
+        console.log('Token wrong');
+      }
     });
   })
   .catch(err => console.log(err));
