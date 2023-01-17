@@ -3,77 +3,24 @@ const Admin = require('../models/admin');
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 
-exports.postSignInUser = (async (req, res, next) => {
+const checkStatusUser = function (user) {
+  if (user) {
+    if (user.status == 1) {
+      return true;
+    } else {
+      return 'This user is block';
+    }
+  } else {
+    return 'This user is doesn\'t exists';
+  }
+}
+
+const signInByTable = (async (req, res, table) => {
   const body = req.body;
   const username = body.username;
   const password = body.password;
 
-  if (username && password) {
-    const user = await User.findOne({
-      where: {
-        username: username
-      }
-    });
-
-    if (user) {
-      if (user.status == 1) {
-        const doMatchPass = await bcrypt.compare(password, user.password);
-
-        if (doMatchPass) {
-          const token = jwt.sign(
-            {
-              userId: user.id,
-              role: 'user'
-            },
-            'RANDOM_TOKEN_SECRET',
-            { expiresIn: '24h' }
-          );
-
-          user.update({
-            token: token
-          });
-          user.save();
-
-          return res.status(200).json({
-            error: {
-              status: 200,
-              message: "Sign in successfully!"
-            },
-            data: {
-              user: user
-            }
-          });
-        } else {
-          return res.status(200).json({
-            error: {
-              status: 500,
-              message: "Wrong Username or Password!"
-            },
-            data: {}
-          });
-        }
-
-      } else {
-        return res.status(200).json({
-          error: {
-            status: 500,
-            message: "This account is block!"
-          },
-          data: {}
-        });
-      }
-
-    } else {
-      return res.status(200).json({
-        error: {
-          status: 500,
-          message: "Wrong Username or Password!"
-        },
-        data: {}
-      });
-    }
-
-  } else {
+  if (!(username && password)) {
     return res.status(200).json({
       error: {
         status: 500,
@@ -82,87 +29,68 @@ exports.postSignInUser = (async (req, res, next) => {
       data: {}
     });
   }
+
+  const user = await table.findOne({
+    where: {
+      username: username
+    }
+  });
+
+  const statusUser = checkStatusUser(user);
+
+  if (statusUser != true) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: statusUser.toString()
+      },
+      data: {}
+    });
+  }
+
+  const doMatchPass = await bcrypt.compare(password, user.password);
+
+  if (!doMatchPass) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: "Wrong Username or Password!"
+      },
+      data: {}
+    });
+  }
+
+  const token = jwt.sign(
+    {
+      userId: user.id,
+      role: table.name
+    },
+    'RANDOM_TOKEN_SECRET',
+    { expiresIn: '24h' }
+  );
+
+  user.update({
+    token: token
+  });
+  await user.save();
+
+  return res.status(200).json({
+    error: {
+      status: 200,
+      message: "Sign in successfully!"
+    },
+    data: {
+      user: user
+    }
+  });
+});
+
+exports.postSignInUser = (async (req, res, next) => {
+  await signInByTable(req, res, User);
 });
 
 exports.postSignInAdmin = (async (req, res, next) => {
-  const body = req.body;
-  const username = body.username;
-  const password = body.password;
-
-  if (username && password) {
-    const admin = await Admin.findOne({
-      where: {
-        username: username
-      }
-    });
-
-    if (admin) {
-      if (admin.status == 1) {
-        const doMatchPass = await bcrypt.compare(password, admin.password);
-
-        if (doMatchPass) {
-          const token = jwt.sign(
-            {
-              userId: admin.id,
-              role: 'admin'
-            },
-            'RANDOM_TOKEN_SECRET',
-            { expiresIn: '24h' }
-          );
-
-          admin.update({
-            token: token
-          });
-          admin.save();
-
-          return res.status(200).json({
-            error: {
-              status: 200,
-              message: "Sign in successfully!"
-            },
-            data: {
-              user: admin
-            }
-          });
-        } else {
-          return res.status(200).json({
-            error: {
-              status: 500,
-              message: "Wrong Username or Password!"
-            },
-            data: {}
-          });
-        }
-
-      } else {
-        return res.status(200).json({
-          error: {
-            status: 500,
-            message: "This account is block!"
-          },
-          data: {}
-        });
-      }
-
-    } else {
-      return res.status(200).json({
-        error: {
-          status: 500,
-          message: "Wrong Username or Password!"
-        },
-        data: {}
-      });
-    }
-
-  } else {
-    return res.status(200).json({
-      error: {
-        status: 500,
-        message: 'Where your feild ?'
-      },
-      data: {}
-    });
-  }
+  await signInByTable(req, res, Admin);
 });
 
 exports.postSignUp = (async (req, res, next) => {
