@@ -8,7 +8,8 @@ const bcrypt = require('bcryptjs');
 const sequelize = require('./config/db');
 
 const User = require('./models/user');
-const Group = require('./models/group');
+const Conversation = require('./models/conversation');
+const Type = require('./models/type');
 const Group_Member = require('./models/group_member');
 const Role = require('./models/role');
 const Chat = require('./models/chat');
@@ -22,6 +23,7 @@ const errorController = require('./controllers/error');
 
 // Call routes
 const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/user');
 
 
 // Config and use extensions
@@ -39,6 +41,7 @@ app.use((req, res, next) => {
 
 // Use routes
 app.use('/auth', authRoutes);
+app.use(userRoutes);
 app.use(errorController.get404);
 
 // Relationship mysql
@@ -46,10 +49,12 @@ Permission.hasMany(Admin);
 Admin.belongsTo(Permission, { constraints: true, onDelete: 'CASCADE' });
 Role.hasMany(Group_Member);
 Group_Member.belongsTo(Role, { constraints: true, onDelete: 'CASCADE' });
-User.belongsToMany(Group, { through: Group_Member });
-Group.belongsToMany(User, { through: Group_Member });
-User.belongsToMany(Group, { through: Chat });
-Group.belongsToMany(User, { through: Chat });
+Type.hasMany(Conversation);
+Conversation.belongsTo(Type, { constraints: true, onDelete: 'CASCADE' });
+User.belongsToMany(Conversation, { through: Group_Member });
+Conversation.belongsToMany(User, { through: Group_Member });
+User.belongsToMany(Conversation, { through: Chat });
+Conversation.belongsToMany(User, { through: Chat });
 
 // Run database and run server
 sequelize
@@ -70,6 +75,18 @@ sequelize
         name: 'Member'
       }
     ];
+    
+    const types = [
+      {
+        name: 'individual'
+      },
+      {
+        name: 'group'
+      },
+      {
+        name: 'channel'
+      }
+    ];
 
     const hashPassword = bcrypt.hashSync('admin001', 12);
 
@@ -84,6 +101,7 @@ sequelize
     // init data for option table and option datas
     initDataForTable(Permission, permissions);
     initDataForTable(Role, roles);
+    initDataForTable(Type, types);
     initDataForTable(Admin, admins);
 
     // Test connection
