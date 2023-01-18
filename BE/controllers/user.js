@@ -90,7 +90,7 @@ exports.postUpdateConversation = (async (req, res, next) => {
   const conversationName = body.conversationName;
   const typeConversation = body.typeConversation;//int
   const conversationAvatarUrl = body.conversationAvatarUrl;
-  
+
   const userId = req.query.userId;
 
   if (!(userId && conversationId && conversationName && conversationAvatarUrl)) {
@@ -245,17 +245,18 @@ exports.postSetRole = (async (req, res, next) => {
   }
 
   if (userInGroup.roleId < memberInGroup.roleId) {
+
+    memberInGroup.update({
+      roleId: roleId
+    });
+    memberInGroup.save();
+
     io.getIO().emit('group', {
       action: 'setRole',
       data: {
         memberInGroup: memberInGroup,
       }
     });
-
-    memberInGroup.update({
-      roleId: roleId
-    });
-    memberInGroup.save();
 
     res.status(200).json({
       error: {
