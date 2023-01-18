@@ -1,0 +1,14 @@
+apilink: {
+  auth: {
+    "admin_signin": "http://localhost:8080/auth/admin/signin",
+    "user_signin": "http://localhost:8080/auth/signin",
+    "signup": "http://localhost:8080/auth/signup"
+  },
+  user: {
+    "get_all_conversation": "http://localhost:8080/conversation",
+    "create_conversation": "http://localhost:8080/conversation/create",
+    "update_conversation": "http://localhost:8080/conversation/update",
+    "set_role_member": "http://localhost:8080/conversation/setrole",
+    "get_all_members-in-group": "http://localhost:8080/group/member"
+  }
+}
