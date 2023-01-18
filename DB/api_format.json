@@ -18,9 +18,31 @@
   },
   "varaiable": {
     "auth": {
-      "admin_signin": "http://localhost:8080/auth/admin/signin",
-      "user_signin": "http://localhost:8080/auth/signin",
-      "signup": "http://localhost:8080/auth/signup"
+      "admin_signin": {
+        "body": {
+          "username": "",
+          "password": ""
+        }
+      },
+      "user_signin": {
+        "body": {
+          "username": "",
+          "password": ""
+        }
+      },
+      "signup": {
+        "body": {
+          "username": "",
+          "password": "",
+          "firstName": "",
+          "lastName": "",
+          "gender": "",
+          "avatarUrl": "",
+          "dob": "",
+          "mobile": "",
+          "email": ""
+        }
+      }
     },
     "user": {
       "get_all_conversation": {
