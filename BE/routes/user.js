@@ -9,10 +9,10 @@ const userController = require('../controllers/user');
 routes.get('/conversation', isUser, userController.getConversationsByUserId);
 routes.post('/conversation/create', isUser, haveBody, userController.postCreateConversation);
 routes.post('/conversation/update', isUser, haveBody, userController.postUpdateConversation);
+routes.post('/conversation/setrole', isUser, haveBody, userController.postSetRole);
 
 routes.get('/role', userController.getRoles);
-routes.post('/role/set', isUser, haveBody, userController.postSetRole);
 
-routes.get('/member', isUser, userController.getMembersInGroup);
+routes.get('/group/member', isUser, userController.getMembersInGroup);
 
 module.exports = routes;
