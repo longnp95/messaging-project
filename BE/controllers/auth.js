@@ -50,7 +50,31 @@ const signInByTable = (async (req, res, table) => {
 
   const doMatchPass = await bcrypt.compare(password, user.password);
 
-  if (!doMatchPass) {
+  if (doMatchPass) {
+    const token = jwt.sign(
+      {
+        userId: user.id,
+        role: table.name
+      },
+      'RANDOM_TOKEN_SECRET',
+      { expiresIn: '24h' }
+    );
+
+    user.update({
+      token: token
+    });
+    await user.save();
+
+    return res.status(200).json({
+      error: {
+        status: 200,
+        message: "Sign in successfully!"
+      },
+      data: {
+        user: user
+      }
+    });
+  } else {
     return res.status(200).json({
       error: {
         status: 500,
@@ -59,30 +83,6 @@ const signInByTable = (async (req, res, table) => {
       data: {}
     });
   }
-
-  const token = jwt.sign(
-    {
-      userId: user.id,
-      role: table.name
-    },
-    'RANDOM_TOKEN_SECRET',
-    { expiresIn: '24h' }
-  );
-
-  user.update({
-    token: token
-  });
-  await user.save();
-
-  return res.status(200).json({
-    error: {
-      status: 200,
-      message: "Sign in successfully!"
-    },
-    data: {
-      user: user
-    }
-  });
 });
 
 exports.postSignInUser = (async (req, res, next) => {
@@ -105,7 +105,7 @@ exports.postSignUp = (async (req, res, next) => {
   const mobile = body.phoneNumber;
   const email = body.email;
 
-  if (username && password && firstName && lastName && gender && avatarUrl && dob && mobile && email) {
+  if (!(username && password && firstName && lastName && gender && avatarUrl && dob && mobile && email)) {
     const existsUsername = await User.findOne({
       where: {
         username: username

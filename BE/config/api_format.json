@@ -5,6 +5,18 @@
       "user_signin": "http://localhost:8080/auth/signin",
       "signup": "http://localhost:8080/auth/signup"
     },
+    "admin": {
+      "get_all_user": "http://localhost:8080/admin/user",
+      "get_an_user": "http://localhost:8080/admin/user/show",
+      "create_user": "http://localhost:8080/admin/user/create",
+      "update_user": "http://localhost:8080/admin/user/update",
+      "activate_user": "http://localhost:8080/admin/user/activate",
+      "deactivate_user": "http://localhost:8080/admin/user/deactivate",
+      "get_all_conversation": "http://localhost:8080/admin/conversation",
+      "get_a_conversation": "http://localhost:8080/admin/conversation/show",
+      "create_conversation": "http://localhost:8080/admin/conversation/create",
+      "update_conversation": "http://localhost:8080/admin/conversation/update"
+    },
     "user": {
       "get_all_conversation": "http://localhost:8080/conversation",
       "create_conversation": "http://localhost:8080/conversation/create",
