@@ -23,6 +23,7 @@ const errorController = require('./controllers/error');
 
 // Call routes
 const authRoutes = require('./routes/auth');
+const adminRoutes = require('./routes/admin');
 const userRoutes = require('./routes/user');
 
 
@@ -40,6 +41,7 @@ app.use((req, res, next) => {
 });//cors
 
 // Use routes
+app.use('/admin', adminRoutes);
 app.use('/auth', authRoutes);
 app.use(userRoutes);
 app.use(errorController.get404);

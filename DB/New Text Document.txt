@@ -1,14 +1,100 @@
-apilink: {
-  auth: {
+"apilink": {
+  "auth": {
     "admin_signin": "http://localhost:8080/auth/admin/signin",
     "user_signin": "http://localhost:8080/auth/signin",
     "signup": "http://localhost:8080/auth/signup"
   },
-  user: {
+  "user": {
     "get_all_conversation": "http://localhost:8080/conversation",
     "create_conversation": "http://localhost:8080/conversation/create",
     "update_conversation": "http://localhost:8080/conversation/update",
     "set_role_member": "http://localhost:8080/conversation/setrole",
     "get_all_members-in-group": "http://localhost:8080/group/member"
+  }
+  "role": {
+    "get_all_role": "http://localhost:8080/role"
+  }
+},
+
+"varaiable": {
+  "auth": {
+    "admin_signin": "http://localhost:8080/auth/admin/signin",
+    "user_signin": "http://localhost:8080/auth/signin",
+    "signup": "http://localhost:8080/auth/signup"
+  },
+
+  "user": {
+    "get_all_conversation": {
+      "query": {
+        "userId": ""
+      }
+    },
+
+    "create_conversation": {
+      "query": {
+        "userId": ""
+      },
+      "body": {
+        conversationName: "",
+        conversationAvatarUrl: ""
+        typeConversation: ""
+      }
+    },
+
+    "update_conversation": {
+      "query": {
+        "userId": ""
+      },
+      "body": {
+        "conversationId"= "";
+        "conversationName": "",
+        "conversationAvatarUrl": ""
+        "typeConversation": ""
+      }
+    },
+
+    "set_role_member": {
+      "query": {
+        "userId": ""
+      },
+      "body": {
+        "conservationId": "",
+        "memberId": "",
+        "roleId": ""
+      }
+    },
+
+    "get_all_members-in-group": {
+      "query": {
+        "groupId": ""
+      }
+    }
+  }
+}
+
+"data": {
+  "role": {
+    "get_all_role": {
+      "error": {
+        "status": 200,
+        "message": "OK"
+      },
+      "data": {
+        "roles": [
+          {
+            "id": 1,
+            "name": "Leader",
+            "createdAt": "2023-01-18T03:49:26.000Z",
+            "updatedAt": "2023-01-18T03:49:26.000Z"
+          },
+          {
+            "id": 2,
+            "name": "Member",
+            "createdAt": "2023-01-18T03:49:26.000Z",
+            "updatedAt": "2023-01-18T03:49:26.000Z"
+          }
+        ]
+      }
+    }
   }
 }
