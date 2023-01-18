@@ -6,10 +6,13 @@ const isUser = require('../middlewares/isUser');
 
 const userController = require('../controllers/user');
 
-// routes.get('/group', isUser, userController.getGroupsByUserId);
-// routes.post('/createGroup', isUser, haveBody, userController.postCreateGroup);
-// routes.post('/setRole', isUser, haveBody, userController.postSetRole);
-routes.get('/role', isUser, haveBody, userController.getRoles);
-// routes.get('/member', isUser, haveBody, userController.getMembers);
+routes.get('/conversation', isUser, userController.getConversationsByUserId);
+routes.post('/conversation/create', isUser, haveBody, userController.postCreateConversation);
+routes.post('/conversation/update', isUser, haveBody, userController.postUpdateConversation);
+
+routes.get('/role', isUser, userController.getRoles);
+routes.post('/role/set', isUser, haveBody, userController.postSetRole);
+
+routes.get('/member', isUser, userController.getMembers);
 
 module.exports = routes;
