@@ -75,13 +75,16 @@ sequelize
         name: 'Inactive user'
       },
       {
+        name: 'View conversation'
+      },
+      {
         name: 'Create conversation'
       },
       {
         name: 'Edit conversation'
       },
       {
-        name: ''
+        name: 'Delete conversation'
       }
     ];
 

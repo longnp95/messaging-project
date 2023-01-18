@@ -21,9 +21,10 @@ exports.postCreateConversation = (async (req, res, next) => {
   const conversationName = body.conversationName;//string
   const conversationAvatarUrl = body.conversationAvatarUrl;//string
   const typeConversation = body.typeConversation;//int
-  const createdBy = body.createdBy;
 
-  if (!(conversationName && conversationAvatarUrl && typeConversationId && createdBy)) {
+  const userId = req.query.userId;
+
+  if (!(conversationName && conversationAvatarUrl && typeConversation && userId)) {
     return res.status(200).json({
       error: {
         status: 500,
@@ -85,11 +86,12 @@ exports.postCreateConversation = (async (req, res, next) => {
 
 exports.postUpdateConversation = (async (req, res, next) => {
   const body = req.body;
-  const userId = body.userId;
   const conversationId = body.conversationId;
   const conversationName = body.conversationName;
   const typeConversation = body.typeConversation;//int
   const conversationAvatarUrl = body.conversationAvatarUrl;
+  
+  const userId = req.query.userId;
 
   if (!(userId && conversationId && conversationName && conversationAvatarUrl)) {
     return res.status(200).json({
@@ -141,8 +143,8 @@ exports.postUpdateConversation = (async (req, res, next) => {
 });
 
 exports.postSetRole = (async (req, res, next) => {
+  const userId = req.query.userId;
   const body = req.body;
-  const userId = body.userId;
   const conservationId = body.conservationId;
   const memberId = body.memberId;
   const roleId = body.roleId;
