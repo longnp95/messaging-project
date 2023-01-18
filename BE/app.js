@@ -63,7 +63,25 @@ sequelize
   .then(() => {
     const permissions = [
       {
-        name: 'Owner'
+        name: 'View infomation of user'
+      },
+      {
+        name: 'Edit infomation of user'
+      },
+      {
+        name: 'Active user'
+      },
+      {
+        name: 'Inactive user'
+      },
+      {
+        name: 'Create conversation'
+      },
+      {
+        name: 'Edit conversation'
+      },
+      {
+        name: ''
       }
     ];
 

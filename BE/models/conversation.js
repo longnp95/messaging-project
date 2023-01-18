@@ -18,7 +18,13 @@ const Conversation = sequelize.define('conversation', {
     allowNull: false
   },
 
+  // field with type is String
   avatar: {
+    type: Sequelize.STRING
+  },
+  
+  // field with type is String
+  last_message: {
     type: Sequelize.STRING
   }
 });
