@@ -11,8 +11,8 @@ const initialForm = {
   password: '',
   gender: '',
   avatarUrl: '',
-  dateOfBirth: '',
-  phoneNumber: '',
+  dob: '',
+  mobile: '',
   email: '',
 }
 
@@ -24,17 +24,15 @@ const Auth = () => {
     e.preventDefault();
     const { username, password, avatarUrl} = form;
 
-    const URL = 'https://localhost:8080/auth';
-
-    const response = await axios.post(`${URL}/${isSignup ? 'signup' : 'login'}`, {
+    const response = await axios.post(`/auth/${isSignup ? 'signup' : 'login'}`, {
       username, 
       password, 
       firstName: form.firstName,
       lastName: form.lastName,
       gender: form.gender,
       avatarUrl: form.avatarUrl,
-      dateOfBirth: form.dateOfBirth,
-      phoneNumber: form.phoneNumber,
+      dob: form.dob,
+      mobile: form.mobile,
       email: form.email
     });
 
@@ -156,9 +154,9 @@ const Auth = () => {
             )}
             {isSignup && (
               <div id='auth_form-container-fields-content-input'>
-                <label htmlFor="dateOfBirth">Date Of Birth</label>
+                <label htmlFor="dob">Date Of Birth</label>
                 <input
-                  name='dateOfBirth'
+                  name='dob'
                   type="date"
                   value='2000-01-01'
                   onChange={handleChange}
@@ -167,9 +165,9 @@ const Auth = () => {
             )}
             {isSignup && (
               <div id='auth_form-container-fields-content-input'>
-                <label htmlFor="phoneNumber">Phone Number</label>
+                <label htmlFor="mobile">Phone Number</label>
                 <input
-                  name='phoneNumber'
+                  name='mobile'
                   type="tel"
                   onChange={handleChange}
                 />

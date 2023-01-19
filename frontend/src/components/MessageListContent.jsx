@@ -1,8 +1,15 @@
 const MessageListContent = ({messages, userId}) => {
   const listItems = messages.map((message) =>
-    <p key={message.messageId} className={message.senderId==userId ? 'sent' : 'received'}>
-      {message.content}
-    </p>
+    <div 
+      id="message_list-container-content-item-wrapper" 
+      key={message.messageId} 
+      className={message.senderId==userId ? 'sent' : 'received'}
+    >
+      {message.senderId!=userId && (
+        <p className="senderName">{message.senderName}</p>
+      )}
+      <p>{message.content}</p>
+    </div>
   );
 
 
