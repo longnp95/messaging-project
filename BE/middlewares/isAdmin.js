@@ -14,10 +14,7 @@ module.exports = (req, res, next) => {
         }
       })
         .then(admin => {
-          if (admin) {
-            req.userId = data.userId;
-            next();
-          } else {
+          if (!admin) {
             return res.status(200).json({
               error: {
                 status: 500,
@@ -25,6 +22,19 @@ module.exports = (req, res, next) => {
               },
               data: {}
             });
+          } else {
+            if (admin.status == 0) {
+              return res.status(200).json({
+                error: {
+                  status: 500,
+                  message: 'This Account is block!'
+                },
+                data: {}
+              });
+            } else {
+              req.adminId = admin.id;
+              next();
+            }
           }
         })
         .catch(err => {
