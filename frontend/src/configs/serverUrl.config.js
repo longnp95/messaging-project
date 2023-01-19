@@ -1,1 +1,1 @@
-export default "https://localhost:8080"
+export default "http://localhost:8080"

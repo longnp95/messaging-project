@@ -1,0 +1,22 @@
+$blue: #74b9ff;
+
+body {
+  height: 100vh;
+  background-color: #3498db;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+#root {
+  height: 100%;
+  width: 100%;
+}
+
+.App {
+  min-height: 100%;
+  margin: 0;
+  background: #fff;
+  padding: 0;
+  border-radius: 0px;
+}

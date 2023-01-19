@@ -23,22 +23,35 @@ if (authToken) {
 }
 
 function App() {
-  const [menuToggle, setMenuToggle] = useState(false);
+  const [menuToggle, setMenuToggle] = useState('menu-off');
   const [createType, setCreateType] = useState('');
+  const [createTypeId, setCreateTypeId] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentConversation, setCurrentConversation] = useState([])
 
   if(!authToken) return <Auth />
-
+  const user = {
+    token: cookie.get('token'),
+    userId: cookie.get('userId'),
+    hashedPassword: cookie.get('hashedPassword'),
+    firstName: cookie.get('firstName'),
+    lastName: cookie.get('lastName'),
+    avatarUrl: cookie.get('avatarUrl')
+  }
 
   return (
-    <div className="App">
+    <div id="App" className="App">
       <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet"></link>
-      {menuToggle && (
-        <MenuContainer/>
-      )}
+      <MenuContainer
+        menuToggle={menuToggle}
+        setMenuToggle={setMenuToggle}
+        setCreateType={setCreateType}
+        setCreateTypeId={setCreateTypeId}
+        createTypeId={createTypeId}
+        setIsCreating={setIsCreating}
+      />
       <div id='App_content' className='row no-gutters' onClick={()=>{if (menuToggle) setMenuToggle(false)}}>
         <ConversationListContainer
           //socket={socket}
@@ -50,6 +63,7 @@ function App() {
           setIsEditing={setIsEditing}
           currentConversation={currentConversation}
           setCurrentConversation={setCurrentConversation}
+          user={user}
         />
 
         {currentConversation.length==0
@@ -62,6 +76,7 @@ function App() {
             setIsEditing={setIsEditing}
             createType={createType}
             currentConversation={currentConversation}
+            user={user}
           />
         }
       </div>

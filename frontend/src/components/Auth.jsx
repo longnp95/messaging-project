@@ -9,7 +9,7 @@ const initialForm = {
   lastName: '',
   username: '',
   password: '',
-  gender: '',
+  gender: 0,
   avatarUrl: '',
   dob: '',
   mobile: '',
@@ -22,11 +22,11 @@ const Auth = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const { username, password, avatarUrl} = form;
+    const { username, avatarUrl} = form;
 
     const response = await axios.post(`/auth/${isSignup ? 'signup' : 'login'}`, {
       username, 
-      password, 
+      password: form.password, 
       firstName: form.firstName,
       lastName: form.lastName,
       gender: form.gender,
@@ -35,21 +35,21 @@ const Auth = () => {
       mobile: form.mobile,
       email: form.email
     });
-
-    if (response.error.status == 500) {
-      alert(response.error.message);
+    if (response.data.error.status == 500) {
+      alert(response.data.error.message);
       return;
     }
+    console.log(response.data.data);
     const {user: { 
       token, 
-      userId, 
-      hashedPassword, 
+      id, 
+      password, 
       firstName, 
       lastName } 
-    } = response.data;
+    } = response.data.data;
     cookie.set('token', token);
-    cookie.set('userId', userId);
-    cookie.set('hashedPassword', hashedPassword);
+    cookie.set('userId', id);
+    cookie.set('hashedPassword', password);
     cookie.set('firstName', firstName);
     cookie.set('lastName', lastName);
     if (avatarUrl) cookie.set('avatarUrl', avatarUrl);
@@ -133,11 +133,11 @@ const Auth = () => {
               <div id='auth_form-container-fields-content-input'>
                 <label htmlFor="gender">Gender</label>
                 <select name="gender" onChange={handleChange}>
-                  <option value="" selected disabled hidden>Choose here</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
-                  <option value="nonBinary">Non-binary</option>
-                  <option value="noInfo">I prefer not to tell</option>
+                  <option value={0} selected disabled hidden>Choose here</option>
+                  <option value={1}>Male</option>
+                  <option value={2}>Female</option>
+                  <option value={3}>Non-binary</option>
+                  <option value={0}>I prefer not to tell</option>
                 </select>
               </div>
             )}
