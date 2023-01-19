@@ -3,7 +3,7 @@ const Sequelize = require('sequelize');
 const sequelize = require('../config/db');
 
 // Create database with define model of Sequelize
-const Chat = sequelize.define('chat', {
+const Type = sequelize.define('type', {
   // field primary key and type is INTEGER
   id: {
     type: Sequelize.INTEGER,
@@ -13,16 +13,10 @@ const Chat = sequelize.define('chat', {
   },
 
   // field cannot be null and type is String
-  message: {
+  name: {
     type: Sequelize.STRING,
     allowNull: false
-  },
-  
-  // field cannot be null and type is String
-  status: {
-    type: Sequelize.INTEGER,
-    allowNull: false
-  },
+  }
 });
 
-module.exports = Chat;
+module.exports = Type;

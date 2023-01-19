@@ -3,7 +3,7 @@ const Sequelize = require('sequelize');
 const sequelize = require('../config/db');
 
 // Create database with define model of Sequelize
-const Group = sequelize.define('group', {
+const Conversation = sequelize.define('conversation', {
   // field primary key and type is INTEGER
   id: {
     type: Sequelize.INTEGER,
@@ -18,9 +18,15 @@ const Group = sequelize.define('group', {
     allowNull: false
   },
 
+  // field with type is String
   avatar: {
+    type: Sequelize.STRING
+  },
+  
+  // field with type is String
+  last_message: {
     type: Sequelize.STRING
   }
 });
 
-module.exports = Group;
+module.exports = Conversation;

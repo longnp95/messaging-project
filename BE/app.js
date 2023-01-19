@@ -8,7 +8,8 @@ const bcrypt = require('bcryptjs');
 const sequelize = require('./config/db');
 
 const User = require('./models/user');
-const Group = require('./models/group');
+const Conversation = require('./models/conversation');
+const Type = require('./models/type');
 const Group_Member = require('./models/group_member');
 const Role = require('./models/role');
 const Chat = require('./models/chat');
@@ -22,6 +23,8 @@ const errorController = require('./controllers/error');
 
 // Call routes
 const authRoutes = require('./routes/auth');
+const adminRoutes = require('./routes/admin');
+const userRoutes = require('./routes/user');
 
 
 // Config and use extensions
@@ -38,7 +41,9 @@ app.use((req, res, next) => {
 });//cors
 
 // Use routes
+app.use('/admin', adminRoutes);
 app.use('/auth', authRoutes);
+app.use(userRoutes);
 app.use(errorController.get404);
 
 // Relationship mysql
@@ -46,10 +51,12 @@ Permission.hasMany(Admin);
 Admin.belongsTo(Permission, { constraints: true, onDelete: 'CASCADE' });
 Role.hasMany(Group_Member);
 Group_Member.belongsTo(Role, { constraints: true, onDelete: 'CASCADE' });
-User.belongsToMany(Group, { through: Group_Member });
-Group.belongsToMany(User, { through: Group_Member });
-User.belongsToMany(Group, { through: Chat });
-Group.belongsToMany(User, { through: Chat });
+Type.hasMany(Conversation);
+Conversation.belongsTo(Type, { constraints: true, onDelete: 'CASCADE' });
+User.belongsToMany(Conversation, { through: Group_Member });
+Conversation.belongsToMany(User, { through: Group_Member });
+User.belongsToMany(Conversation, { through: Chat });
+Conversation.belongsToMany(User, { through: Chat });
 
 // Run database and run server
 sequelize
@@ -58,7 +65,28 @@ sequelize
   .then(() => {
     const permissions = [
       {
-        name: 'Owner'
+        name: 'View infomation of user'
+      },
+      {
+        name: 'Edit infomation of user'
+      },
+      {
+        name: 'Active user'
+      },
+      {
+        name: 'Inactive user'
+      },
+      {
+        name: 'View conversation'
+      },
+      {
+        name: 'Create conversation'
+      },
+      {
+        name: 'Edit conversation'
+      },
+      {
+        name: 'Delete conversation'
       }
     ];
 
@@ -70,9 +98,21 @@ sequelize
         name: 'Member'
       }
     ];
+    
+    const types = [
+      {
+        name: 'individual'
+      },
+      {
+        name: 'group'
+      },
+      {
+        name: 'channel'
+      }
+    ];
 
     const hashPassword = bcrypt.hashSync('admin001', 12);
-    
+
     const admins = [
       {
         username: 'admin001@gmail.com',
@@ -84,14 +124,24 @@ sequelize
     // init data for option table and option datas
     initDataForTable(Permission, permissions);
     initDataForTable(Role, roles);
+    initDataForTable(Type, types);
     initDataForTable(Admin, admins);
 
     // Test connection
+    const socketFile = require('./socket');
     const server = app.listen(8080);
-    const io = require('./socket').init(server);
+    const io = socketFile.init(server);
 
     io.on('connection', socket => {
-      console.log('Client connected');
+      const token = socket.handshake.auth.token;
+
+      if (socketFile.checkToken(token)) {
+        socket.disconnect();
+        console.log('Client connected');
+      } else {
+        socket.connect();
+        console.log('Token wrong');
+      }
     });
   })
   .catch(err => console.log(err));
