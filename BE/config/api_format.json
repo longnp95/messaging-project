@@ -79,10 +79,29 @@
       "update_user": {
         "query": {
           "userId": "id"
+        },
+        "body": {
+          "username": "username",
+          "password": "password",
+          "firstName": "firstName",
+          "lastName": "lastName",
+          "gender": "gender",
+          "avatarUrl": "avatarUrl",
+          "dob": "dateOfBirth",
+          "mobile": "phoneNumber",
+          "email": "email"
         }
       },
-      "activate_user": {},
-      "deactivate_user": {},
+      "activate_user": {
+        "query": {
+          "userId": "id"
+        }
+      },
+      "deactivate_user": {
+        "query": {
+          "userId": "id"
+        }
+      },
       "get_all_conversation": {},
       "get_a_conversation": {
         "query": {
