@@ -103,44 +103,40 @@ exports.postCreateUser = (async (req, res, next) => {
   const dob = body.dateOfBirth;
   const mobile = body.phoneNumber;
   const email = body.email;
-  const userId = req.query.userId;
 
   if (!(username && password && firstName && lastName && gender && avatarUrl && dob && mobile && email)) {
     const data = {}
     await apiData(res, 500, 'Where params ?', data);
   }
 
-  const user = await checkStatusAccount(res, userId, User);
+  const user = await User.create({
+    username: username,
+    password: password,
+    firstName: firstName,
+    lastName: lastName,
+    gender: gender,
+    avatarUrl: avatarUrl,
+    dob: dob,
+    mobile: mobile,
+    email: email,
+    status: 1
+  });
 
-  if (user) {
-    const user = await User.create({
-      username: username,
-      password: password,
-      firstName: firstName,
-      lastName: lastName,
-      gender: gender,
-      avatarUrl: avatarUrl,
-      dob: dob,
-      mobile: mobile,
-      email: email
+  if (!user) {
+    const data = {
+      user: user
+    };
+
+    io.getIO().emit('user', {
+      action: 'create',
+      data: {
+        user: user,
+      }
     });
-
-    if (!user) {
-      const data = {
-        user: user
-      };
-
-      io.getIO().emit('user', {
-        action: 'create',
-        data: {
-          user: user,
-        }
-      });
-      await apiData(res, 200, 'Create an account successfullly with username: ' + user.username + ' !', data);
-    } else {
-      const data = {};
-      await apiData(res, 500, 'Create an account fail!', data);
-    }
+    await apiData(res, 200, 'Create an account successfullly with username: ' + user.username + ' !', data);
+  } else {
+    const data = {};
+    await apiData(res, 500, 'Create an account fail!', data);
   }
 });
 
