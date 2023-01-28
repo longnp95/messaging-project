@@ -110,12 +110,19 @@
       },
       "create_conversation": {
         "body": {
-          "conversationName": "name",
-          "conversationAvatarUrl": "avatar",
-          "typeConversation": "typeId"
+          "name": "name",
+          "avatar": "avatarUrl",
+          "typeId": "typeId"
         }
       },
-      "update_conversation": {}
+      "update_conversation": {
+        "body": {
+          "id": "id",
+          "name": "name",
+          "avatar": "avatarUrl",
+          "typeId": "typeId"
+        }
+      }
     },
     "user": {
       "get_all_conversation": {

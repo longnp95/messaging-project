@@ -66,9 +66,9 @@ exports.getConversation = (async (req, res, next) => {
 
 exports.postCreateConversation = (async (req, res, next) => {
   const body = req.body;
-  const name = body.conversationName;
-  const avatar = body.conversationAvatarUrl;
-  const typeId = body.typeConversation;
+  const name = body.name;
+  const avatar = body.avatarUrl;
+  const typeId = body.typeId;
 
   if (!(name && avatar && typeId)) {
     const data = {};
@@ -100,10 +100,10 @@ exports.postCreateConversation = (async (req, res, next) => {
 exports.postUpdateConversation = (async (req, res, next) => {
   const conversationId = req.query.conversationId;
   const body = req.body;
-  const id = body.conversationId;
-  const name = body.conversationName;
-  const avatar = body.conversationAvatarUrl;
-  const typeId = body.typeConversation;
+  const id = body.id;
+  const name = body.name;
+  const avatar = body.avatarUrl;
+  const typeId = body.typeId;
 
   if (!conversationId) {
     const data = {};
@@ -136,6 +136,6 @@ exports.postUpdateConversation = (async (req, res, next) => {
     await apiData(res, 200, 'Update conversation successfully!', data);
   } else {
     const data = {};
-    await apiData(res, 500, 'Update conversatio fail!', data);
+    await apiData(res, 500, 'Update conversation fail!', data);
   }
 });

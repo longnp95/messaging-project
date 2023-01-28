@@ -98,7 +98,7 @@ sequelize
         name: 'Member'
       }
     ];
-    
+
     const types = [
       {
         name: 'individual'
@@ -136,10 +136,10 @@ sequelize
       const token = socket.handshake.auth.token;
 
       if (socketFile.checkToken(token)) {
-        socket.disconnect();
+        socket.connect();
         console.log('Client connected');
       } else {
-        socket.connect();
+        socket.disconnect();
         console.log('Token wrong');
       }
     });
