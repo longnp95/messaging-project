@@ -1,5 +1,7 @@
 const io = require('../socket');
 const Conversation = require('../models/conversation');
+const Group_Member = require('../models/group_member');
+const Chat = require('../models/chat');
 
 const apiData = (async (res, status, message, data) => {
   return res.status(200).json({
@@ -137,5 +139,46 @@ exports.postUpdateConversation = (async (req, res, next) => {
   } else {
     const data = {};
     await apiData(res, 500, 'Update conversation fail!', data);
+  }
+});
+
+exports.postDeleteConversation = (async (req, res, next) => {
+  const conversationId = req.query.conversationId;
+
+  if (!conversationId) {
+    const data = {};
+    await apiData(res, 500, 'Where your params ?', data);
+  }
+
+  const conversation = await checkConversation(res, id);
+
+  if (conversation) {
+    await Group_Member.destroy({
+      where: {
+        conversationId: conversationId
+      }
+    });
+
+    await Chat.destroy({
+      where: {
+        conversationId: conversationId
+      }
+    });
+
+    conversation.destroy();
+
+    await apiData(res, 200, 'Delete this conversation successfully!', data);
+
+    io.getIO().emit('conversation', {
+      action: 'delete',
+      data: {
+        conversation: {
+          id: conversationId
+        }
+      }
+    });
+  } else {
+    const data = {};
+    await apiData(res, 500, 'Fail', data);
   }
 });
