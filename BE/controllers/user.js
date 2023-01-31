@@ -385,14 +385,25 @@ exports.getMembersInGroup = (async (req, res, next) => {
 });
 
 exports.postAddMemberInGroup = (async (req, res, next) => {
+  const userId = req.query.userId;
   const groupId = req.query.groupId;
   const memberId = req.body.memberId;
 
-  if (!groupId) {
+  if (!(groupId && userId)) {
     return res.status(200).json({
       error: {
         status: 500,
         message: 'Where params ?'
+      },
+      data: {}
+    });
+  }
+
+  if (!(memberId)) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'Where body ?'
       },
       data: {}
     });
@@ -470,12 +481,18 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
       return res.status(200).json({
         error: {
           status: 500,
-          message: 'Add ' + member.firstName + ' ' + member.lastName
+          message: 'Add ' + member.firstName + ' ' + member.lastName + ' in group successfully!'
         },
         data: {}
       });
     } else {
-
+      return res.status(200).json({
+        error: {
+          status: 500,
+          message: 'Add ' + member.firstName + ' ' + member.lastName + ' in group fail!'
+        },
+        data: {}
+      });
     }
   }
 })
