@@ -16,7 +16,5 @@ routes.post('/user/deactivate', isAdmin, haveBody, usersController.postDeactivat
 
 routes.get('/conversation', isAdmin, conversationsController.getAllConversation);
 routes.get('/conversation/show', isAdmin, conversationsController.getConversation);
-routes.post('/conversation/create', isAdmin, haveBody, conversationsController.postCreateConversation);
-routes.post('/conversation/update', isAdmin, haveBody, conversationsController.postUpdateConversation);
 
 module.exports = routes;

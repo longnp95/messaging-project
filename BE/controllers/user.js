@@ -245,7 +245,6 @@ exports.postSetRole = (async (req, res, next) => {
   }
 
   if (userInGroup.roleId < memberInGroup.roleId) {
-
     memberInGroup.update({
       roleId: roleId
     });
@@ -478,6 +477,13 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
     });
 
     if (newMember) {
+      io.getIO().emit('group', {
+        action: 'addMember',
+        data: {
+          member: member,
+        }
+      });
+
       return res.status(200).json({
         error: {
           status: 500,
@@ -495,4 +501,4 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
       });
     }
   }
-})
+});
