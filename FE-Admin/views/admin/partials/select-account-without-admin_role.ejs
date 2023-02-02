@@ -1,0 +1,18 @@
+<div class="form-group">
+  <label for="accounts" class="fw-bold">Accounts</label>
+
+  <select class="form-select" name="accounts" id="accounts">
+    <% for(account of accounts){ %>
+      <% if(account.role.id != 1){ %>
+        <option class="role_<%= account.role.name %>" value="<%= account.id %>">
+          <%= account.username %>
+        </option>
+      <% } %>
+    <% } %>
+  </select>
+  <br>
+
+  <span class="text-danger d-none" id="accounts_error">
+    Please select Account!
+  </span>
+</div>

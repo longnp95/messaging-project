@@ -1,0 +1,66 @@
+<td><%= no %></td>
+
+<td>
+  <div data-toggle="tooltip">
+    <%= account && account.username ? account.username : 'No Information' %>
+  </div>
+</td>
+<td>
+  <%= account && account.role && account.role.name ? account.role.name : '' %>
+</td>
+
+<% if(info){ %>
+  <td>
+    <%= info.full_name ? info.full_name : 'No Infomation' %>
+  </td>
+  
+  <td>
+    <% switch(info.gender){ 
+      case 1: %>
+        <%= 'Male' %>
+        <% break; %>
+      <% case 2: %>
+        <%= 'Female' %>
+        <% break; %>
+      <% default: %>
+        <%= 'Other' %>
+        <% break; %>
+    <% } %>
+  </td>
+  
+  <td>
+    <%= info.dob ? info.dob : 'No Infomation' %>
+  </td>
+  
+  <td>
+    <%= info.mobile ? info.mobile : 'No Infomation' %>
+  </td>
+  
+  <td>
+    <%= info.address ? info.address : 'No Infomation' %>
+  </td>
+<% } else { %>
+  <td>No Infomation</td>
+
+  <td>No Infomation</td>
+
+  <td>No Infomation</td>
+
+  <td>No Infomation</td>
+
+  <td>No Infomation</td>
+<% } %>
+ 
+<td>
+  <% switch(account.status) { 
+    case 0: %>
+    <span class="text-danger">Inactive</span>
+    <% break;
+    case 1: %>
+    <span class="text-success">Active</span>
+    <% break;
+    default: %>
+    <span class="text-danger">Inactive</span>
+    <% break;
+  }%>
+</td>

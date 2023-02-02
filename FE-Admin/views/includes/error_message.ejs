@@ -1,0 +1,9 @@
+<% if(message.toString() != 'undefined' && message.length > 0){ %>
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+  <%= message %>
+  <button class="closebtn" onclick="this.parentElement.style.display='none';">
+    &times;
+  </button>
+</div>
+<br>
+<% } %>

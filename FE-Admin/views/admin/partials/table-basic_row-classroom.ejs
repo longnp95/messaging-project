@@ -1,0 +1,33 @@
+<td><%= no %></td>
+
+<td><%= classroom.name %></td>
+
+<td><%= accounts.length %></td>
+
+<!-- convert to Date Time format DD/MM/YYYY HH:MM:SS -->
+<% 
+  convertDateTimeToString = function(value) {
+    dateTime = new Date(value);
+
+    return dateTime.toString();
+  }
+
+  dateTimeFormat = function(value) {
+    dateTime = new Date(value);
+    
+    stringFormat = "";
+
+    stringFormat += dateTime.getDate().toString() + "/";
+    stringFormat += dateTime.getMonth().toString() + "/";
+    stringFormat += dateTime.getFullYear().toString() + " ";
+    stringFormat += dateTime.getHours().toString() + ":";
+    stringFormat += dateTime.getMinutes().toString() + ":";
+    stringFormat += dateTime.getSeconds().toString();
+
+    return stringFormat;
+  }
+%>
+
+<td><%= convertDateTimeToString(classroom.createdAt) %></td>
+
+<td><%= convertDateTimeToString(classroom.updatedAt) %></td>

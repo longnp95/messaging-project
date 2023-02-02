@@ -1,0 +1,161 @@
+<%- include('../../includes/head.ejs') %>
+<style>
+  body {
+    background-color: #f9f7f4;
+  }
+</style>
+</head>
+
+<%- include('../../includes/adminNav.ejs') %>
+<% let user = data.user;%>
+<!-- convert to Date Time format DD/MM/YYYY HH:MM:SS -->
+<% 
+  convertDateTimeToString = function(value) {
+    dateTime = new Date(value);
+
+    return dateTime.toString();
+  }
+
+  dateTimeFormat = function(value) {
+    dateTime = new Date(value);
+    
+    stringFormat = "";
+
+    stringFormat += dateTime.getDate().toString() + "/";
+    stringFormat += dateTime.getMonth().toString() + "/";
+    stringFormat += dateTime.getFullYear().toString() + " ";
+    stringFormat += dateTime.getHours().toString() + ":";
+    stringFormat += dateTime.getMinutes().toString() + ":";
+    stringFormat += dateTime.getSeconds().toString();
+
+    return stringFormat;
+  }
+%>
+<main>
+  <div class="container">
+    <br>
+    <br>
+    <h1 class="display-4">
+      User Account Details
+    </h1>
+    <br>
+
+    <div class="container">
+      <dl class="row">
+        <div class="col-sm-5">
+          <dt class="col-sm-12">
+            <i class="bi bi-image"></i>
+            Avatar
+          </dt>
+          <dd class="col-sm-12">
+            <% if(user && user.avatar) { %>
+              <img src="<%= user.avatar %>" class="img-thumbnail" alt="" style="width: 100%; height: auto;">
+            <% } %>
+          </dd>
+        </div>
+
+        <div class="col-sm-3">
+          <div class="container">
+            <dt class="col-sm-12">
+              <i class="bi bi-person-fill"></i>
+              Username
+            </dt>
+            <dd class="col-sm-12">
+              <%= user && user.username ? user.username : 'No Infomation' %>
+            </dd>
+  
+            <dt class="col-sm-12">
+              <i class="bi bi-lightning-charge-fill"></i>
+              Status
+            </dt>
+            <dd class="col-sm-12">
+              <% switch(user.username) {
+                case 1: %>
+                <span class="text-success">Active</span>
+                <% break;
+                default: %>
+                <span class="text-danger">Inactive</span>
+                <% break;
+              }%>
+            </dd>
+  
+            <dt class="col-sm-12">
+              <i class="bi bi-person-badge-fill"></i>
+              Fullname
+            </dt>
+            <dd class="col-sm-12">
+              <%= user && user.firstName && user.lastName ? user.firstName + user.lastName : 'No Infomation' %>
+            </dd>
+  
+            <% let gender = user && user.gender ? user.gender : "3" %>
+            <dt class="col-sm-12">
+              <% switch (gender) {
+              case "1": %>
+              <i class="bi bi-gender-male"></i>
+              <% break;
+              case "2": %>
+              <i class="bi bi-gender-female"></i>
+              <% break;
+              default: %>
+              <i class="bi bi-gender-ambiguous"></i>
+              <% break; 
+            } %>
+              Gender
+            </dt>
+            <dd class="col-sm-12">
+              <% switch (gender) {
+              case "1": %>
+              <%= 'Male' %>
+              <% break;
+              case "2": %>
+              <%= 'Female' %>
+              <% break;
+              default: %>
+              <%= 'Other' %>
+              <% break; 
+            } %>
+            </dd>
+  
+            <dt class="col-sm-12">
+              <i class="bi bi-telephone-fill"></i>
+              Mobile
+            </dt>
+            <dd class="col-sm-12">
+              <%= user && user.mobile ? user.mobile : 'No Infomation' %>
+            </dd>
+  
+            <dt class="col-sm-12">
+              <i class="bi bi-envelope-at-fill"></i>
+              Email
+            </dt>
+            <dd class="col-sm-12">
+              <%= user && user.email? account.email: 'No Infomation' %>
+            </dd>
+  
+            <dt class="col-sm-12">
+              <i class="bi bi-geo-alt-fill"></i>
+              Address
+            </dt>
+            <dd class="col-sm-12">
+              <%= user && user.address ? user.address : 'No Infomation' %>
+            </dd>
+  
+            <dt class="col-sm-9">
+              <i class="bi bi-geo-alt-fill"></i>
+              Current Update
+            </dt>
+            <dd class="col-sm-12">
+              <%= user && user.updatedAt ? convertDateTimeToString(user.updatedAt) : 'No Infomation' %>
+            </dd>
+          </div>
+        </div>
+      </dl>
+    </div>
+
+    <a type="button" onclick="history.back()" class="btn btn-info">
+      <i class="bi bi-arrow-left"></i>
+      Back
+    </a>
+  </div>
+</main>
+<%- include('../../includes/end.ejs') %>

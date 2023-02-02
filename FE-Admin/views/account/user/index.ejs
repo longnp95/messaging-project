@@ -1,0 +1,173 @@
+<%- include('../../includes/head.ejs') %>
+<style>
+  body {
+    background-color: #f9f7f4;
+  }
+</style>
+</head>
+
+<%- include('../../includes/adminNav.ejs') %>
+<% // begin varaiable
+let users = data.users;
+
+convertDateTimeToString = function(value) {
+  dateTime = new Date(value);
+
+  return dateTime.toString();
+}
+
+dateTimeFormat = function(value) {
+  dateTime = new Date(value);
+  
+  stringFormat = "";
+
+  stringFormat += dateTime.getDate().toString() + "/";
+  stringFormat += dateTime.getMonth().toString() + "/";
+  stringFormat += dateTime.getFullYear().toString() + " ";
+  stringFormat += dateTime.getHours().toString() + ":";
+  stringFormat += dateTime.getMinutes().toString() + ":";
+  stringFormat += dateTime.getSeconds().toString();
+
+  return stringFormat;
+}
+%>
+<main>
+  <div class="container">
+    <br>
+    <br>
+    <div>
+      <h1 class="display-4">
+        User Accounts
+      </h1>
+    </div>
+    <br>
+
+    <!-- <div>
+      <a class="btn btn-dark" href="/account/user/add">
+        <i class="bi bi-plus"></i>
+        Add
+      </a>
+    </div>
+    <br> -->
+
+    <%- include('../../includes/success_message.ejs') %>
+    <table class="table table-hover">
+      <thead class="thead" style="background-color: #acb2c7">
+        <!-- column -->
+        <tr>
+          <th scope="col">No.</th>
+
+          <th scope="col">Username</th>
+
+          <th scope="col">Firstname</th>
+
+          <th scope="col">Lastname</th>
+
+          <th scope="col">Gender</th>
+
+          <th scope="col">Dob</th>
+
+          <th scope="col">Mobile</th>
+
+          <th scope="col">Status</th>
+
+          <th scope="col">Recent Edit</th>
+
+          <th scope="col">&nbsp;</th>
+
+          <th scope="col">&nbsp;</th>
+
+          <th scope="col">&nbsp;</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <% no = 1; %>
+        <% for(user of users) {  %>
+
+        <tr>
+          <td><%= no %></td>
+
+          <td>
+            <div>
+              <%= user && user.username ? user.username : 'No Information' %>
+            </div>
+          </td>
+
+          <td>
+            <%= user && user.firstName ? user.firstName : 'No Infomation' %>
+          </td>
+
+          <td>
+            <%= user && user.lastName ? user.lastName : 'No Infomation' %>
+          </td>
+
+          <td>
+            <% switch(user.gender){ 
+                case 1: %>
+            <%= 'Male' %>
+            <% break; %>
+            <% case 2: %>
+            <%= 'Female' %>
+            <% break; %>
+            <% default: %>
+            <%= 'Other' %>
+            <% break; %>
+            <% } %>
+          </td>
+
+          <td>
+            <%= user && user.dob ? user.dob : 'No Infomation' %>
+          </td>
+
+          <td>
+            <%= user && user.mobile ? user.mobile : 'No Infomation' %>
+          </td>
+
+          <td>
+            <% switch(user.status) { 
+              case 1: %>
+            <span class="text-success">Activate</span>
+            <% break;
+              default: %>
+            <span class="text-danger">Deactivate</span>
+            <% break;
+            } %>
+          </td>
+
+          <td>
+            <%= user && user.updatedAt ? convertDateTimeToString(user.updatedAt) : 'No activity' %>
+          </td>
+
+          <td>
+            <a class="btn btn-outline-info" href="/account/user/show?userId=<%= user.id %>">
+              Details
+            </a>
+          </td>
+
+          <td>
+            <form action="/account/user/activate?userId=<%= user.id %>" method="post">
+              <button class="btn btn-outline-success" type="submit">
+                Activate
+              </button>
+            </form>
+          </td>
+
+          <td>
+            <form action="/account/user/deactivate?userId=<%= user.id %>" method="post">
+              <button class="btn btn-outline-danger" type="submit">
+                Deactivate
+              </button>
+            </form>
+          </td>
+        </tr>
+
+        <% no++; %>
+        <% } %>
+
+      </tbody>
+    </table>
+    <br>
+  </div>
+</main>
+<%- include('../../includes/end.ejs') %>

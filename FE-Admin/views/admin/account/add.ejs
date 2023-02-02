@@ -1,0 +1,38 @@
+<%- include('../../includes/head.ejs') %>
+  <style>
+    body{
+      background-color: #f9f7f4;
+    }
+  </style>
+</head>
+
+<%- include('../../includes/adminNav.ejs') %>
+
+<main>
+  <div class="container">
+    <br>
+    <br>
+    <h1 class="display-4">Add Account</h1>
+    <br>
+    
+    <%- include('../../includes/error_message.ejs') %>
+
+    <form action="/admin/account/add" method="post">
+      <% account = data.account; %>
+
+      <%- include('../partials/feild-account.ejs') %>
+
+      <a type="button" href="/admin/account" class="btn btn-info">
+        <i class="bi bi-arrow-left"></i>
+        Back to Account Index
+      </a>
+      
+      <button type="submit" class="btn btn-dark disabled" id="submit">
+        <i class="bi bi-person-plus-fill"></i>
+        Add
+      </button>
+    </form>
+  </div>
+</main>
+<script src="/js/admin_account_valid_feild.js"></script>
+<%- include('../../includes/end.ejs') %>

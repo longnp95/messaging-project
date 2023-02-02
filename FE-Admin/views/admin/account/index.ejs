@@ -1,0 +1,93 @@
+<%- include('../../includes/head.ejs') %>
+  <style>
+    body{
+      background-color: #f9f7f4;
+    }
+  </style>
+</head>
+
+<%- include('../../includes/adminNav.ejs') %>
+<% // begin varaiable
+let accounts = data.accounts; %>
+<main>
+  <div class="container">
+    <br>
+    <br>
+    <div>
+      <h1 class="display-4">
+        Accounts
+      </h1>
+    </div>
+    <br>
+
+    <div>
+      <a class="btn btn-dark" href="/admin/account/add">
+        <i class="bi bi-plus"></i>
+        Add
+      </a>
+    </div>
+    <br>
+
+    <%- include('../../includes/success_message.ejs') %>
+    <table class="table table-hover">
+      <thead class="thead" style="background-color: #acb2c7">
+        <!-- column -->
+        <tr>
+          <%- include('../partials/table-basic_column-account.ejs') %>
+    
+          <th scope="col">&nbsp;</th>
+    
+          <th scope="col">&nbsp;</th>
+    
+          <th scope="col">&nbsp;</th>
+    
+          <th scope="col">&nbsp;</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <% no = 1; %>
+        <% for(account of accounts) { 
+          info = account.info_account; %>
+
+            <tr>
+              <%- include('../partials/table-basic_row-account.ejs') %>
+              
+              <td>
+                <a class="btn btn-outline-info" href="/admin/account/show?accountId=<%= account.id %>">
+                  Details
+                </a>
+              </td>
+              
+              <td>
+                <a class="btn btn-outline-primary" href="/admin/account/edit?accountId=<%= account.id %>">
+                  Edit
+                </a>
+              </td>
+              
+              <td>
+                <form action="/admin/account/active?accountId=<%= account.id %>" method="post">
+                  <button class="btn btn-outline-success" type="submit">
+                    Active
+                  </button>
+                </form>
+              </td>
+
+              <td>
+                <form action="/admin/account/inactive?accountId=<%= account.id %>" method="post">
+                  <button class="btn btn-outline-danger" type="submit">
+                    Inactive
+                  </button>
+                </form>
+              </td>
+            </tr>
+              
+            <% no++; %>
+          <% } %>
+
+      </tbody>
+    </table>
+    <br>
+  </div>
+</main>
+<%- include('../../includes/end.ejs') %>
