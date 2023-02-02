@@ -92,15 +92,6 @@ exports.postDeleteConversation = (async (req, res, next) => {
     conversation.destroy();
 
     await apiData(res, 200, 'Delete this conversation successfully!', data);
-
-    io.getIO().emit('conversation', {
-      action: 'delete',
-      data: {
-        conversation: {
-          id: conversationId
-        }
-      }
-    });
   } else {
     const data = {};
     await apiData(res, 500, 'Fail', data);

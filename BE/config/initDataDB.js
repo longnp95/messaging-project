@@ -78,6 +78,17 @@ exports.init = (() => {
 
       const hashPassword = bcrypt.hashSync('admin001', 12);
 
+      const users = [
+        {
+          username: 'admin001@gmail.com',
+          password: hashPassword,
+          firstName: "Admin",
+          lastName: "001",
+          gender: 1,
+          status: 1
+        }
+      ];
+
       const admins = [
         {
           username: 'admin001@gmail.com',
@@ -97,7 +108,7 @@ exports.init = (() => {
       initDataForTable(Permission, permissions);
       initDataForTable(Role, roles);
       initDataForTable(Type, types);
-      initDataForTable(Admin, admins);
+      initDataForTable(User, users);
       initDataForTable(Admin, admins);
       initDataForTable(Admin_Permission, admin_permissions);
 
