@@ -9,7 +9,7 @@ const ConversationContentContainer = ({currentConversation}) => {
   const messages = [
     {
       messageId: 1,
-      senderId: 11,
+      senderId: 1,
       senderName: 'Tuan',
       content: 'First Message'
     },

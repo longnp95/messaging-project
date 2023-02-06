@@ -30,6 +30,7 @@ function App() {
   const [createTypeId, setCreateTypeId] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [conversations, setConversations] = useState([]);
   const [currentConversation, setCurrentConversation] = useState([1])
 
   if(!authToken) return <Auth />
@@ -53,6 +54,8 @@ function App() {
           setIsCreating={setIsCreating}
           setCreateType={setCreateType}
           setIsEditing={setIsEditing}
+          conversations={conversations}
+          setConversations={setConversations}
           currentConversation={currentConversation}
           setCurrentConversation={setCurrentConversation}
           user={user}
