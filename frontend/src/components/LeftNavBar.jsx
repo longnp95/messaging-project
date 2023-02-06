@@ -9,7 +9,7 @@ function LeftNavBar({setSearchText, user}) {
     <>
       {[false].map((expand) => (
         <Navbar key={expand} bg="info" expand={expand} className="mb-3">
-          <Container fluid>
+          <Container fluid className="g-0">
             <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-${expand}`} />
             <Form className="d-flex flex-grow-1">
               <Form.Control
