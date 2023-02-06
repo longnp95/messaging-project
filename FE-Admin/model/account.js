@@ -2,6 +2,10 @@
 // const FormData = require('form-data');
 const apiPort = "http://localhost:8080/admin";
 
+exports.apiUrlAdmins = {
+  allAdmin: apiPort
+};
+
 exports.apiUrlUsers = {
   allUser: apiPort + '/user',
   anUser: apiPort + '/user/show',

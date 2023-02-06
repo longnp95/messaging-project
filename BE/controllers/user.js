@@ -16,6 +16,50 @@ const checkStatusUser = function (user) {
   }
 }
 
+exports.getConversationsByUserId = (async (req, res, next) => {
+  const userId = req.query.userId;
+
+  if (!userId) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'Where params ?'
+      },
+      data: {}
+    });
+  }
+
+  const user = await User.findOne({
+    where: {
+      id: userId
+    },
+    include: {
+      all: true,
+      nested: true
+    }
+  });
+
+  if (!user) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'This user doesn\'t exists!'
+      },
+      data: {}
+    });
+  }
+
+  return res.status(200).json({
+    error: {
+      status: 200,
+      message: 'OK'
+    },
+    data: {
+      conversations: user
+    }
+  });
+});
+
 exports.postCreateConversation = (async (req, res, next) => {
   const body = req.body;
   const conversationName = body.conversationName;//string
@@ -37,7 +81,8 @@ exports.postCreateConversation = (async (req, res, next) => {
   const conversation = await Conversation.create({
     name: conversationName,
     avatar: conversationAvatarUrl,
-    typeId: typeConversation
+    typeId: typeConversation,
+    maxUser: 50
   });
 
   if (!conversation) {
@@ -52,7 +97,7 @@ exports.postCreateConversation = (async (req, res, next) => {
 
   const groupMember = await Group_Member.create({
     roleId: 1,
-    userId: createdBy,
+    userId: userId,
     groupId: conversation.id
   });
 
@@ -69,7 +114,7 @@ exports.postCreateConversation = (async (req, res, next) => {
   io.getIO().emit('conversation', {
     action: 'create',
     data: {
-      conversation: conversation,
+      conversation: conversation
     }
   });
 
@@ -103,8 +148,14 @@ exports.postUpdateConversation = (async (req, res, next) => {
     });
   }
 
-  const conversation = Conversation.findOne({
-    id: conversationId
+  const conversation = await Conversation.findOne({
+    where: {
+      id: conversationId
+    },
+    include: {
+      all: true,
+      nested: true
+    }
   });
 
   if (!conversation) {
@@ -285,50 +336,6 @@ exports.getRoles = (async (req, res, next) => {
     },
     data: {
       roles: roles
-    }
-  });
-});
-
-exports.getConversationsByUserId = (async (req, res, next) => {
-  const userId = req.query.userId;
-
-  if (!userId) {
-    return res.status(200).json({
-      error: {
-        status: 500,
-        message: 'Where params ?'
-      },
-      data: {}
-    });
-  }
-
-  const user = await User.findOne({
-    where: {
-      id: userId
-    },
-    include: {
-      all: true,
-      nested: true
-    }
-  });
-
-  if (!user) {
-    return res.status(200).json({
-      error: {
-        status: 500,
-        message: 'This user doesn\'t exists!'
-      },
-      data: {}
-    });
-  }
-
-  return res.status(200).json({
-    error: {
-      status: 200,
-      message: 'OK'
-    },
-    data: {
-      conversations: user.conversations
     }
   });
 });

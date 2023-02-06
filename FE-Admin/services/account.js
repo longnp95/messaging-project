@@ -1,20 +1,26 @@
-const User = require('../model/user');
-const apiUrlUsers = User.apiUrlUsers;
+const Account = require('../model/account');
+const apiUrlAdmins = Account.apiUrlAdmins;
+const apiUrlUsers = Account.apiUrlUsers;
 
-// account
-exports.getAllAccount = (req, res, next) => {
+// admin account
+exports.getAllAdminAccount = (req, res, next) => {
+  return renderEjsPageWithApiGet("messageAdminAccount", 'account/admin/index', apiUrlAdmins.allAdmin, req, res, next);
+}
+
+// user account
+exports.getAllUserAccount = (req, res, next) => {
   return renderEjsPageWithApiGet("messageUserAccount", 'account/user/index', apiUrlUsers.allUser, req, res, next);
 }
 
-exports.getAnAccount = (req, res, next) => {
+exports.getAnUserAccount = (req, res, next) => {
   return renderEjsPageWithApiGet("messageUserAccount", 'account/user/show', apiUrlUsers.anUser, req, res, next);
 }
 
-exports.postAccountActivate = (req, res, next) => {
+exports.postUserAccountActivate = (req, res, next) => {
   return renderEjsPageWithApiPost('messageUserAccount', apiUrlUsers.activate, req, res, next);
 }
 
-exports.postAccountDeactivate = (req, res, next) => {
+exports.postUserAccountDeactivate = (req, res, next) => {
   return renderEjsPageWithApiPost('messageUserAccount', apiUrlUsers.deactivate, req, res, next);
 }
 
@@ -25,7 +31,7 @@ function renderEjsPageWithApiGet(messageName, pagePath, urlApi, req, res, next) 
   const token = req.cookies.token;
   const body = req.body;
 
-  User.get(urlApi, token, params)
+  Account.get(urlApi, token, params)
     .then(response => {
       return response.json();
     })
@@ -52,7 +58,7 @@ function renderEjsPageWithApiPost(messageName, urlApi, req, res, next) {
   const params = req.query;
   const body = req.body;
 
-  User.postOne(urlApi, token, body, params)
+  Account.postOne(urlApi, token, body, params)
     .then(response => {
       return response.json();
     })

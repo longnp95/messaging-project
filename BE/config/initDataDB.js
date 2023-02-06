@@ -21,8 +21,8 @@ exports.init = (() => {
   Conversation.belongsTo(Type, { constraints: true, onDelete: 'CASCADE' });
   User.belongsToMany(Conversation, { through: Group_Member });
   Conversation.belongsToMany(User, { through: Group_Member });
-  User.belongsToMany(Conversation, { through: Chat });
-  Conversation.belongsToMany(User, { through: Chat });
+  Group_Member.belongsToMany(Conversation, { through: Chat });
+  Conversation.belongsToMany(Group_Member, { through: Chat });
 
   sequelize
     .sync({ force: true })

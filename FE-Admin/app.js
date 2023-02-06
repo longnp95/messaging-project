@@ -13,7 +13,7 @@ const app = express();
 
 // Call routes
 const signRoutes = require('./routes/sign');
-const userRoutes = require('./routes/user');
+const accountRoutes = require('./routes/account');
 
 // set views
 app.set('view engine', 'ejs');
@@ -36,7 +36,7 @@ app.use(
 
 // Use routes
 app.use('/auth', signRoutes);
-app.use(userRoutes);
+app.use(accountRoutes);
 // app.use(errorController);
 
 var headers = new Headers();
