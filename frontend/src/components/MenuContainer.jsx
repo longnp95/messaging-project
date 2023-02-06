@@ -1,19 +1,25 @@
-const MenuContainer = ({menuToggle, setCreateType, setCreateTypeId, createTypeId, setIsCreating}) => {
+import React, { useState } from 'react';
+import Nav from 'react-bootstrap/Nav';
+import NewConversationForm from './NewConversationForm';
+
+const MenuContainer = ({menuToggle, user, setCreateType, setCreateTypeId, createTypeId}) => {
+  const [isCreating, setIsCreating] = React.useState(false);
+  
   return (
-    <div id="menu-container" className={"col-md-4 "+{menuToggle}}>
-      <div id="menu-container-user">
-        <span>Current user</span>
-      </div>
-      <div id="menu-container-create_group">
-        <span>Create Group</span>
-      </div>
-      <div id="menu-container-direct_message">
-        <span>Direct Message</span>
-      </div>
-      <div id="menu-container-logout">
-        <span>Logout</span>
-      </div>
-    </div>
+    <>
+      <Nav className="justify-content-end flex-grow-1 px-0">
+        <Nav.Link href="#action1">Current User</Nav.Link>
+        <Nav.Link href="#action2" onClick={() => setIsCreating(true)}>Create Group</Nav.Link>
+        <Nav.Link href="#action3">Direct Message</Nav.Link>
+        <Nav.Link href="#action4">Log Out</Nav.Link>
+      </Nav>
+
+      <NewConversationForm 
+        isCreating={isCreating}
+        setIsCreating={setIsCreating}
+        user={user}
+      />
+    </>
   )
 }
 

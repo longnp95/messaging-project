@@ -1,25 +1,24 @@
 import React, { useState } from 'react';
 import ConversationSearch from './ConversationSearch';
 import ConversationListContent from './ConversationListContent';
+import LeftNavBar from './LeftNavBar';
+import Col from 'react-bootstrap/Col';
 
-const ConversationListContainer = ({isCreating, setIsCreating, setMenuToggle, menuToggle, setCurrentConversation, currentConversation, user}) => {
-  const menuOn = () => {
-    setMenuToggle('menu-on');
-  }
+const ConversationListContainer = ({isCreating, setIsCreating, setCurrentConversation, currentConversation, user}) => {
   const [searchText, setSearchText] = useState('');
   return (
-    <div id="conversation_list-container" className="col-md-4 border-right">
-      <div id="conversation_list-container-topbar">
-        <i className="material-icons menu" onClick={menuOn}>menu</i>
-        <ConversationSearch setSearchText={setSearchText}/>
-      </div>
+    <Col xs={4} id="conversation_list-container" className="g-0 border-right bg-light">
+      <LeftNavBar 
+        setSearchText={setSearchText}
+        user={user}
+      />
       <p>{searchText}</p>
       <ConversationListContent
         currentConversation={currentConversation}
         setCurrentConversation={setCurrentConversation}
         user={user}
       />
-    </div>
+    </Col>
   )
   
 }

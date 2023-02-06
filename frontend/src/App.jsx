@@ -3,6 +3,9 @@ import './App.scss';
 import Cookies from 'universal-cookie';
 import axios from 'axios';
 import { io } from "socket.io-client";
+import Container from 'react-bootstrap/Container';
+import Row from 'react-bootstrap/Row';
+import Col from 'react-bootstrap/Col';
 import MenuContainer from './components/MenuContainer';
 import ConversationListContainer from './components/ConversationListContainer';
 import ConversationContentContainer from './components/ConversationContentContainer';
@@ -23,7 +26,6 @@ if (authToken) {
 }
 
 function App() {
-  const [menuToggle, setMenuToggle] = useState('menu-off');
   const [createType, setCreateType] = useState('');
   const [createTypeId, setCreateTypeId] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
@@ -41,22 +43,12 @@ function App() {
   }
 
   return (
-    <div id="App" className="App">
+    <Container fluid id="App" className="App">
       <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet"></link>
-      <MenuContainer
-        menuToggle={menuToggle}
-        setMenuToggle={setMenuToggle}
-        setCreateType={setCreateType}
-        setCreateTypeId={setCreateTypeId}
-        createTypeId={createTypeId}
-        setIsCreating={setIsCreating}
-      />
-      <div id='App_content' className='row no-gutters' onClick={()=>{if (menuToggle) setMenuToggle(false)}}>
+      <Row id='App_content' className='no-gutters'>
         <ConversationListContainer
           //socket={socket}
-          menuToggle={menuToggle}
-          setMenuToggle={setMenuToggle}
           isCreating={isCreating}
           setIsCreating={setIsCreating}
           setCreateType={setCreateType}
@@ -79,8 +71,8 @@ function App() {
             user={user}
           />
         }
-      </div>
-    </div>
+      </Row>
+    </Container>
   );
 }
 
