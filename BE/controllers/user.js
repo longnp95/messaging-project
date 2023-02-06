@@ -24,11 +24,11 @@ exports.postCreateConversation = (async (req, res, next) => {
 
   const userId = req.query.userId;
 
-  if (!(conversationName && conversationAvatarUrl && typeConversation && userId)) {
+  if (!(conversationName && typeConversation && userId)) {
     return res.status(200).json({
       error: {
         status: 500,
-        message: 'Where your feild ?'
+        message: 'Where your field ?'
       },
       data: {}
     });
@@ -52,7 +52,7 @@ exports.postCreateConversation = (async (req, res, next) => {
 
   const groupMember = await Group_Member.create({
     roleId: 1,
-    userId: createdBy,
+    userId: userId,
     groupId: conversation.id
   });
 
@@ -93,11 +93,11 @@ exports.postUpdateConversation = (async (req, res, next) => {
 
   const userId = req.query.userId;
 
-  if (!(userId && conversationId && conversationName && conversationAvatarUrl)) {
+  if (!(userId && conversationId && conversationName)) {
     return res.status(200).json({
       error: {
         status: 500,
-        message: 'Where your feild ?'
+        message: 'Where your field ?'
       },
       data: {}
     });

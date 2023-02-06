@@ -38,6 +38,7 @@ const NewConversationForm = ({user, isCreating, setIsCreating, createType, creat
   
   return (
     <Modal
+      onHide={() => setIsCreating(false)}
       show={isCreating}
       size="lg"
       aria-labelledby="contained-modal-title-vcenter"
