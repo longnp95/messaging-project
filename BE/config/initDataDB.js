@@ -25,8 +25,8 @@ exports.init = (() => {
   Conversation.belongsToMany(User, { through: Chat });
 
   sequelize
-    .sync({ force: true })
-    // .sync()
+    // .sync({ force: true })
+    .sync()
     .then(() => {
       const permissions = [
         {

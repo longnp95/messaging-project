@@ -66,10 +66,6 @@ const NewConversationForm = ({user, isCreating, setIsCreating, createType, creat
         </Form>
       </form>
       </Modal.Body>
-      <Modal.Footer>
-        <Button onClick={()=>{setIsCreating(false)}}>Close</Button>
-        <Button onClick={handleSubmit}>Create</Button>
-      </Modal.Footer>
     </Modal>
   )
 }

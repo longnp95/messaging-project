@@ -17,14 +17,14 @@ const initialForm = {
 }
 
 const Auth = () => {  
-  const [isSignup, setIsSignup] = useState(true);
+  const [isSignup, setIsSignup] = useState(false);
   const [form,setForm] = useState(initialForm)
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { username, avatarUrl} = form;
 
-    const response = await axios.post(`/auth/${isSignup ? 'signup' : 'login'}`, {
+    const response = await axios.post(`/auth/${isSignup ? 'signup' : 'signin'}`, {
       username, 
       password: form.password, 
       firstName: form.firstName,

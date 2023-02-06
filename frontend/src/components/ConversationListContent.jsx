@@ -5,30 +5,32 @@ const ConversationListContent = ({setCurrentConversation, user}) => {
     headers: {token: user.token},
     params: {userId: user.userId}})
   .then((response)=>{
-    if (response.error.status == 500) {
+    console.log(response);
+    if (response.data.error.status == 500) {
       return (
         <div id="conversation_list-container-content">
           <p>{response.error.message}</p>
         </div>
       )
     }
-    const conversations = response.data;
-  
+    const conversations = response.data.data.conversations;
+    console.log(conversations);
     const handleClick = (conversation) => {
       setCurrentConversation(conversation);
       return;
     }
-    const conversationItems = conversations.map((conversation) =>
+    const conversationItems = conversations.map((conversation) => {
+      console.log(conversation);
       <div
-        key={conversation.conversationId}
+        key={conversation.id}
         id="conversation_list-container-content-item-wrapper"
         onClick={() => handleClick(conversation)}
       >
         <p>
-          {conversation.conversationName}
+          {conversation.name}
         </p>
       </div>
-    );
+    });
 
 
     return (

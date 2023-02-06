@@ -34,6 +34,20 @@ exports.postCreateConversation = (async (req, res, next) => {
     });
   }
 
+  const user = await User.findOne({
+    id: userId
+  })
+
+  if (!user) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'Can\'t find user'
+      },
+      data: {}
+    });
+  }
+
   const conversation = await Conversation.create({
     name: conversationName,
     avatar: conversationAvatarUrl,
@@ -53,7 +67,7 @@ exports.postCreateConversation = (async (req, res, next) => {
   const groupMember = await Group_Member.create({
     roleId: 1,
     userId: userId,
-    groupId: conversation.id
+    conversationId: conversation.id
   });
 
   if (!groupMember) {
@@ -145,11 +159,11 @@ exports.postUpdateConversation = (async (req, res, next) => {
 exports.postSetRole = (async (req, res, next) => {
   const userId = req.query.userId;
   const body = req.body;
-  const conservationId = body.conservationId;
+  const conversationId = body.conversationId;
   const memberId = body.memberId;
   const roleId = body.roleId;
 
-  if (!(userId && conservationId && memberId && roleId)) {
+  if (!(userId && conversationId && memberId && roleId)) {
     return res.status(200).json({
       error: {
         status: 500,
@@ -194,13 +208,13 @@ exports.postSetRole = (async (req, res, next) => {
     });
   }
 
-  const conservation = await Conversation.findOne({
+  const conversation = await Conversation.findOne({
     where: {
-      id: conservationId
+      id: conversationId
     }
   });
 
-  if (!conservation) {
+  if (!conversation) {
     return res.status(200).json({
       error: {
         status: 500,
@@ -213,14 +227,14 @@ exports.postSetRole = (async (req, res, next) => {
   const userInGroup = await Group_Member.findOne({
     where: {
       userId: userId,
-      conservationId: conservationId
+      conversationId: conversationId
     }
   });
 
   const memberInGroup = await Group_Member.findOne({
     where: {
       userId: memberId,
-      conservationId: conservationId
+      conversationId: conversationId
     }
   });
 
@@ -228,7 +242,7 @@ exports.postSetRole = (async (req, res, next) => {
     return res.status(200).json({
       error: {
         status: 500,
-        message: 'You are don\'t have permission in ' + conservation.name + '!'
+        message: 'You are don\'t have permission in ' + conversation.name + '!'
       },
       data: {}
     });
@@ -238,7 +252,7 @@ exports.postSetRole = (async (req, res, next) => {
     return res.status(200).json({
       error: {
         status: 500,
-        message: 'This account doesn\'t exists in ' + conservation.name + '!'
+        message: 'This account doesn\'t exists in ' + conversation.name + '!'
       },
       data: {}
     });
@@ -268,7 +282,7 @@ exports.postSetRole = (async (req, res, next) => {
     return res.status(200).json({
       error: {
         status: 500,
-        message: 'This account doesn\'t exists in ' + conservation.name + '!'
+        message: 'This account doesn\'t exists in ' + conversation.name + '!'
       },
       data: {}
     });
@@ -291,7 +305,6 @@ exports.getRoles = (async (req, res, next) => {
 
 exports.getConversationsByUserId = (async (req, res, next) => {
   const userId = req.query.userId;
-
   if (!userId) {
     return res.status(200).json({
       error: {
@@ -312,6 +325,8 @@ exports.getConversationsByUserId = (async (req, res, next) => {
     }
   });
 
+  console.log(user);
+  
   if (!user) {
     return res.status(200).json({
       error: {
@@ -364,7 +379,7 @@ exports.getMembersInGroup = (async (req, res, next) => {
 
   const members = await Group_Member.findAll({
     where: {
-      groupId: groupId
+      conversationId: groupId
     },
     include: {
       all: true,

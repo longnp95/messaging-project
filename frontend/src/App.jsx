@@ -46,7 +46,7 @@ function App() {
     <Container fluid id="App" className="App">
       <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet"></link>
-      <Row id='App_content' className='no-gutters'>
+      <Row id='App_content' className='g-0'>
         <ConversationListContainer
           //socket={socket}
           isCreating={isCreating}
