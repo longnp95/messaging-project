@@ -1,0 +1,92 @@
+<% avatar = account && account.info_account && account.info_account.avatar ? account.info_account.avatar : '' %>
+
+<input type="hidden" name="id" value="<%= account && account.id ? account.id : '' %>">
+<input type="hidden" name="avatarURL" id="avatarURL" value="<%= avatar %>">
+
+<div class="form-group">
+  <label for="username" class="fw-bold">Username</label>
+
+  <input type="text" class="form-control" id="username" name="username" value="<%= account && account.username ? account.username : '' %>" placeholder="abc@gmail.com">
+
+  <span class="text-danger d-none" id="username_error">
+    Please enter a valid mail!
+  </span>
+</div>
+<br>
+
+<div class="form-group">
+  <label for="avatar" class="fw-bold">Avatar</label>
+
+  <input type="file" class="form-control" id="avatar" name="avatar" placeholder="Please choose a image!">
+
+  <span class="text-danger d-none" id="avartar_error">
+    Please choose a image!
+  </span>
+
+  <span class="text-success d-none" id="avartar_success">
+    Please choose a image!
+  </span>
+  <br>
+
+  <div class="container">
+    <img src="<%= avatar %>" class="img-thumbnail" alt="" style="width: 100%; height: auto;">
+  </div>
+</div>
+<br>
+
+<div class="form-group">
+  <label for="password" class="fw-bold">Password</label>
+
+  <input type="password" class="form-control" id="password" name="password" value="<%= account && account.password ? account.password : '' %>" placeholder="abcd1234">
+
+  <span class="text-danger d-none" id="password_error">
+    Please enter 8 characters with number, capital and small letter!
+  </span>
+</div>
+<br>
+
+<div class="form-group">
+  <label for="full_name" class="fw-bold">Full Name</label>
+
+  <input type="text" class="form-control" id="full_name" name="full_name" value="<%= account && account.info_account && account.info_account.full_name ? account.info_account.full_name : '' %>" placeholder="Nguyen An">
+
+  <span class="text-danger d-none" id="full_name_error">
+    Please valid format (Firstname + Lastname)!
+  </span>
+</div>
+<br>
+
+<div class="form-group">
+  <label for="gender" class="fw-bold">Gender</label>
+
+  <select name="gender" class="form-select" id="gender">
+    <option value="1" <%= account && account.gender && account.gender == "1" ? 'checked' : '' %>>
+      Male
+    </option>
+    <option value="2" <%= account && account.gender && account.gender == "2" ? 'checked' : '' %>>
+      Female
+    </option>
+  </select>
+
+  <span class="text-danger d-none" id="gender_error">
+    Please select a gender!
+  </span>
+</div>
+<br>
+
+<div class="form-group">
+  <label for="roles" class="fw-bold">Role</label>
+
+  <select class="form-select" id="roles" name="roles">
+    <% for(let role of roles){ %>
+    <option value="<%= role.id %>" <%= account && account.roleId && account.roleId == role.id ? 'checked' : '' %>>
+      <%= role.name %>
+    </option>
+    <% } %>
+  </select>
+
+  <span class="text-danger d-none" id="role_error">
+    Please select a role!
+  </span>
+</div>
+<br>

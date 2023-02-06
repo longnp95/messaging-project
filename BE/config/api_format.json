@@ -21,8 +21,9 @@
       "get_all_conversation": "http://localhost:8080/conversation",
       "create_conversation": "http://localhost:8080/conversation/create",
       "update_conversation": "http://localhost:8080/conversation/update",
-      "set_role_member": "http://localhost:8080/conversation/setrole",
-      "get_all_members-in-group": "http://localhost:8080/group/member"
+      "get_all_members-in-group": "http://localhost:8080/group/member",
+      "add_member_in_group": "http://localhost:8080/group/member/add",
+      "set_role_member": "http://localhost:8080/conversation/setrole"
     },
     "role": {
       "get_all_role": "http://localhost:8080/role"
@@ -32,70 +33,151 @@
     "auth": {
       "admin_signin": {
         "body": {
-          "username": "",
-          "password": ""
+          "username": "username",
+          "password": "password"
         }
       },
       "user_signin": {
         "body": {
-          "username": "",
-          "password": ""
+          "username": "username",
+          "password": "password"
         }
       },
       "signup": {
         "body": {
-          "username": "",
-          "password": "",
-          "firstName": "",
-          "lastName": "",
-          "gender": "",
-          "avatarUrl": "",
-          "dob": "",
-          "mobile": "",
-          "email": ""
+          "username": "username",
+          "password": "password",
+          "firstName": "firstName",
+          "lastName": "lastName",
+          "gender": "1",
+          "avatarUrl": "avatarUrl",
+          "dob": "dob",
+          "mobile": "mobile",
+          "email": "email"
+        }
+      }
+    },
+    "admin": {
+      "get_all_user": {},
+      "get_an_user": {
+        "query": {
+          "userId": "userId"
+        }
+      },
+      "create_user": {
+        "body": {
+          "username": "username",
+          "password": "password",
+          "firstName": "firstName",
+          "lastName": "lastName",
+          "gender": "gender",
+          "avatarUrl": "avatarUrl",
+          "dob": "dateOfBirth",
+          "mobile": "phoneNumber",
+          "email": "email"
+        }
+      },
+      "update_user": {
+        "query": {
+          "userId": "userId"
+        },
+        "body": {
+          "username": "username",
+          "password": "password",
+          "firstName": "firstName",
+          "lastName": "lastName",
+          "gender": "gender",
+          "avatarUrl": "avatarUrl",
+          "dob": "dateOfBirth",
+          "mobile": "phoneNumber",
+          "email": "email"
+        }
+      },
+      "activate_user": {
+        "query": {
+          "userId": "userId"
+        }
+      },
+      "deactivate_user": {
+        "query": {
+          "userId": "userId"
+        }
+      },
+      "get_all_conversation": {},
+      "get_a_conversation": {
+        "query": {
+          "conversationId": "conversationId"
+        }
+      },
+      "create_conversation": {
+        "body": {
+          "name": "name",
+          "avatar": "avatarUrl",
+          "typeId": "typeId"
+        }
+      },
+      "update_conversation": {
+        "query": {
+          "conversationId": "conversationId"
+        },
+        "body": {
+          "id": "id",
+          "name": "name",
+          "avatar": "avatarUrl",
+          "typeId": "typeId"
+        }
+      },
+      "delete_conversation": {
+        "query": {
+          "conversationId": "conversationId"
         }
       }
     },
     "user": {
       "get_all_conversation": {
         "query": {
-          "userId": ""
+          "userId": "userId"
         }
       },
       "create_conversation": {
         "query": {
-          "userId": ""
+          "userId": "userId"
         },
         "body": {
-          "conversationName": "",
-          "conversationAvatarUrl": "",
-          "typeConversation": ""
+          "conversationName": "conversationName",
+          "conversationAvatarUrl": "conversationAvatarUrl",
+          "typeConversation": "typeConversation"
         }
       },
       "update_conversation": {
         "query": {
-          "userId": ""
+          "userId": "userId"
         },
         "body": {
-          "conversationId": "",
-          "conversationName": "",
-          "conversationAvatarUrl": "",
-          "typeConversation": ""
+          "conversationId": "conversationId",
+          "conversationName": "conversationName",
+          "conversationAvatarUrl": "conversationAvatarUrl",
+          "typeConversation": "typeConversation"
+        }
+      },
+      "get_all_members_in_group": {
+        "query": {
+          "groupId": "groupId"
         }
       },
       "set_role_member": {
         "query": {
-          "userId": ""
+          "userId": "userId"
         },
         "body": {
-          "conservationId": "",
-          "memberId": "",
-          "roleId": ""
+          "conservationId": "conservationId",
+          "memberId": "memberId",
+          "roleId": "roleId"
         }
       },
-      "get_all_members-in-group": {
+      "add_member_in_group": {
         "query": {
-          "groupId": ""
+          "groupId": "groupId"
         }
       }
     },

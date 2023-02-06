@@ -1,0 +1,12 @@
+<input type="hidden" name="id" value="<%= classroom.id ? classroom.id : '' %>">
+
+<div class="form-group">
+  <label for="name" class="fw-bold">Classroom's Name</label>
+
+  <input type="text" class="form-control" id="name" name="name" value="<%= classroom.name ? classroom.name : '' %>" placeholder="C2109I">
+
+  <span class="text-danger d-none" id="name_error">
+    Please enter a classroom's name (Uppercase all characters, have number)!
+  </span>
+</div>
+<br>

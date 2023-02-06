@@ -1,0 +1,38 @@
+<%- include('../../includes/head.ejs') %>
+  <style>
+    body{
+      background-color: #f9f7f4;
+    }
+  </style>
+</head>
+
+<%- include('../../includes/adminNav.ejs') %>
+
+<main>
+  <div class="container">
+    <br>
+    <br>
+    <h1 class="display-4">Edit Classroom</h1>
+    <br>
+
+    <%- include('../../includes/error_message.ejs') %>
+
+    <form action="/admin/classroom/update" method="post">
+      <% classroom = data.classroom; %>
+
+      <%- include('../partials/feild-classroom.ejs') %>
+
+      <a type="button" href="/admin/classroom" class="btn btn-info">
+        <i class="bi bi-arrow-left"></i>
+        Back to Classroom Index
+      </a>
+      
+      <button type="submit" class="btn btn-dark disabled" id="submit">
+        <i class="bi bi-pencil-square"></i>
+        Edit
+      </button>
+    </form>
+  </div>
+</main>
+<script src="/js/admin_classroom_valid_feild.js"></script>
+<%- include('../../includes/end.ejs') %>

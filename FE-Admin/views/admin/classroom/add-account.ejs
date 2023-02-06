@@ -1,0 +1,37 @@
+<%- include('../../includes/head.ejs') %>
+<style>
+  body {
+    background-color: #f9f7f4;
+  }
+</style>
+</head>
+
+<%- include('../../includes/adminNav.ejs') %>
+<% let classroom = data.classroom; %>
+
+<main>
+  <div class="container">
+    <br>
+    <br>
+    <h1 class="display-4">Add Account In <%= classroom.name %></h1>
+    <br>
+    
+    <%- include('../../includes/error_message.ejs') %>
+
+    <form action="/admin/classroom/add_student?classroomId=<%= classroom.id %>" method="post">
+      <%- include('../partials/select-account-without-admin_role.ejs') %>
+
+      <a type="button" href="/admin/classroom/show?classroomId=<%= classroom.id %>" class="btn btn-info">
+        <i class="bi bi-arrow-left"></i>
+        Back to <%= classroom.name %> Index
+      </a>
+
+      <button type="submit" class="btn btn-dark disabled" name="submit" id="submit">
+        <i class="bi bi-person-plus-fill"></i>
+        Add
+      </button>
+    </form>
+  </div>
+</main>
+<script src="/js/admin_classroom_add-account.js"></script>
+<%- include('../../includes/end.ejs') %>

@@ -245,7 +245,6 @@ exports.postSetRole = (async (req, res, next) => {
   }
 
   if (userInGroup.roleId < memberInGroup.roleId) {
-
     memberInGroup.update({
       roleId: roleId
     });
@@ -349,8 +348,7 @@ exports.getMembersInGroup = (async (req, res, next) => {
 
   const group = await Conversation.findOne({
     where: {
-      id: groupId,
-      typeId: 2
+      id: groupId
     }
   });
 
@@ -383,4 +381,124 @@ exports.getMembersInGroup = (async (req, res, next) => {
       members: members
     }
   });
+});
+
+exports.postAddMemberInGroup = (async (req, res, next) => {
+  const userId = req.query.userId;
+  const groupId = req.query.groupId;
+  const memberId = req.body.memberId;
+
+  if (!(groupId && userId)) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'Where params ?'
+      },
+      data: {}
+    });
+  }
+
+  if (!(memberId)) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'Where body ?'
+      },
+      data: {}
+    });
+  }
+
+  const group = await Conversation.findOne({
+    where: {
+      id: groupId
+    }
+  });
+
+  if (!group) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'This group doesn\'t exists!'
+      },
+      data: {}
+    });
+  }
+
+  const member = await User.findOne({
+    where: {
+      id: memberId
+    }
+  });
+
+  if (!member) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'This user doesn\'t exists!'
+      },
+      data: {}
+    });
+  }
+
+  if (member && member.status == 0) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'This user does deactivate!'
+      },
+      data: {}
+    });
+  }
+
+  const memberInGroup = await Group_Member.findOne({
+    where: {
+      groupId: groupId,
+      userId: memberId
+    },
+    include: {
+      all: true,
+      nested: true
+    }
+  });
+
+  if (memberInGroup) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'This user does exists in group!'
+      },
+      data: {}
+    });
+  } else {
+    const newMember = await Group_Member.create({
+      groupId: groupId,
+      userId: memberId,
+      roleId: 2
+    });
+
+    if (newMember) {
+      io.getIO().emit('group', {
+        action: 'addMember',
+        data: {
+          member: member,
+        }
+      });
+
+      return res.status(200).json({
+        error: {
+          status: 500,
+          message: 'Add ' + member.firstName + ' ' + member.lastName + ' in group successfully!'
+        },
+        data: {}
+      });
+    } else {
+      return res.status(200).json({
+        error: {
+          status: 500,
+          message: 'Add ' + member.firstName + ' ' + member.lastName + ' in group fail!'
+        },
+        data: {}
+      });
+    }
+  }
 });

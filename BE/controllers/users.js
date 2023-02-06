@@ -1,8 +1,6 @@
 const io = require('../socket');
 const Admin = require('../models/admin');
 const User = require('../models/user');
-const Group_Member = require('../models/group_member');
-const Role = require('../models/role');
 
 const checkStatusAccount = (async (res, id, table) => {
   if (id) {
@@ -25,16 +23,18 @@ const checkStatusAccount = (async (res, id, table) => {
     } else {
       const returnData = {};
 
-      await apiData(req, 500, 'This account is block', returnData);
+      await apiData(res, 500, 'This account is block', returnData);
     }
   } else {
-    await apiData(res, 500, 'Where your params ?', data);
+    const returnData = {};
+
+    await apiData(res, 500, 'Where your params ?', returnData);
   }
 });
 
 const changeStatusAccount = (async (res, id, status, table) => {
   if (id) {
-    const user = await checkStatusAccount(req, id, table);
+    const user = await checkStatusAccount(res, id, table);
 
     if (user) {
       await user.update({
@@ -63,6 +63,20 @@ const apiData = (async (res, status, message, data) => {
   });
 });
 
+exports.getAllAdmin = (async (req, res, next) => {
+  const admins = await Admin.findAll({
+    order: [
+      ['updatedAt', 'DESC'],
+    ]
+  });
+
+  const data = {
+    admins: admins
+  };
+
+  await apiData(res, 200, 'OK', data);
+});
+
 exports.getAllUser = (async (req, res, next) => {
   const users = await User.findAll({
     order: [
@@ -88,7 +102,10 @@ exports.getUser = (async (req, res, next) => {
   const user = await checkStatusAccount(res, userId, User);
 
   if (user) {
-    await apiData(res, 200, 'OK', user);
+    const data = {
+      user: user
+    }
+    await apiData(res, 200, 'OK', data);
   }
 });
 
@@ -103,44 +120,34 @@ exports.postCreateUser = (async (req, res, next) => {
   const dob = body.dateOfBirth;
   const mobile = body.phoneNumber;
   const email = body.email;
-  const userId = req.query.userId;
 
   if (!(username && password && firstName && lastName && gender && avatarUrl && dob && mobile && email)) {
     const data = {}
     await apiData(res, 500, 'Where params ?', data);
   }
 
-  const user = await checkStatusAccount(res, userId, User);
+  const user = await User.create({
+    username: username,
+    password: password,
+    firstName: firstName,
+    lastName: lastName,
+    gender: gender,
+    avatarUrl: avatarUrl,
+    dob: dob,
+    mobile: mobile,
+    email: email,
+    status: 1
+  });
 
-  if (user) {
-    const user = await User.create({
-      username: username,
-      password: password,
-      firstName: firstName,
-      lastName: lastName,
-      gender: gender,
-      avatarUrl: avatarUrl,
-      dob: dob,
-      mobile: mobile,
-      email: email
-    });
+  if (!user) {
+    const data = {
+      user: user
+    };
 
-    if (!user) {
-      const data = {
-        user: user
-      };
-
-      io.getIO().emit('user', {
-        action: 'create',
-        data: {
-          user: user,
-        }
-      });
-      await apiData(res, 200, 'Create an account successfullly with username: ' + user.username + ' !', data);
-    } else {
-      const data = {};
-      await apiData(res, 500, 'Create an account fail!', data);
-    }
+    await apiData(res, 200, 'Create an account successfullly with username: ' + user.username + ' !', data);
+  } else {
+    const data = {};
+    await apiData(res, 500, 'Create an account fail!', data);
   }
 });
 
@@ -192,49 +199,55 @@ exports.postUpdateUser = (async (req, res, next) => {
         user: user
       };
 
-      io.getIO().emit('user', {
-        action: 'update',
-        data: {
-          user: user,
-        }
-      });
       await apiData(res, 200, 'Update an account successfullly!', data);
     }
   }
 });
 
 exports.postActivavteUser = (async (req, res, next) => {
-  const userId = req.qeury.userId;
+  const userId = req.query.userId;
 
-  const user = await changeStatusAccount(req, userId, 1, table);
+  if (!userId) {
+    const data = {};
+
+    await apiData(res, 500, 'Where your params!', data);
+  }
+
+  const user = await changeStatusAccount(res, userId, 1, User);
 
   if (user) {
-    io.getIO().emit('user', {
-      action: 'activate',
-      data: {
-        user: user,
-      }
-    });
+    const data = {
+      path: '/account/user'
+    }
+
     await apiData(res, 200, 'Activate an account successfullly!', data);
   } else {
+    const data = {};
+
     await apiData(res, 200, 'Activate an account fail!', data);
   }
 });
 
 exports.postDeactivateUser = (async (req, res, next) => {
-  const userId = req.qeury.userId;
+  const userId = req.query.userId;
 
-  const user = await checkStatusAccount(req, userId, table);
+  if (!userId) {
+    const data = {};
+
+    await apiData(res, 500, 'Where your params!', data);
+  }
+
+  const user = await changeStatusAccount(res, userId, 0, User);
 
   if (user) {
-    io.getIO().emit('user', {
-      action: 'deactive',
-      data: {
-        user: user,
-      }
-    });
+    const data = {
+      path: '/account/user'
+    }
+
     await apiData(res, 200, 'Deactive an account successfullly!', data);
   } else {
+    const data = {};
+
     await apiData(res, 200, 'Deactive an account fail!', data);
   }
 });
