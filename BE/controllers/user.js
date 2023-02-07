@@ -5,61 +5,53 @@ const Conversation = require('../models/conversation');
 const Role = require('../models/role');
 const Type = require('../models/type');
 
-const checkStatusUser = function (user) {
-  if (user) {
-    if (user.status == 1) {
-      return true;
+const apiData = (async (res, status, message, data) => {
+  return res.status(200).json({
+    error: {
+      status: status,
+      message: message
+    },
+    data: data
+  });
+});
+
+const checkStatusAccount = (async (res, id, table) => {
+  if (id) {
+    const data = await table.findOne({
+      where: {
+        id: id
+      },
+      include: Conversation
+    });
+
+    if (!data) {
+      const returnData = {};
+
+      await apiData(res, 500, 'This account doesn\'t exists', returnData);
+    } else if (data.status == 1) {
+      return data;
     } else {
-      return 'This user is block';
+      const returnData = {};
+
+      await apiData(res, 500, 'This account is block', returnData);
     }
   } else {
-    return 'This user is doesn\'t exists';
+    const returnData = {};
+
+    await apiData(res, 500, 'Where your params ?', returnData);
   }
-}
+});
 
 exports.getConversationsByUserId = (async (req, res, next) => {
   const userId = req.query.userId;
-  if (!userId) {
-    return res.status(200).json({
-      error: {
-        status: 500,
-        message: 'Where params ?'
-      },
-      data: {}
-    });
-  }
 
-  const user = await User.findOne({
-    where: {
-      id: userId
-    },
-    include: {
-      model: Conversation,
-      include: {
-        model: Type
-      }
-    }
-  });
+  const user = await checkStatusAccount(res, userId, User);
 
-  if (!user) {
-    return res.status(200).json({
-      error: {
-        status: 500,
-        message: 'This user doesn\'t exists!'
-      },
-      data: {}
-    });
-  }
+  const data = {
+    conversations: user.conversations
+  };
 
-  return res.status(200).json({
-    error: {
-      status: 200,
-      message: 'OK'
-    },
-    data: {
-      conversations: user.conversations
-    }
-  });
+  await apiData(res, 200, 'OK', data);
 });
 
 exports.postCreateConversation = (async (req, res, next) => {
@@ -71,32 +63,12 @@ exports.postCreateConversation = (async (req, res, next) => {
   const userId = req.query.userId;
 
   if (!(conversationName && typeConversation && userId)) {
-    return res.status(200).json({
-      error: {
-        status: 500,
-        message: 'Where your field ?'
-      },
-      data: {}
-    });
+    const data = {};
+
+    await apiData(res, 500, 'Where your field ?', data);
   }
 
-  const user = await User.findOne({
-    where: {
-      id: userId
-    }
-  });
-
-  const statusUser = checkStatusUser(user);
-
-  if (statusUser != true) {
-    return res.status(200).json({
-      error: {
-        status: 500,
-        message: statusUser
-      },
-      data: {}
-    });
-  }
+  const user = await checkStatusAccount(res, userId, User);
 
   const conversation = await Conversation.create({
     name: conversationName,
@@ -158,13 +130,9 @@ exports.postUpdateConversation = (async (req, res, next) => {
   const userId = req.query.userId;
 
   if (!(userId && conversationId && conversationName)) {
-    return res.status(200).json({
-      error: {
-        status: 500,
-        message: 'Where your field ?'
-      },
-      data: {}
-    });
+    const data = {};
+
+    await apiData(res, 500, 'Where your field ?', data);
   }
 
   const conversation = await Conversation.findOne({
@@ -174,13 +142,9 @@ exports.postUpdateConversation = (async (req, res, next) => {
   });
 
   if (!conversation) {
-    return res.status(200).json({
-      error: {
-        status: 500,
-        message: 'This conversation doesn\'t exists!'
-      },
-      data: {}
-    });
+    const data = {};
+
+    await apiData(res, 500, 'This conversation doesn\'t exists!', data);
   }
 
   conversation.update({
@@ -190,22 +154,18 @@ exports.postUpdateConversation = (async (req, res, next) => {
   });
   conversation.save();
 
-  io.getIO().emit('conversation', {
+  io.getIO().to("conversation" + conversation.id).emit('conversation', {
     action: 'update',
     data: {
       conversation: conversation,
     }
   });
 
-  res.status(200).json({
-    error: {
-      status: 200,
-      message: 'Edit group successfully!'
-    },
-    data: {
-      conversation: conversation,
-    }
-  });
+  const data = {
+    conversation: conversation,
+  };
+
+  await apiData(res, 200, 'Edit group successfully!', data);
 });
 
 exports.postSetRole = (async (req, res, next) => {
@@ -437,45 +397,17 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
   });
 
   if (!group) {
-    return res.status(200).json({
-      error: {
-        status: 500,
-        message: 'This group doesn\'t exists!'
-      },
-      data: {}
-    });
+    const data = {};
+
+    await apiData(res, 500, 'This group doesn\'t exists!', data);
   }
 
-  const member = await User.findOne({
-    where: {
-      id: memberId
-    }
-  });
-
-  if (!member) {
-    return res.status(200).json({
-      error: {
-        status: 500,
-        message: 'This user doesn\'t exists!'
-      },
-      data: {}
-    });
-  }
-
-  if (member && member.status == 0) {
-    return res.status(200).json({
-      error: {
-        status: 500,
-        message: 'This user does deactivate!'
-      },
-      data: {}
-    });
-  }
+  const member = await checkStatusAccount(res, memberId, User);
 
   const memberInGroup = await Group_Member.findOne({
     where: {
-      conversationId: conversationId,
-      userId: memberId
+      conversationId: group.id,
+      userId: member.id
     },
     include: {
       all: true,
@@ -499,10 +431,10 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
     });
 
     if (newMember) {
-      io.getIO().emit('group', {
+      io.getIO().to("conversation" + conversationId).emit('group', {
         action: 'addMember',
         data: {
-          member: member,
+          member: member
         }
       });
 
@@ -522,5 +454,57 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
         data: {}
       });
     }
+  }
+});
+
+exports.sendMessage = (async (req, res, next) => {
+  const userId = req.query.userId;
+  const conversationId = req.query.conversationId;
+  const message = req.body.message;
+
+  if (!(message && conversationId)) {
+    const data = {};
+
+    await apiData(res, 500, 'Where your params ?', data);
+  }
+
+  const user = await checkStatusAccount(res, userId, User);
+
+  const conversation = await Conversation.findOne({
+    where: {
+      id: conversationId
+    }
+  });
+
+  if (!conversation) {
+    const data = {
+      action: 'create new conversation'
+    };
+
+    await apiData(res, 500, 'Please create conversaion!', data);
+  }
+
+  const newMessage = await Chat.create({
+    message: message,
+    status: 1,
+    userId: user.id,
+    conversation: conversation.id
+  });
+
+  if (newMessage) {
+    const data = {
+      chat: newMessage
+    };
+
+    io.getIO().to("conversation" + conversation.id).emit("conversation", {
+      action: "sendMessage",
+      data: data
+    });
+
+    await apiData(res, 200, 'Send message successfully!', data);
+  } else {
+    const data = {};
+
+    await apiData(res, 500, 'Send message faild!', data);
   }
 });
