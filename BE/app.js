@@ -46,7 +46,6 @@ const io = socketFile.init(server);
 
 io.on('connection', socket => {
   const token = socket.handshake.auth.token;
-
   if (socketFile.checkToken(token)) {
     socket.connect();
     console.log('Client connected');

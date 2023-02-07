@@ -26,11 +26,14 @@ const ConversationListContent = ({conversations, setConversations, setCurrentCon
   const conversationItems = conversations.map((conversation) =>
     <div
       key={conversation.conversationId}
-      id="conversation_list-container-content-item-wrapper"
+      id="conversation-item-container"
       onClick={() => handleClick(conversation)}
     >
-      <p>
-        {conversation.conversationName}
+      <p id='conversation-name'>
+        {conversation.name}
+      </p>
+      <p id='conversation-preview'>
+        {conversation.last_message}
       </p>
     </div>
   );
@@ -38,12 +41,12 @@ const ConversationListContent = ({conversations, setConversations, setCurrentCon
   console.log('returning')
   return (
     <div
-      id="conversation_list-container-content-item-wrapper"
+      id="conversation-item-container"
     >
-      <p>
+      <p id='conversation-name'>
         conversationName
       </p>
-      <p>
+      <p id='conversation-preview'>
         conversationPreview...
       </p>
     </div>      
