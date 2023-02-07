@@ -51,19 +51,17 @@ const NewConversationForm = ({user, isCreating, setIsCreating, createType, creat
       </Modal.Header>
       <Modal.Body>
       <form onSubmit={handleSubmit}>
-        <Form>
-          <Form.Group className="mb-3" controlId="conversationName" onChange={handleChange}>
-            <Form.Label>Group Name</Form.Label>
-            <Form.Control type="text" placeholder="Enter group name" />
-          </Form.Group>
-          <Form.Group className="mb-3" controlId="conversationAvatarUrl" onChange={handleChange}>
-            <Form.Label>Avatar Url</Form.Label>
-            <Form.Control type="text" placeholder="Avatar Url" />
-          </Form.Group>
-          <Button variant="primary" type="submit" onClick={handleSubmit}>
-            Create
-          </Button>
-        </Form>
+        <Form.Group className="mb-3" controlId="conversationName" onChange={handleChange}>
+          <Form.Label>Group Name</Form.Label>
+          <Form.Control type="text" placeholder="Enter group name" />
+        </Form.Group>
+        <Form.Group className="mb-3" controlId="conversationAvatarUrl" onChange={handleChange}>
+          <Form.Label>Avatar Url</Form.Label>
+          <Form.Control type="text" placeholder="Avatar Url" />
+        </Form.Group>
+        <Button variant="primary" type="submit" onClick={handleSubmit}>
+          Create
+        </Button>
       </form>
       </Modal.Body>
     </Modal>

@@ -30,6 +30,7 @@ function App() {
   const [createTypeId, setCreateTypeId] = useState(0);
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [conversations, setConversations] = useState([]);
   const [currentConversation, setCurrentConversation] = useState([])
 
   if(!authToken) return <Auth />
@@ -43,7 +44,7 @@ function App() {
   }
 
   return (
-    <Container fluid id="App" className="App">
+    <Container fluid id="App" className="App g-0">
       <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet"></link>
       <Row id='App_content' className='g-0'>
@@ -53,13 +54,15 @@ function App() {
           setIsCreating={setIsCreating}
           setCreateType={setCreateType}
           setIsEditing={setIsEditing}
+          conversations={conversations}
+          setConversations={setConversations}
           currentConversation={currentConversation}
           setCurrentConversation={setCurrentConversation}
           user={user}
         />
 
         {currentConversation.length==0
-          ? <div className="col-md-8">Select a conversation to start messaging.</div>
+          ? <div className="col-8">Select a conversation to start messaging.</div>
           : <ConversationContentContainer
             //socket={socket}
             isCreating={isCreating}
