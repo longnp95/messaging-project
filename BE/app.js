@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 // Call database and models
 const sequelize = require('./config/db');
 const initDataDB = require('./config/initDataDB');
+const Conversation = require('./models/conversation');
 
 const app = express();
 
@@ -48,6 +49,8 @@ io.on('connection', socket => {
   const token = socket.handshake.auth.token;
 
   if (socketFile.checkToken(token)) {
+    socketFile.joinRoomByToken(socket, token);
+    
     socket.connect();
     console.log('Client connected');
   } else {

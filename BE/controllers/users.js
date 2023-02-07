@@ -67,7 +67,11 @@ exports.getAllAdmin = (async (req, res, next) => {
   const admins = await Admin.findAll({
     order: [
       ['updatedAt', 'DESC'],
-    ]
+    ],
+    include: {
+      all: true,
+      nested: true
+    }
   });
 
   const data = {
