@@ -49,47 +49,8 @@ io.on('connection', socket => {
   const token = socket.handshake.auth.token;
 
   if (socketFile.checkToken(token)) {
-    var data = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
-    var userId = data.userId;
-    var role = data.role;
-
-    if (role == 'user') {
-      User.findOne({
-        where: {
-          id: userId
-        },
-        include: Conversation
-      })
-        .then(user => {
-          if (user) {
-            if (user.status == 1) {
-              const conversations = user.conversations;
-
-              conversations.forEach(conversation => {
-                socket.join("conversation" + conversation.id);
-              });
-            } else {
-              socket.send(JSON.stringify({
-                action: 'joinRoom',
-                error: 'This Account is block!'
-              }));
-            }
-          } else {
-            socket.send(JSON.stringify({
-              action: 'joinRoom',
-              error: 'This Account Doesn\'t exists'
-            }));
-          }
-        })
-        .catch(err => {
-          console.log(err);
-        });
-    } else {
-      socket.send(JSON.stringify({
-        action: 'joinRoom',
-        error: 'Don\'t have perrmission in this page'
-      }));
-    }
+    socketFile.joinRoomByToken(socket, token);
+    
     socket.connect();
     console.log('Client connected');
   } else {
