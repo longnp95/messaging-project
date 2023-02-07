@@ -19,19 +19,7 @@ module.exports = {
   checkToken: (token) => {
     try {
       var data = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
-
-      return true;
-    } catch (err) {
-      if (err) {
-        return false;
-      }
-    }
-  },
-
-  joinConversationByUser: (token) => {
-    try {
-      var data = jwt.verify(token, 'RANDOM_TOKEN_SECRET');
-
+      
       return true;
     } catch (err) {
       if (err) {

@@ -3,6 +3,7 @@ const User = require('../models/user');
 const Group_Member = require('../models/group_member');
 const Conversation = require('../models/conversation');
 const Role = require('../models/role');
+const Type = require('../models/type');
 
 const checkStatusUser = function (user) {
   if (user) {
@@ -33,12 +34,12 @@ exports.getConversationsByUserId = (async (req, res, next) => {
       id: userId
     },
     include: {
-      all: true,
-      nested: true
+      model: Conversation,
+      include: {
+        model: Type
+      }
     }
   });
-
-  console.log(user);
 
   if (!user) {
     return res.status(200).json({
