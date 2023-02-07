@@ -31,7 +31,7 @@ function App() {
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [conversations, setConversations] = useState([]);
-  const [currentConversation, setCurrentConversation] = useState([1])
+  const [currentConversation, setCurrentConversation] = useState([])
 
   if(!authToken) return <Auth />
   const user = {

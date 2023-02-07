@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Card from 'react-bootstrap/Card';
 
 const MessageInputContainer = ()=>{
   const handleSubmit = (e)=>{
@@ -9,7 +10,7 @@ const MessageInputContainer = ()=>{
   }
 
   return (
-    <div id="message_input-container">
+    <Card.Footer id="message_input-container">
       <div id="message_input-container-fields">
         <form onSubmit={handleSubmit} className="chat-box-tray">
           <input 
@@ -21,7 +22,7 @@ const MessageInputContainer = ()=>{
           <i className="material-icons" onClick={handleSubmit}>send</i>
         </form>
       </div>
-    </div>
+    </Card.Footer>
   )
 }
 

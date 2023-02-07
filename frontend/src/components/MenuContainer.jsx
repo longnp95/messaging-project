@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import Cookies from 'universal-cookie';
 import NewConversationForm from './NewConversationForm';
@@ -15,10 +16,10 @@ const MenuContainer = ({menuToggle, user, setCreateType, setCreateTypeId, create
   return (
     <>
       <Nav className="justify-content-end flex-grow-1 px-0">
-        <Nav.Link >Current User</Nav.Link>
-        <Nav.Link onClick={() => setIsCreating(true)}>Create Group</Nav.Link>
-        <Nav.Link >Direct Message</Nav.Link>
-        <Nav.Link onClick={Logout}>Log Out</Nav.Link>
+        <Navbar.Text >Current User</Navbar.Text>
+        <Navbar.Text onClick={() => setIsCreating(true)}>Create Group</Navbar.Text>
+        <Navbar.Text >Direct Message</Navbar.Text>
+        <Navbar.Text onClick={Logout}>Log Out</Navbar.Text>
       </Nav>
 
       <NewConversationForm 

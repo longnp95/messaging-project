@@ -12,7 +12,6 @@ const ConversationListContainer = ({isCreating, setIsCreating, conversations, se
         setSearchText={setSearchText}
         user={user}
       />
-      <p>{searchText}</p>
       <ConversationListContent
         conversations={conversations}
         setConversations={setConversations}

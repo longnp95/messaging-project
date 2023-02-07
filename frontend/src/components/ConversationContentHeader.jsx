@@ -1,15 +1,23 @@
+import Blank_Avatar from '../public/Blank-Avatar.png'
+import Image from 'react-bootstrap/Image';
+import Card from 'react-bootstrap/Card';
+
 const ConversationContentHeader = ({currentConversation}) => {
   return (
-    <div id="conversation_content-header-wrapper" className="settings-tray">
-      <div className="friend-drawer no-gutters friend-drawer--grey">
-        <div className="text">
-          <h6 id="conversation_content-header-conversation_name">{currentConversation.conversationName}</h6>
-        </div>
-        <span className="settings-tray--right">
-          <i className="material-icons">menu</i>
-        </span>
-      </div>
-    </div>
+    <Card.Header id="conversation_content-header-wrapper" 
+      className="d-flex justify-content-between align-items-center p-3 g-0 bg-info text-white"
+      style={{ borderRadius: "0" }}
+    >
+        <i className="material-icons d-md-none">arrow_back</i>
+        <Image 
+          roundedCircle alt="Avatar" 
+          src={currentConversation.avatar||Blank_Avatar} 
+          style={{ width: "30px", height: "100%" }}
+          className="d-none d-md-block"
+        />
+        <p className="mb-0 fw-bold">{currentConversation.name}</p>
+        <i className="material-icons">more_vert</i>
+    </Card.Header>
   )
 }
 
