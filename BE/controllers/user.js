@@ -16,6 +16,51 @@ const checkStatusUser = function (user) {
   }
 }
 
+exports.getConversationsByUserId = (async (req, res, next) => {
+  const userId = req.query.userId;
+  if (!userId) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'Where params ?'
+      },
+      data: {}
+    });
+  }
+
+  const user = await User.findOne({
+    where: {
+      id: userId
+    },
+    include: {
+      all: true,
+      nested: true
+    }
+  });
+
+  console.log(user);
+
+  if (!user) {
+    return res.status(200).json({
+      error: {
+        status: 500,
+        message: 'This user doesn\'t exists!'
+      },
+      data: {}
+    });
+  }
+
+  return res.status(200).json({
+    error: {
+      status: 200,
+      message: 'OK'
+    },
+    data: {
+      conversations: user.conversations
+    }
+  });
+});
+
 exports.postCreateConversation = (async (req, res, next) => {
   const body = req.body;
   const conversationName = body.conversationName;//string
@@ -35,14 +80,18 @@ exports.postCreateConversation = (async (req, res, next) => {
   }
 
   const user = await User.findOne({
-    id: userId
-  })
+    where: {
+      id: userId
+    }
+  });
 
-  if (!user) {
+  const statusUser = checkStatusUser(user);
+
+  if (statusUser != true) {
     return res.status(200).json({
       error: {
         status: 500,
-        message: 'Can\'t find user'
+        message: statusUser
       },
       data: {}
     });
@@ -66,7 +115,7 @@ exports.postCreateConversation = (async (req, res, next) => {
 
   const groupMember = await Group_Member.create({
     roleId: 1,
-    userId: userId,
+    userId: user.id,
     conversationId: conversation.id
   });
 
@@ -117,8 +166,10 @@ exports.postUpdateConversation = (async (req, res, next) => {
     });
   }
 
-  const conversation = Conversation.findOne({
-    id: conversationId
+  const conversation = await Conversation.findOne({
+    where: {
+      id: conversationId
+    }
   });
 
   if (!conversation) {
@@ -303,55 +354,10 @@ exports.getRoles = (async (req, res, next) => {
   });
 });
 
-exports.getConversationsByUserId = (async (req, res, next) => {
-  const userId = req.query.userId;
-  if (!userId) {
-    return res.status(200).json({
-      error: {
-        status: 500,
-        message: 'Where params ?'
-      },
-      data: {}
-    });
-  }
-
-  const user = await User.findOne({
-    where: {
-      id: userId
-    },
-    include: {
-      all: true,
-      nested: true
-    }
-  });
-
-  console.log(user);
-  
-  if (!user) {
-    return res.status(200).json({
-      error: {
-        status: 500,
-        message: 'This user doesn\'t exists!'
-      },
-      data: {}
-    });
-  }
-
-  return res.status(200).json({
-    error: {
-      status: 200,
-      message: 'OK'
-    },
-    data: {
-      conversations: user.conversations
-    }
-  });
-});
-
 exports.getMembersInGroup = (async (req, res, next) => {
-  const groupId = req.query.groupId;
+  const conversationId = req.query.conversationId;
 
-  if (!groupId) {
+  if (!conversationId) {
     return res.status(200).json({
       error: {
         status: 500,
@@ -363,7 +369,7 @@ exports.getMembersInGroup = (async (req, res, next) => {
 
   const group = await Conversation.findOne({
     where: {
-      id: groupId
+      id: conversationId
     }
   });
 
@@ -379,7 +385,7 @@ exports.getMembersInGroup = (async (req, res, next) => {
 
   const members = await Group_Member.findAll({
     where: {
-      conversationId: groupId
+      conversationId: conversationId
     },
     include: {
       all: true,
@@ -400,10 +406,10 @@ exports.getMembersInGroup = (async (req, res, next) => {
 
 exports.postAddMemberInGroup = (async (req, res, next) => {
   const userId = req.query.userId;
-  const groupId = req.query.groupId;
+  const conversationId = req.query.conversationId;
   const memberId = req.body.memberId;
 
-  if (!(groupId && userId)) {
+  if (!(conversationId && userId)) {
     return res.status(200).json({
       error: {
         status: 500,
@@ -425,7 +431,7 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
 
   const group = await Conversation.findOne({
     where: {
-      id: groupId
+      id: conversationId
     }
   });
 
@@ -467,7 +473,7 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
 
   const memberInGroup = await Group_Member.findOne({
     where: {
-      groupId: groupId,
+      conversationId: conversationId,
       userId: memberId
     },
     include: {
@@ -486,7 +492,7 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
     });
   } else {
     const newMember = await Group_Member.create({
-      groupId: groupId,
+      conversationId: conversationId,
       userId: memberId,
       roleId: 2
     });
