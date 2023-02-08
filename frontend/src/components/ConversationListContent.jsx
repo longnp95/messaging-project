@@ -37,7 +37,7 @@ const ConversationListContent = ({conversations, setConversations, setCurrentCon
         <ImageLoader
           roundedCircle alt="Avatar" 
           src={conversation.avatar}
-          style={{ width: "50px", height: "auto" }}
+          style={{ width: "50px", height: "auto", aspectRatio: "1"}}
         />
       </Col>
       <Col xs={8} className="ms-1 flex-grow-1 px-0 px-sm-1">

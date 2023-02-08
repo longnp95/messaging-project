@@ -1,11 +1,11 @@
 import Blank_Avatar from '../public/Blank-Avatar.png'
 import Image from 'react-bootstrap/Image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const ImageLoader = (props) => {
   const [imgProps, setImgProps] = useState(props);
-  const handleError = (currentTarget) => {
-    setImgProps({...imgProps, src:Blank_Avatar})
+  const handleError = (e) => {
+    props.setSrc(Blank_Avatar);
   }
   return (
     <Image 

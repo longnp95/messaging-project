@@ -4,6 +4,7 @@ const Group_Member = require('../models/group_member');
 const Conversation = require('../models/conversation');
 const Role = require('../models/role');
 const Type = require('../models/type');
+const Chat = require('../models/chat');
 
 const apiData = (async (res, status, message, data) => {
   return res.status(200).json({
@@ -408,6 +409,10 @@ exports.getMessageByConversationId = (async (req, res, next) => {
   const conversation = await Conversation.findOne({
     where: {
       id: conversationId
+    },
+    include: {
+      model: Chat,
+      include: User
     }
   });
 
@@ -442,20 +447,21 @@ exports.postSendMessage = (async (req, res, next) => {
       id: conversationId
     }
   });
+  console.log(conversation);
 
   if (!conversation) {
     const data = {
-      action: 'create new conversation'
+      action: 'Please create new conversation first!'
     };
 
-    return await apiData(res, 500, 'Please create conversaion!', data);
+    return await apiData(res, 500, 'Please create conversation!', data);
   }
 
   const newMessage = await Chat.create({
     message: message,
     status: 1,
     userId: user.id,
-    conversation: conversation.id
+    conversationId: conversation.id
   });
 
   if (newMessage) {
@@ -472,6 +478,6 @@ exports.postSendMessage = (async (req, res, next) => {
   } else {
     const data = {};
 
-    return await apiData(res, 500, 'Send message faild!', data);
+    return await apiData(res, 500, 'Send message failed!', data);
   }
 });

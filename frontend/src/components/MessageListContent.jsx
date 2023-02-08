@@ -1,9 +1,35 @@
 import { useEffect, useState } from 'react';
 import Card from 'react-bootstrap/Card';
-import ImageLoader from '../services/ImageLoader.services'
+import ImageLoader from '../services/ImageLoader.services';
+import axios from 'axios';
 
 
-const MessageListContent = ({messages, user}) => {
+const MessageListContent = ({currentConversation, user}) => {
+  const [messages, setMessages] = useState([])
+  useEffect(() => {
+    axios.get('/conversation/getMessage', {
+      headers: {token: user.token},
+      params: {conversationId: currentConversation.id}})
+    .then((response)=>{
+      if (response.data.error.status === 500) {
+        return (
+          console.log(response.data.error.message)
+        )
+      }
+      console.log(response.data);
+      setMessages(response.data.data.chats);
+    }).catch((err)=>{
+      console.log(err)
+    })
+  },[])
+
+  
+  const scrollToBottom = () => {
+    messageEnd && messageEnd.scrollIntoView({ behavior: "smooth" });
+  }
+  useEffect(() => {
+    scrollToBottom();
+  })
   const [messageEnd, setMessageEnd] = useState();
   const isFirstOfSenderGroup = (message, index) => {
     return index===0 || messages[index-1].userId !== message.userId
@@ -12,7 +38,18 @@ const MessageListContent = ({messages, user}) => {
   const isNewDay = (message, index) => {
     return index===0 || false
   }
-
+  if (!(messages&&messages.length)) return (
+    <Card.Body 
+      id="message_list-container-content"
+      style={{overflowY: 'scroll'}}
+      className="d-flex flex-row justify-content-center"
+    >
+      <div className='justify-content-center'>
+        No Messages Loaded.
+      </div>
+    </Card.Body>
+  )
+  
   const listItems = messages.map((message, index) => {
     const newDay = isNewDay(message, index);
     const firstInGroup = isFirstOfSenderGroup(message, index);
@@ -59,7 +96,7 @@ const MessageListContent = ({messages, user}) => {
               {message.userId!=user.id && (newDay || firstInGroup) && (
                 <div className="senderName">{message.user.firstName}</div>
               )}
-              <div>{message.content}</div>
+              <div>{message.message}</div>
             </div>
           </div>
           {/*SendTime*/}
@@ -71,13 +108,6 @@ const MessageListContent = ({messages, user}) => {
     )
   });
 
-  const scrollToBottom = () => {
-    messageEnd && messageEnd.scrollIntoView({ behavior: "smooth" });
-  }
-
-  useEffect(() => {
-    scrollToBottom();
-  })
 
   return (
     <Card.Body 

@@ -4,6 +4,7 @@ import Dropdown from 'react-bootstrap/Dropdown'
 import ImageLoader from '../services/ImageLoader.services';
 
 const ConversationContentHeader = ({currentConversation}) => {
+  const [src,setSrc] = useState(currentConversation.avatar);
   return (
     <Card.Header id="conversation_content-header-wrapper" 
       className="d-flex justify-content-between align-items-center p-3 g-0 bg-info text-white"
@@ -12,9 +13,10 @@ const ConversationContentHeader = ({currentConversation}) => {
         <i className="material-icons d-md-none">arrow_back</i>
         <ImageLoader 
           roundedCircle alt="Avatar" 
-          src={currentConversation.avatar} 
-          style={{ width: "30px", height: "auto" }}
+          src={src} 
+          style={{ width: "30px", height: "auto", aspectRatio: "1" }}
           className="d-none d-md-block"
+          setSrc={setSrc}
         />
         <p className="mb-0 fw-bold">{currentConversation.name}</p>
         <Dropdown>

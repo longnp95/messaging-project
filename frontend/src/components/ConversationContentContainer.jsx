@@ -174,6 +174,7 @@ const ConversationContentContainer = ({currentConversation, user}) => {
           currentConversation={currentConversation}
         />
         <MessageListContent
+          currentConversation={currentConversation}
           messages={messages}
           user={user}
         />
