@@ -25,6 +25,21 @@ body {
   height: 100%;
 }
 
-.nav-link:hover {
+.navbar-text:hover {
   background: $blue;
+}
+
+#conversation-item-container .col {
+  max-height: 60px;
+}
+#conversation-item-container:hover {
+  background: $blue;
+}
+
+#conversation-name{
+  font-weight: 450;
+}
+
+.senderName {
+  font-weight: 500;
 }
