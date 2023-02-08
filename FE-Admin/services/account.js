@@ -7,6 +7,10 @@ exports.getAllAdminAccount = (req, res, next) => {
   return renderEjsPageWithApiGet("messageAdminAccount", 'account/admin/index', apiUrlAdmins.allAdmin, req, res, next);
 }
 
+exports.getAnAdminAccount = (req, res, next) => {
+  return renderEjsPageWithApiGet("messageAdminAccount", 'account/admin/show', apiUrlAdmins.allAdmin, req, res, next);
+}
+
 // user account
 exports.getAllUserAccount = (req, res, next) => {
   return renderEjsPageWithApiGet("messageUserAccount", 'account/user/index', apiUrlUsers.allUser, req, res, next);

@@ -97,3 +97,7 @@ exports.postDeleteConversation = (async (req, res, next) => {
     await apiData(res, 500, 'Fail', data);
   }
 });
+
+exports.postUpdateMaxMember = (async (req, res, next) => {
+
+});

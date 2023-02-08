@@ -102,7 +102,7 @@ exports.postCreateConversation = (async (req, res, next) => {
     });
   }
 
-  io.getIO().emit('conversation', {
+  io.getIO().to(["user" + user.id,"conversation" + conversation.id]).emit('conversation', {
     action: 'create',
     data: {
       conversation: conversation,
