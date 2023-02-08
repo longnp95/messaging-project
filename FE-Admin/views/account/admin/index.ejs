@@ -59,16 +59,6 @@ dateTimeFormat = function(value) {
 
           <th scope="col">Username</th>
 
-          <th scope="col">Firstname</th>
-
-          <th scope="col">Lastname</th>
-
-          <th scope="col">Gender</th>
-
-          <th scope="col">Dob</th>
-
-          <th scope="col">Mobile</th>
-
           <th scope="col">Status</th>
 
           <th scope="col">Recent Edit</th>
@@ -83,19 +73,19 @@ dateTimeFormat = function(value) {
 
       <tbody>
         <% no = 1; %>
-        <% for(user of users) {  %>
+        <% for(admin of admins) {  %>
 
         <tr>
           <td><%= no %></td>
 
           <td>
             <div>
-              <%= user && user.username ? user.username : 'No Information' %>
+              <%= admin && admin.username ? admin.username : 'No Information' %>
             </div>
           </td>
 
           <td>
-            <% switch(user.status) { 
+            <% switch(admin.status) { 
               case 1: %>
             <span class="text-success">Activate</span>
             <% break;
@@ -106,11 +96,11 @@ dateTimeFormat = function(value) {
           </td>
 
           <td>
-            <%= user && user.updatedAt ? convertDateTimeToString(user.updatedAt) : 'No activity' %>
+            <%= admin && admin.updatedAt ? convertDateTimeToString(admin.updatedAt) : 'No activity' %>
           </td>
 
           <td>
-            <form action="/account/users/activate?accountId=<%= account.id %>" method="post">
+            <form action="/account/users/activate?adminId=<%= admin.id %>" method="post">
               <button class="btn btn-outline-success" type="submit">
                 Activate
               </button>
@@ -118,7 +108,7 @@ dateTimeFormat = function(value) {
           </td>
 
           <td>
-            <form action="/account/users/deactivate?accountId=<%= account.id %>" method="post">
+            <form action="/account/users/deactivate?adminId=<%= admin.id %>" method="post">
               <button class="btn btn-outline-danger" type="submit">
                 Deactivate
               </button>

@@ -3,11 +3,12 @@ const routes = express.Router();
 
 const accountServices = require('../services/account');
 
-routes.get('/account/admin', accountServices.getAllAdminAccount);
+routes.get('/admin', accountServices.getAllAdminAccount);
+routes.get('/admin', accountServices.getAnAdminAccount);
 
-routes.get('/account/user', accountServices.getAllUserAccount);
-routes.get('/account/user/show', accountServices.getAnUserAccount);
-routes.post('/account/user/activate', accountServices.postUserAccountActivate);
-routes.post('/account/user/deactivate', accountServices.postUserAccountDeactivate);
+routes.get('/user', accountServices.getAllUserAccount);
+routes.get('/user/show', accountServices.getAnUserAccount);
+routes.post('/user/activate', accountServices.postUserAccountActivate);
+routes.post('/user/deactivate', accountServices.postUserAccountDeactivate);
 
 module.exports = routes;

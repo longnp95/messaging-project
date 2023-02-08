@@ -1,5 +1,4 @@
 const io = require('../socket');
-const Admin = require('../models/admin');
 const User = require('../models/user');
 
 const checkStatusAccount = (async (res, id, table) => {
@@ -7,10 +6,6 @@ const checkStatusAccount = (async (res, id, table) => {
     const data = await table.findOne({
       where: {
         id: id
-      },
-      include: {
-        all: true,
-        nested: true
       }
     });
 
@@ -61,24 +56,6 @@ const apiData = (async (res, status, message, data) => {
     },
     data: data
   });
-});
-
-exports.getAllAdmin = (async (req, res, next) => {
-  const admins = await Admin.findAll({
-    order: [
-      ['updatedAt', 'DESC'],
-    ],
-    include: {
-      all: true,
-      nested: true
-    }
-  });
-
-  const data = {
-    admins: admins
-  };
-
-  await apiData(res, 200, 'OK', data);
 });
 
 exports.getAllUser = (async (req, res, next) => {
