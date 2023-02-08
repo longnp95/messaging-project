@@ -10,6 +10,8 @@ routes.get('/conversation', isUser, userController.getConversationsByUserId);
 routes.post('/conversation/create', isUser, haveBody, userController.postCreateConversation);
 routes.post('/conversation/update', isUser, haveBody, userController.postUpdateConversation);
 routes.post('/conversation/setrole', isUser, haveBody, userController.postSetRole);
+routes.post('/conversation/getMessage', isUser, haveBody, userController.getMessageByConversationId);
+routes.post('/conversation/sendMessage', isUser, haveBody, userController.posSendMessage);
 
 routes.get('/role', userController.getRoles);
 
