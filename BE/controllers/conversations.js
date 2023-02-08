@@ -74,7 +74,7 @@ exports.postDeleteConversation = (async (req, res, next) => {
     await apiData(res, 500, 'Where your params ?', data);
   }
 
-  const conversation = await checkConversation(res, id);
+  const conversation = await checkConversation(res, conversationId);
 
   if (conversation) {
     await Group_Member.destroy({
@@ -96,4 +96,16 @@ exports.postDeleteConversation = (async (req, res, next) => {
     const data = {};
     await apiData(res, 500, 'Fail', data);
   }
+});
+
+exports.postUpdateMaxMember = (async (req, res, next) => {
+  const conversationId = req.query.conversationId;
+
+  if (!conversationId) {
+    const data = {};
+
+    await apiData(res, 500, 'Where your params!', data);
+  }
+
+
 });
