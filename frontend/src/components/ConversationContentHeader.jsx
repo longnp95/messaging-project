@@ -1,6 +1,7 @@
-import Blank_Avatar from '../public/Blank-Avatar.png'
-import Image from 'react-bootstrap/Image';
+import React, { useState } from 'react';
 import Card from 'react-bootstrap/Card';
+import Dropdown from 'react-bootstrap/Dropdown'
+import ImageLoader from '../services/ImageLoader.services';
 
 const ConversationContentHeader = ({currentConversation}) => {
   return (
@@ -9,14 +10,24 @@ const ConversationContentHeader = ({currentConversation}) => {
       style={{ borderRadius: "0" }}
     >
         <i className="material-icons d-md-none">arrow_back</i>
-        <Image 
+        <ImageLoader 
           roundedCircle alt="Avatar" 
-          src={currentConversation.avatar||Blank_Avatar} 
-          style={{ width: "30px", height: "100%" }}
+          src={currentConversation.avatar} 
+          style={{ width: "30px", height: "auto" }}
           className="d-none d-md-block"
         />
         <p className="mb-0 fw-bold">{currentConversation.name}</p>
-        <i className="material-icons">more_vert</i>
+        <Dropdown>
+          <Dropdown.Toggle id="dropdown-basic" variant="info" className='p-0'>
+            <i className="material-icons">more_vert</i>
+          </Dropdown.Toggle>
+
+          <Dropdown.Menu>
+            <Dropdown.Item href="#/action-1">Add Member</Dropdown.Item>
+            <Dropdown.Item href="#/action-2">Another action</Dropdown.Item>
+            <Dropdown.Item href="#/action-3">Something else</Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
     </Card.Header>
   )
 }

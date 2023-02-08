@@ -3,15 +3,14 @@ import axios from "axios";
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
-import Image from 'react-bootstrap/Image';
 import Stack from 'react-bootstrap/Stack';
-import Blank_Avatar from '../public/Blank-Avatar.png'
+import ImageLoader from '../services/ImageLoader.services';
 
 const ConversationListContent = ({conversations, setConversations, setCurrentConversation, user}) => {
   useEffect(() => {
     axios.get('/conversation', {
       headers: {token: user.token},
-      params: {userId: user.userId}})
+      params: {userId: user.id}})
     .then((response)=>{
       if (response.data.error.status === 500) {
         return (
@@ -19,7 +18,6 @@ const ConversationListContent = ({conversations, setConversations, setCurrentCon
         )
       }
       setConversations(response.data.data.conversations);
-      console.log(response.data.data.conversations);
     }).catch((err)=>{
       console.log(err)
     })
@@ -36,10 +34,10 @@ const ConversationListContent = ({conversations, setConversations, setCurrentCon
       className="mx-0 py-1 ps-1 flex-nowrap"
     >
       <Col className="g-0 border-right">
-        <Image 
+        <ImageLoader
           roundedCircle alt="Avatar" 
-          src={conversation.avatar||Blank_Avatar}
-          style={{ width: "50px", height: "100%" }}
+          src={conversation.avatar}
+          style={{ width: "50px", height: "auto" }}
         />
       </Col>
       <Col xs={8} className="ms-1 flex-grow-1 px-0 px-sm-1">

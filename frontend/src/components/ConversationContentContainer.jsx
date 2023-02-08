@@ -7,7 +7,7 @@ import MessageInputContainer from './MessageInputContainer';
 import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
 
-const ConversationContentContainer = ({currentConversation}) => {
+const ConversationContentContainer = ({currentConversation, user}) => {
   const messages = [
     {
       id: 1,
@@ -22,10 +22,10 @@ const ConversationContentContainer = ({currentConversation}) => {
     },
     {
       id: 2,
-      userId: 34,
+      userId: 2,
       content: 'Second Message',
       user: {
-        id: 34,
+        id: 2,
         firstName: 'Hung',
         lastName:'',
         avatar:''
@@ -44,28 +44,126 @@ const ConversationContentContainer = ({currentConversation}) => {
     },
     {
       id: 4,
-      userId: 23,
+      userId: 2,
       content: 'Second Message',
       user: {
-        id: 23,
+        id: 2,
         firstName: 'Hung',
         lastName:'',
         avatar:''
       }
     },
     {
-      id: 5,
-      userId: 23,
+      id: 2352,
+      userId: 2,
       content: 'Third Message',
       user: {
-        id: 23,
+        id: 2,
+        firstName: 'Hung',
+        lastName:'',
+        avatar:''
+      }
+    },
+    {
+      id: 4563454,
+      userId: 1,
+      content: 'First Message',
+      user: {
+        id: 1,
+        firstName: 'Tuan',
+        lastName:'',
+        avatar:''
+      }
+    },
+    {
+      id: 23245,
+      userId: 2,
+      content: 'Second Message',
+      user: {
+        id: 2,
+        firstName: 'Hung',
+        lastName:'',
+        avatar:''
+      }
+    },
+    {
+      id: 334,
+      userId: 1,
+      content: 'Third Message',
+      user: {
+        id: 1,
+        firstName: 'Tuan',
+        lastName:'',
+        avatar:''
+      }
+    },
+    {
+      id: 1245634,
+      userId: 2,
+      content: 'Second Message',
+      user: {
+        id: 2,
+        firstName: 'Hung',
+        lastName:'',
+        avatar:''
+      }
+    },
+    {
+      id: 224541,
+      userId: 2,
+      content: 'Third Message',
+      user: {
+        id: 2,
+        firstName: 'Hung',
+        lastName:'',
+        avatar:''
+      }
+    },
+    {
+      id: 245673245,
+      userId: 2,
+      content: 'Second Message',
+      user: {
+        id: 2,
+        firstName: 'Hung',
+        lastName:'',
+        avatar:''
+      }
+    },
+    {
+      id: 357434,
+      userId: 1,
+      content: 'Third Message',
+      user: {
+        id: 1,
+        firstName: 'Tuan',
+        lastName:'',
+        avatar:''
+      }
+    },
+    {
+      id: 12345687,
+      userId: 2,
+      content: 'Second Message',
+      user: {
+        id: 2,
+        firstName: 'Hung',
+        lastName:'',
+        avatar:''
+      }
+    },
+    {
+      id: 8567456,
+      userId: 2,
+      content: 'Third Message',
+      user: {
+        id: 2,
         firstName: 'Hung',
         lastName:'',
         avatar:''
       }
     },
   ];
-  const userId = 1;
   return (
     <Col xs={8} id='conversation_content-container-wrapper' className='g-0 border-left border-white '>
       <Card 
@@ -77,9 +175,12 @@ const ConversationContentContainer = ({currentConversation}) => {
         />
         <MessageListContent
           messages={messages}
-          userId={userId}
+          user={user}
         />
-        <MessageInputContainer/>
+        <MessageInputContainer
+          currentConversation={currentConversation}
+          user={user}
+        />
       </Card>
     </Col>
   );
