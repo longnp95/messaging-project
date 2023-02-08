@@ -11,7 +11,7 @@ routes.post('/conversation/create', isUser, haveBody, userController.postCreateC
 routes.post('/conversation/update', isUser, haveBody, userController.postUpdateConversation);
 routes.post('/conversation/setrole', isUser, haveBody, userController.postSetRole);
 routes.post('/conversation/getMessage', isUser, haveBody, userController.getMessageByConversationId);
-routes.post('/conversation/sendMessage', isUser, haveBody, userController.posSendMessage);
+routes.post('/conversation/sendMessage', isUser, haveBody, userController.postSendMessage);
 
 routes.get('/role', userController.getRoles);
 

@@ -457,57 +457,6 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
   }
 });
 
-exports.sendMessage = (async (req, res, next) => {
-  const userId = req.query.userId;
-  const conversationId = req.query.conversationId;
-
-  if (!(conversationId)) {
-    const data = {};
-
-    await apiData(res, 500, 'Where your params ?', data);
-  }
-
-  const user = await checkStatusAccount(res, userId, User);
-
-  const conversation = await Conversation.findOne({
-    where: {
-      id: conversationId
-    }
-  });
-
-  if (!conversation) {
-    const data = {
-      action: 'create new conversation'
-    };
-
-    await apiData(res, 500, 'Please create conversaion!', data);
-  }
-
-  const newMessage = await Chat.create({
-    message: message,
-    status: 1,
-    userId: user.id,
-    conversation: conversation.id
-  });
-
-  if (newMessage) {
-    const data = {
-      chat: newMessage
-    };
-
-    io.getIO().to("conversation" + conversation.id).emit("conversation", {
-      action: "sendMessage",
-      data: data
-    });
-
-    await apiData(res, 200, 'Send message successfully!', data);
-  } else {
-    const data = {};
-
-    await apiData(res, 500, 'Send message faild!', data);
-  }
-});
-
 exports.getMessageByConversationId = (async (req, res, next) => {
   const conversationId = req.query.conversationId;
 
@@ -536,7 +485,7 @@ exports.getMessageByConversationId = (async (req, res, next) => {
   }
 });
 
-exports.posSendMessage = (async (req, res, next) => {
+exports.postSendMessage = (async (req, res, next) => {
   const userId = req.query.userId;
   const conversationId = req.query.conversationId;
   const message = req.body.message;
