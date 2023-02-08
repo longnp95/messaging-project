@@ -22,7 +22,7 @@ const NewConversationForm = ({user, isCreating, setIsCreating, createType, creat
       typeConversation: form.typeConversation
     },{
       headers: {token: user.token},
-      params: {userId: user.userId},
+      params: {userId: user.id},
     });
     if (response.data.error.status == 500) {
       alert(response.data.error.message);

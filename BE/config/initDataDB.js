@@ -27,8 +27,8 @@ exports.init = (() => {
   Chat.belongsTo(Conversation, { constraints: true, onDelete: 'CASCADE' });
 
   sequelize
-    // .sync({ force: true })
-    .sync()
+    .sync({ force: true })
+    //.sync()
     .then(() => {
       const permissions = [
         {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.scss';
 import Cookies from 'universal-cookie';
 import axios from 'axios';
@@ -17,12 +17,21 @@ axios.defaults.baseURL = serverUrlConfig;
 const cookie = new Cookies();
 const authToken = cookie.get('token');
 if (authToken) {
-  axios.defaults.headers.common['token'] = 'authToken'
+  axios.defaults.headers.common['token'] = 'authToken';
+
 /*   const socket = io(serverUrlConfig,{
     auth: {
       token: authToken
     }
   }); */
+}
+const currentUser ={
+  token: cookie.get('token'),
+  id: cookie.get('userId'),
+  hashedPassword: cookie.get('hashedPassword'),
+  firstName: cookie.get('firstName'),
+  lastName: cookie.get('lastName'),
+  avatarUrl: cookie.get('avatarUrl')
 }
 
 function App() {
@@ -32,17 +41,17 @@ function App() {
   const [isEditing, setIsEditing] = useState(false);
   const [conversations, setConversations] = useState([]);
   const [currentConversation, setCurrentConversation] = useState([])
-
+  
   if(!authToken) return <Auth />
-  const user = {
-    token: cookie.get('token'),
-    userId: cookie.get('userId'),
+  const user ={
+    token: authToken,
+    id: cookie.get('userId'),
     hashedPassword: cookie.get('hashedPassword'),
     firstName: cookie.get('firstName'),
     lastName: cookie.get('lastName'),
     avatarUrl: cookie.get('avatarUrl')
   }
-
+  
   return (
     <Container fluid id="App" className="App g-0">
       <link href="https://fonts.googleapis.com/icon?family=Material+Icons"

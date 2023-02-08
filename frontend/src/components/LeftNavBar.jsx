@@ -8,7 +8,7 @@ function LeftNavBar({setSearchText, user}) {
   return (
     <>
       {[false].map((expand) => (
-        <Navbar key={expand} bg="info" expand={expand} className="mb-3">
+        <Navbar key={expand} bg="info" expand={expand} className="">
           <Container fluid className="g-0 flex-nowrap">
             <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-${expand}`} className="ms-1 p-1">
               <i className="material-icons">menu</i>
