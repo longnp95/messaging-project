@@ -4,7 +4,6 @@ const Group_Member = require('../models/group_member');
 const Conversation = require('../models/conversation');
 const Role = require('../models/role');
 const Type = require('../models/type');
-const Chat = require('../models/chat');
 
 const apiData = (async (res, status, message, data) => {
   return res.status(200).json({
@@ -253,20 +252,16 @@ exports.postSetRole = (async (req, res, next) => {
     });
     memberInGroup.save();
 
+    const data = {
+      memberInGroup: memberInGroup,
+    };
+
     io.getIO().emit('group', {
       action: 'setRole',
-      data: {
-        memberInGroup: memberInGroup,
-      }
+      data: data
     });
 
-    res.status(200).json({
-      error: {
-        status: 200,
-        message: 'Set Role successfully!'
-      },
-      data: {}
-    });
+    return await apiData(res, 200, 'Set Role successfully!', data);
   } else {
     const data = {};
 
@@ -371,28 +366,20 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
     });
 
     if (newMember) {
+      const data = {
+        member: member
+      };
+      
       io.getIO().to("conversation" + conversationId).emit('group', {
         action: 'addMember',
-        data: {
-          member: member
-        }
+        data: data
       });
 
-      return res.status(200).json({
-        error: {
-          status: 500,
-          message: 'Add ' + member.firstName + ' ' + member.lastName + ' in group successfully!'
-        },
-        data: {}
-      });
+      await apiData(res, 500, 'Add member in group successfully!', data);
     } else {
-      return res.status(200).json({
-        error: {
-          status: 500,
-          message: 'Add ' + member.firstName + ' ' + member.lastName + ' in group fail!'
-        },
-        data: {}
-      });
+      const data = {};
+  
+      return await apiData(res, 500, 'Add member in group fail!', data);
     }
   }
 });
@@ -409,10 +396,6 @@ exports.getMessageByConversationId = (async (req, res, next) => {
   const conversation = await Conversation.findOne({
     where: {
       id: conversationId
-    },
-    include: {
-      model: Chat,
-      include: User
     }
   });
 
@@ -447,21 +430,25 @@ exports.postSendMessage = (async (req, res, next) => {
       id: conversationId
     }
   });
-  console.log(conversation);
 
   if (!conversation) {
     const data = {
-      action: 'Please create new conversation first!'
+      action: 'create new conversation'
     };
 
-    return await apiData(res, 500, 'Please create conversation!', data);
+    return await apiData(res, 500, 'Please create conversaion!', data);
   }
+
+  conversation.update({
+    last_message: message
+  });
+  conversation.save();
 
   const newMessage = await Chat.create({
     message: message,
     status: 1,
     userId: user.id,
-    conversationId: conversation.id
+    conversation: conversation.id
   });
 
   if (newMessage) {
@@ -474,10 +461,10 @@ exports.postSendMessage = (async (req, res, next) => {
       data: data
     });
 
-    return await apiData(res, 200, 'Send message successfully!', data);
+    await apiData(res, 200, 'Send message successfully!', data);
   } else {
     const data = {};
 
-    return await apiData(res, 500, 'Send message failed!', data);
+    return await apiData(res, 500, 'Send message faild!', data);
   }
 });
