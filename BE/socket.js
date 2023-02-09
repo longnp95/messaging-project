@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const Admmin = require('./models/admin');
 let io;
 
 module.exports = {
