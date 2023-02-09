@@ -317,7 +317,7 @@ exports.getMembersInGroup = (async (req, res, next) => {
   return await apiData(res, 200, 'OK', data);
 });
 
-exports.postAddMemberInGroup = (async (req, res, next) => {
+exports.postAddMemberInGroup = (async (req, res, next) => {0
   const userId = req.query.userId;
   const conversationId = req.query.conversationId;
   const memberId = req.body.memberId;
