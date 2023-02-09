@@ -116,6 +116,14 @@ exports.postCreateConversation = (async (req, res, next) => {
     });
   }
 
+  if (group.typeId != 1) {
+    const newMessage = await Chat.create({
+      message: last_message,
+      status: 1,
+      conversationId: conversation.id
+    });
+  }
+
   io.getIO().to(["user" + user.id, "conversation" + conversation.id]).emit('conversation', {
     action: 'create',
     data: {
@@ -162,14 +170,23 @@ exports.postUpdateConversation = (async (req, res, next) => {
 
     return await apiData(res, 500, 'This conversation doesn\'t exists!', data);
   }
+  const last_message = 'Converastion was updated by ' + user.firstName + user.lastName;
 
   conversation.update({
     name: conversationName,
     avatar: conversationAvatarUrl,
     typeId: typeConversation,
-    last_message: 'Converastion was updated by ' + user.firstName + user.lastName
+    last_message: last_message
   });
   conversation.save();
+
+  if (group.typeId != 1) {
+    const newMessage = await Chat.create({
+      message: last_message,
+      status: 1,
+      conversationId: conversation.id
+    });
+  }
 
   io.getIO().to("conversation" + conversation.id).emit('conversation', {
     action: 'update',
@@ -322,13 +339,13 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
   if (!(conversationId && userId)) {
     const data = {};
 
-    return await apiData(res, 200, 'Where params ?', data);
+    return await apiData(res, 500, 'Where params ?', data);
   }
 
   if (!(memberId)) {
     const data = {};
 
-    return await apiData(res, 200, 'Where body ?', data);
+    return await apiData(res, 500, 'Where body ?', data);
   }
 
   const group = await Conversation.findOne({
@@ -353,6 +370,14 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
 
   if (!member) {
     return member;
+  }
+
+  if (group.typeId != 1) {
+    const newMessage = await Chat.create({
+      message: user.firstName + user.lastName + ' added '+ +' to the group' + member.firstName + member.lastName,
+      status: 1,
+      conversationId: group.id
+    });
   }
 
   const memberInGroup = await Group_Member.findOne({
@@ -389,7 +414,7 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
     data: data
   });
 
-  await apiData(res, 500, 'Add member in group successfully!', data);
+  await apiData(res, 200, 'Add member in group successfully!', data);
 });
 
 exports.getMessageByConversationId = (async (req, res, next) => {
