@@ -25,7 +25,7 @@ app.use(express.static(path.join(__dirname, 'public'))); //public file in web ap
 app.use((req, res, next) => {
   const allPort = "*";
   const FEPort = "http://localhost:3000";
-  res.setHeader('Access-Control-Allow-Origin', allPort);
+  res.setHeader('Access-Control-Allow-Origin', FEPort);
   // res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT'); // [OPTIONAL SETTING]
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, token');
   next();
@@ -49,8 +49,6 @@ io.on('connection', socket => {
   const token = socket.handshake.auth.token;
   if (socketFile.checkToken(token)) {
     socketFile.joinRoomByToken(socket, token);
-    
-    socket.connect();
     console.log('Client connected');
   } else {
     socket.disconnect();

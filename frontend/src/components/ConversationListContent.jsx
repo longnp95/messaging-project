@@ -6,7 +6,7 @@ import Col from 'react-bootstrap/Col';
 import Stack from 'react-bootstrap/Stack';
 import ImageLoader from '../services/ImageLoader.services';
 
-const ConversationListContent = ({conversations, setConversations, setCurrentConversation, user}) => {
+const ConversationListContent = ({socket, conversations, setConversations, setCurrentConversation, user}) => {
   useEffect(() => {
     axios.get('/conversation', {
       headers: {token: user.token},
@@ -22,6 +22,33 @@ const ConversationListContent = ({conversations, setConversations, setCurrentCon
       console.log(err)
     })
   },[])
+
+  useEffect(() => {
+    socket.on("conversation", ({action, data}) => {
+      switch (action) {
+        case 'create': 
+          const existed = conversations.find(conversation => conversation.id == data.conversation.id);
+          if (!existed) setConversations(prevConversations => [...prevConversations, data.conversation]);
+          break
+        case 'update':
+          const nextConversations = conversations.map(conversation => {
+            if (conversation.id == data.conversation.id) {
+              return data.conversation;
+            } else {
+              return conversation;
+            }
+          });
+          setConversations(nextConversations);
+          break
+        default:
+      }
+    });
+
+    return () => {
+      socket.off("conversation");
+    }
+  }, [socket]);
+
   const handleClick = (conversation) => {
     setCurrentConversation(conversation);
     return;
