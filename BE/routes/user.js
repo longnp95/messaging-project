@@ -12,6 +12,7 @@ routes.post('/conversation/update', isUser, haveBody, userController.postUpdateC
 routes.post('/conversation/setrole', isUser, haveBody, userController.postSetRole);
 routes.get('/conversation/getMessage', isUser, haveBody, userController.getMessageByConversationId);
 routes.post('/conversation/sendMessage', isUser, haveBody, userController.postSendMessage);
+routes.post('/conversation/addMember', isUser, haveBody, userController.postAddMemberInGroup);
 
 routes.get('/role', userController.getRoles);
 

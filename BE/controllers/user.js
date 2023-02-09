@@ -48,6 +48,10 @@ exports.getConversationsByUserId = (async (req, res, next) => {
 
   const user = await checkStatusAccount(res, userId, User);
 
+  if (!user) {
+    return user;
+  }
+
   const data = {
     conversations: user.conversations
   };
@@ -71,10 +75,19 @@ exports.postCreateConversation = (async (req, res, next) => {
 
   const user = await checkStatusAccount(res, userId, User);
 
+  const last_message = '';
+
+  if (typeConversation == 2) {
+    last_message = 'Group was created by ' + user.firstName + user.lastName;
+  } else if (typeConversation == 3) {
+    last_message = 'Channel was created by ' + user.firstName + user.lastName;
+  }
+
   const conversation = await Conversation.create({
     name: conversationName,
     avatar: conversationAvatarUrl,
-    typeId: typeConversation
+    typeId: typeConversation,
+    last_message: last_message
   });
 
   if (!conversation) {
@@ -136,6 +149,8 @@ exports.postUpdateConversation = (async (req, res, next) => {
     return await apiData(res, 500, 'Where your field ?', data);
   }
 
+  const user = await checkStatusAccount(res, userId, User);
+
   const conversation = await Conversation.findOne({
     where: {
       id: conversationId
@@ -151,7 +166,8 @@ exports.postUpdateConversation = (async (req, res, next) => {
   conversation.update({
     name: conversationName,
     avatar: conversationAvatarUrl,
-    typeId: typeConversation
+    typeId: typeConversation,
+    last_message: 'Converastion was updated by ' + user.firstName + user.lastName
   });
   conversation.save();
 
@@ -163,7 +179,7 @@ exports.postUpdateConversation = (async (req, res, next) => {
   });
 
   const data = {
-    conversation: conversation,
+    conversation: conversation
   };
 
   return await apiData(res, 200, 'Edit group successfully!', data);
@@ -182,31 +198,16 @@ exports.postSetRole = (async (req, res, next) => {
     return await apiData(res, 500, 'Where your feild ?!', data);
   }
 
-  const user = await User.findOne({
-    where: {
-      id: userId
-    }
-  });
+  const user = await checkStatusAccount(res, userId, User);
 
-  const member = await User.findOne({
-    where: {
-      id: memberId
-    }
-  });
-
-  const statusUser = checkStatusUser(user);
-  const statusMember = checkStatusUser(member);
-
-  if (statusUser != true) {
-    const data = {};
-
-    return await apiData(res, 500, statusUser.toString(), data);
+  if (!user) {
+    return user;
   }
 
-  if (statusMember != true) {
-    const data = {};
+  const member = await checkStatusAccount(res, memberId, User);
 
-    return await apiData(res, 500, statusMember.toString(), data);
+  if (!member) {
+    return member;
   }
 
   const conversation = await Conversation.findOne({
@@ -253,20 +254,16 @@ exports.postSetRole = (async (req, res, next) => {
     });
     memberInGroup.save();
 
+    const data = {
+      memberInGroup: memberInGroup,
+    };
+
     io.getIO().emit('group', {
       action: 'setRole',
-      data: {
-        memberInGroup: memberInGroup,
-      }
+      data: data
     });
 
-    res.status(200).json({
-      error: {
-        status: 200,
-        message: 'Set Role successfully!'
-      },
-      data: {}
-    });
+    return await apiData(res, 200, 'Set Role successfully!', data);
   } else {
     const data = {};
 
@@ -309,7 +306,7 @@ exports.getMembersInGroup = (async (req, res, next) => {
       conversationId: conversationId
     }
   });
-  
+
   const data = {
     members: members
   };
@@ -346,55 +343,53 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
     return await apiData(res, 500, 'This group doesn\'t exists!', data);
   }
 
+  const user = await checkStatusAccount(res, userId, User);
+
+  if (!user) {
+    return user;
+  }
+
   const member = await checkStatusAccount(res, memberId, User);
+
+  if (!member) {
+    return member;
+  }
 
   const memberInGroup = await Group_Member.findOne({
     where: {
       conversationId: group.id,
       userId: member.id
-    },
-    include: {
-      all: true,
-      nested: true
     }
   });
 
-  if (!memberInGroup) {
+  if (memberInGroup) {
     const data = {};
 
-    return await apiData(res, 500, 'This user does exists in group!', data);
-  } else {
-    const newMember = await Group_Member.create({
-      conversationId: conversationId,
-      userId: memberId,
-      roleId: 2
-    });
-
-    if (newMember) {
-      io.getIO().to("conversation" + conversationId).emit('group', {
-        action: 'addMember',
-        data: {
-          member: member
-        }
-      });
-
-      return res.status(200).json({
-        error: {
-          status: 500,
-          message: 'Add ' + member.firstName + ' ' + member.lastName + ' in group successfully!'
-        },
-        data: {}
-      });
-    } else {
-      return res.status(200).json({
-        error: {
-          status: 500,
-          message: 'Add ' + member.firstName + ' ' + member.lastName + ' in group fail!'
-        },
-        data: {}
-      });
-    }
+    return await apiData(res, 500, 'This user is exists in group!', data);
   }
+
+  const newMember = await Group_Member.create({
+    conversationId: conversationId,
+    userId: memberId,
+    roleId: 2
+  });
+
+  if (!newMember) {
+    const data = {};
+
+    return await apiData(res, 500, 'Add member in group fail!', data);
+  }
+
+  const data = {
+    member: member
+  };
+
+  io.getIO().to("conversation" + conversationId).emit('group', {
+    action: 'addMember',
+    data: data
+  });
+
+  await apiData(res, 500, 'Add member in group successfully!', data);
 });
 
 exports.getMessageByConversationId = (async (req, res, next) => {
@@ -412,7 +407,9 @@ exports.getMessageByConversationId = (async (req, res, next) => {
     },
     include: {
       model: Chat,
-      include: User
+      include: {
+        model: User
+      }
     }
   });
 
@@ -442,20 +439,26 @@ exports.postSendMessage = (async (req, res, next) => {
 
   const user = await checkStatusAccount(res, userId, User);
 
+  if (!user) {
+    return user;
+  }
+
   const conversation = await Conversation.findOne({
     where: {
       id: conversationId
     }
   });
-  console.log(conversation);
 
   if (!conversation) {
-    const data = {
-      action: 'Please create new conversation first!'
-    };
+    const data = {};
 
-    return await apiData(res, 500, 'Please create conversation!', data);
+    return await apiData(res, 500, 'Please create conversaion!', data);
   }
+
+  conversation.update({
+    last_message: message
+  });
+  conversation.save();
 
   const newMessage = await Chat.create({
     message: message,
@@ -474,10 +477,10 @@ exports.postSendMessage = (async (req, res, next) => {
       data: data
     });
 
-    return await apiData(res, 200, 'Send message successfully!', data);
+    await apiData(res, 200, 'Send message successfully!', data);
   } else {
     const data = {};
 
-    return await apiData(res, 500, 'Send message failed!', data);
+    return await apiData(res, 500, 'Send message faild!', data);
   }
 });
