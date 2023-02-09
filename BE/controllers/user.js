@@ -70,7 +70,7 @@ exports.postCreateConversation = (async (req, res, next) => {
   if (!(conversationName && typeConversation && userId)) {
     const data = {};
 
-    await apiData(res, 500, 'Where your field ?', data);
+    return await apiData(res, 500, 'Where your field ?', data);
   }
 
   const user = await checkStatusAccount(res, userId, User);
@@ -91,13 +91,7 @@ exports.postCreateConversation = (async (req, res, next) => {
   });
 
   if (!conversation) {
-    return res.status(200).json({
-      error: {
-        status: 500,
-        message: 'Create a group fail!'
-      },
-      data: {}
-    });
+    return await apiData(res, 500, 'Create a group fail!', data);
   }
 
   const groupMember = await Group_Member.create({
@@ -107,13 +101,7 @@ exports.postCreateConversation = (async (req, res, next) => {
   });
 
   if (!groupMember) {
-    return res.status(200).json({
-      error: {
-        status: 500,
-        message: 'Create a group fail!'
-      },
-      data: {}
-    });
+    return await apiData(res, 500, 'Create a group fail!', data);
   }
 
   if (group.typeId != 1) {
@@ -180,13 +168,11 @@ exports.postUpdateConversation = (async (req, res, next) => {
   });
   conversation.save();
 
-  if (group.typeId != 1) {
-    const newMessage = await Chat.create({
-      message: last_message,
-      status: 1,
-      conversationId: conversation.id
-    });
-  }
+  const newMessage = await Chat.create({
+    message: last_message,
+    status: 1,
+    conversationId: conversation.id
+  });
 
   io.getIO().to("conversation" + conversation.id).emit('conversation', {
     action: 'update',
@@ -373,8 +359,15 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
   }
 
   if (group.typeId != 1) {
+    var message = user.firstName + user.lastName + ' added ' + +' to the group' + member.firstName + member.lastName;
+    
+    group.update({
+      last_message: message
+    });
+    group.save();
+
     const newMessage = await Chat.create({
-      message: user.firstName + user.lastName + ' added '+ +' to the group' + member.firstName + member.lastName,
+      message: message,
       status: 1,
       conversationId: group.id
     });
