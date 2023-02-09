@@ -4,13 +4,17 @@ import { useEffect, useState } from 'react';
 
 const ImageLoader = (props) => {
   const [imgProps, setImgProps] = useState(props);
-  const handleError = (e) => {
-    props.setSrc(Blank_Avatar);
+  const handleOnLoad = (currentTarget) => {
+    //setImgProps({...imgProps, src:props.src});
+  }
+  const handleError = (currentTarget) => {
+    setImgProps({...imgProps, src:Blank_Avatar});
   }
   return (
     <Image 
       {...imgProps}
       onError={handleError}
+      onLoad={handleOnLoad}
     />
   )
 }

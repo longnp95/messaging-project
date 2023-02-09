@@ -8,7 +8,7 @@ import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
 
 const ConversationContentContainer = ({currentConversation, user}) => {
-  const messages = [
+/*   const messages = [
     {
       id: 1,
       userId: 1,
@@ -163,7 +163,7 @@ const ConversationContentContainer = ({currentConversation, user}) => {
         avatar:''
       }
     },
-  ];
+  ]; */
   return (
     <Col xs={8} id='conversation_content-container-wrapper' className='g-0 border-left border-white '>
       <Card 
@@ -175,7 +175,6 @@ const ConversationContentContainer = ({currentConversation, user}) => {
         />
         <MessageListContent
           currentConversation={currentConversation}
-          messages={messages}
           user={user}
         />
         <MessageInputContainer

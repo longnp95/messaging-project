@@ -4,11 +4,9 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 
-const NewConversationForm = ({user, isCreating, setIsCreating, createType, createTypeId}) => {
+const AddMemberForm = ({user, currentConversation, isCreating, setIsCreating, createType, createTypeId}) => {
   const initialForm = {
-    conversationName: "",
-    conversationAvatarUrl: "",
-    typeConversation: 2
+    memberId: "",
   }
   
   const [form,setForm] = useState(initialForm)
@@ -17,9 +15,7 @@ const NewConversationForm = ({user, isCreating, setIsCreating, createType, creat
     e.preventDefault();
 
     const response = await axios.post('/conversation/create',{
-      conversationName: form.conversationName,
-      conversationAvatarUrl: form.conversationAvatarUrl,
-      typeConversation: form.typeConversation
+      memberId: form.memberId
     },{
       headers: {token: user.token},
       params: {userId: user.id},
@@ -51,13 +47,9 @@ const NewConversationForm = ({user, isCreating, setIsCreating, createType, creat
       </Modal.Header>
       <Modal.Body>
       <form onSubmit={handleSubmit}>
-        <Form.Group className="mb-3" controlId="conversationName" onChange={handleChange}>
-          <Form.Label>Group Name</Form.Label>
-          <Form.Control type="text" placeholder="Enter group name" required/>
-        </Form.Group>
-        <Form.Group className="mb-3" controlId="conversationAvatarUrl" onChange={handleChange}>
-          <Form.Label>Avatar Url</Form.Label>
-          <Form.Control type="text" placeholder="Avatar Url" />
+        <Form.Group className="mb-3" controlId="memberId" onChange={handleChange}>
+          <Form.Label>New member userId</Form.Label>
+          <Form.Control type="text" placeholder="Enter new member userId" required/>
         </Form.Group>
         <Button variant="primary" type="submit">
           Create
@@ -68,4 +60,4 @@ const NewConversationForm = ({user, isCreating, setIsCreating, createType, creat
   )
 }
 
-export default NewConversationForm;
+export default AddMemberForm;

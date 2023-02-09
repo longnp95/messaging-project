@@ -5,7 +5,8 @@ import axios from 'axios';
 
 
 const MessageListContent = ({currentConversation, user}) => {
-  const [messages, setMessages] = useState([])
+  const [messages, setMessages] = useState([]);
+  
   useEffect(() => {
     axios.get('/conversation/getMessage', {
       headers: {token: user.token},
@@ -21,9 +22,15 @@ const MessageListContent = ({currentConversation, user}) => {
     }).catch((err)=>{
       console.log(err)
     })
-  },[])
+  },[currentConversation.id, user]);
 
-  
+  /* componentDidUpdate(prevProps) {
+    // Typical usage (don't forget to compare props):
+    if (this.props.userID !== prevProps.userID) {
+      this.fetchData(this.props.userID);
+    }
+  } */
+
   const scrollToBottom = () => {
     messageEnd && messageEnd.scrollIntoView({ behavior: "smooth" });
   }

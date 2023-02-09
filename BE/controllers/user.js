@@ -75,7 +75,7 @@ exports.postCreateConversation = (async (req, res, next) => {
 
   const user = await checkStatusAccount(res, userId, User);
 
-  const last_message = '';
+  let last_message = '';
 
   if (typeConversation == 2) {
     last_message = 'Group was created by ' + user.firstName + user.lastName;
