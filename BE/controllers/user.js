@@ -358,6 +358,24 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
     return member;
   }
 
+  if (memberInGroup) {
+    const data = {};
+
+    return await apiData(res, 500, 'This user is exists in group!', data);
+  }
+
+  const newMember = await Group_Member.create({
+    conversationId: conversationId,
+    userId: memberId,
+    roleId: 2
+  });
+
+  if (!newMember) {
+    const data = {};
+
+    return await apiData(res, 500, 'Add member in group fail!', data);
+  }
+
   if (group.typeId != 1) {
     var message = user.firstName + user.lastName + ' added ' + +' to the group' + member.firstName + member.lastName;
     
@@ -379,24 +397,6 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
       userId: member.id
     }
   });
-
-  if (memberInGroup) {
-    const data = {};
-
-    return await apiData(res, 500, 'This user is exists in group!', data);
-  }
-
-  const newMember = await Group_Member.create({
-    conversationId: conversationId,
-    userId: memberId,
-    roleId: 2
-  });
-
-  if (!newMember) {
-    const data = {};
-
-    return await apiData(res, 500, 'Add member in group fail!', data);
-  }
 
   const data = {
     member: member
