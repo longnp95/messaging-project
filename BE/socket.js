@@ -1,9 +1,16 @@
 const jwt = require('jsonwebtoken');
+const User = require('./models/user');
+const Conversation = require('./models/conversation');
+
 let io;
 
 module.exports = {
   init: httpServer => {
-    io = require('socket.io')(httpServer);
+    const FEPort = "http://localhost:3000";
+    io = require('socket.io')(httpServer, {
+      cors:true,
+      origins:[FEPort],
+     });
 
     return io;
   },

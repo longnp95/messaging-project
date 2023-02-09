@@ -70,7 +70,7 @@ exports.postCreateConversation = (async (req, res, next) => {
   if (!(conversationName && typeConversation && userId)) {
     const data = {};
 
-    await apiData(res, 500, 'Where your field ?', data);
+    return await apiData(res, 500, 'Where your field ?', data);
   }
 
   const user = await checkStatusAccount(res, userId, User);
@@ -472,8 +472,8 @@ exports.postSendMessage = (async (req, res, next) => {
       chat: newMessage
     };
 
-    io.getIO().to("conversation" + conversation.id).emit("conversation", {
-      action: "sendMessage",
+    io.getIO().to("conversation" + conversation.id).emit("message", {
+      action: "newMessage",
       data: data
     });
 
