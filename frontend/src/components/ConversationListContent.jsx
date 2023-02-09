@@ -26,7 +26,9 @@ const ConversationListContent = ({conversations, setConversations, setCurrentCon
     setCurrentConversation(conversation);
     return;
   }
-  const conversationItems = conversations.map((conversation) =>
+  const conversationItems = conversations
+  .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+  .map((conversation) =>
     <Row
       key={conversation.id}
       id="conversation-item-container"
@@ -41,12 +43,14 @@ const ConversationListContent = ({conversations, setConversations, setCurrentCon
         />
       </Col>
       <Col xs={8} className="ms-1 flex-grow-1 px-0 px-sm-1">
-        <p id='conversation-name'>
+        <div id='conversation-name'>
           {conversation.name}
-        </p>
-        <p id='conversation-preview'>
+        </div>
+        <div id='conversation-preview'
+          className='text-truncate'
+        >
           {conversation.last_message}
-        </p>
+        </div>
       </Col>
     </Row>
   );
