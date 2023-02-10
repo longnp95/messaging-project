@@ -3,8 +3,14 @@ import Form from 'react-bootstrap/Form';
 import Navbar from 'react-bootstrap/Navbar';
 import Offcanvas from 'react-bootstrap/Offcanvas';
 import MenuContainer from './MenuContainer';
+import Blank_Avatar from '../public/Blank-Avatar.png';
+import Image from 'react-bootstrap/Image';
 
 function LeftNavBar({setSearchText, user}) {
+  const errorHandler = (event) => {
+    console.log('ImgErrorHandler');
+    event.currentTarget.src = Blank_Avatar;
+  };
   return (
     <>
       {[false].map((expand) => (
@@ -27,9 +33,18 @@ function LeftNavBar({setSearchText, user}) {
               placement="start"
             >
               <Offcanvas.Header>
-                <Offcanvas.Title id={`offcanvasNavbarLabel-expand-${expand}`}>
-                  Username
-                </Offcanvas.Title>
+                <div className='d-flex flex-row justify-content-start align-items-center'>
+                  <Image
+                    roundedCircle
+                    src={user.avatar||Blank_Avatar}
+                    alt="avatar"
+                    style={{ width: "50px", height: "50px"}}
+                    onError={(event)=>errorHandler(event)}
+                  />
+                  <Offcanvas.Title id={`offcanvasNavbarLabel-expand-${expand}`} className="ms-3">
+                    {`${user.firstName} ${user.lastName}`}
+                  </Offcanvas.Title>
+                </div>
               </Offcanvas.Header>
               <Offcanvas.Body className='px-0'>
                 <MenuContainer

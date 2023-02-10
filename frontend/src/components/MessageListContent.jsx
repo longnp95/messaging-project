@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import Card from 'react-bootstrap/Card';
 import Image from 'react-bootstrap/Image';
 import Blank_Avatar from '../public/Blank-Avatar.png';
-import ImageLoader from '../services/ImageLoader.services';
 import axios from 'axios';
+import moment from 'moment';
 
 
 const MessageListContent = ({socket, currentConversation, user}) => {
@@ -20,12 +20,12 @@ const MessageListContent = ({socket, currentConversation, user}) => {
           )
         }
         setMessages({...messages, [currentConversation.id]:response.data.data.chats});
+        console.log(messages);
       }).catch((err)=>{
         console.log(err)
       })
     }
-    console.log(messages);
-  },[currentConversation.id, user]);
+  },[currentConversation, user, messages, setMessages]);
 
   useEffect(() => {
     socket.on("message", ({action, data}) => {
@@ -33,12 +33,15 @@ const MessageListContent = ({socket, currentConversation, user}) => {
         case 'newMessage': 
           console.log(data);
           const conversation = messages[data.chat.conversationId];
-          const existed = conversation.find(message => message.id == data.chat.id);
-          if (existed) break;
-          setMessages(prevMessages => {
-            return {...prevMessages, [data.chat.conversationId]:[...(prevMessages[data.chat.conversationId]), data.chat]}
-          });
           console.log(messages);
+          console.log(conversation);
+          const existed = conversation.find(message => message.id == data.chat.id);
+          if (!existed){
+            setMessages(prevMessages => {
+              return {...prevMessages, [data.chat.conversationId]:[...(prevMessages[data.chat.conversationId]||[]), data.chat]}
+            });
+            console.log(messages);
+          }
           break
         /* case 'update':
           const nextConversations = conversations.map(conversation => {
@@ -57,7 +60,7 @@ const MessageListContent = ({socket, currentConversation, user}) => {
     return () => {
       socket.off("message");
     }
-  }, [socket]);
+  }, [socket, messages, setMessages, currentConversation.id]);
 
   /* componentDidUpdate(prevProps) {
     // Typical usage (don't forget to compare props):
@@ -99,6 +102,7 @@ const MessageListContent = ({socket, currentConversation, user}) => {
   const listItems = messages[currentConversation.id].map((message, index) => {
     const newDay = isNewDay(message, index);
     const firstInGroup = isFirstOfSenderGroup(message, index);
+    const createdAt = new Date(message.createdAt);
     const errorHandler = (event) => {
       console.log('ImgErrorHandler');
       event.currentTarget.src = Blank_Avatar;
@@ -151,7 +155,7 @@ const MessageListContent = ({socket, currentConversation, user}) => {
           </div>
           {/*SendTime*/}
           <div className="small ms-2 rounded-3 text-muted align-self-end">
-            23:58
+            {moment(createdAt).format('hh:mm')}
           </div>
         </div>
       </div>

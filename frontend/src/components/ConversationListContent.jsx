@@ -21,7 +21,8 @@ const ConversationListContent = ({socket, conversations, setConversations, setCu
     }).catch((err)=>{
       console.log(err)
     })
-  },[])
+    
+  },[setConversations])
 
   useEffect(() => {
     socket.on("conversation", ({action, data}) => {
@@ -29,6 +30,7 @@ const ConversationListContent = ({socket, conversations, setConversations, setCu
         case 'create': 
           const existed = conversations.find(conversation => conversation.id == data.conversation.id);
           if (!existed) setConversations(prevConversations => [...prevConversations, data.conversation]);
+          console.log(conversations);
           break
         case 'update':
           const nextConversations = conversations.map(conversation => {
@@ -47,7 +49,7 @@ const ConversationListContent = ({socket, conversations, setConversations, setCu
     return () => {
       socket.off("conversation");
     }
-  }, [socket]);
+  }, [socket, setConversations]);
 
   const handleClick = (conversation) => {
     setCurrentConversation(conversation);
@@ -83,7 +85,9 @@ const ConversationListContent = ({socket, conversations, setConversations, setCu
   );
 
   return (
-    <div id="conversation_list-container-content">
+    <div id="conversation_list-container-content"
+    style={{overflowY: 'scroll'}}
+    >
       {conversationItems}
     </div>
   );

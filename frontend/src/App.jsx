@@ -57,7 +57,7 @@ function App() {
     hashedPassword: cookie.get('hashedPassword'),
     firstName: cookie.get('firstName'),
     lastName: cookie.get('lastName'),
-    avatarUrl: cookie.get('avatarUrl')
+    avatar: cookie.get('avatarUrl')
   }
   
   return (

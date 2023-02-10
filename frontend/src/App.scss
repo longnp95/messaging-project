@@ -49,7 +49,7 @@ img[alt~="avatar"] {
   background: #74b9ff;
 }
 
-.card-footer i:hover {
+.card-footer button:hover {
   cursor: pointer;
   color: $bs-info-rgb
 }

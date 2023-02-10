@@ -8,7 +8,9 @@ const ConversationListContainer = ({socket, isCreating, setIsCreating, conversat
   const [searchText, setSearchText] = useState('');
 
   return (
-    <Col xs={4} id="conversation_list-container" className="g-0 border-right bg-light">
+    <Col xs={4} id="conversation_list-container" className="flex d-flex flex-column g-0 border-right bg-light"
+    style={{ borderRadius: "0" , height: "100vh"}}
+    >
       <LeftNavBar 
         setSearchText={setSearchText}
         user={user}
