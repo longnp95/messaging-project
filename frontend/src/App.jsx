@@ -19,13 +19,13 @@ const authToken = cookie.get('token');
 if (authToken) {
   axios.defaults.headers.common['token'] = 'authToken';
 }
-const currentUser ={
-  token: cookie.get('token'),
+const user ={
+  token: authToken,
   id: cookie.get('userId'),
   hashedPassword: cookie.get('hashedPassword'),
   firstName: cookie.get('firstName'),
   lastName: cookie.get('lastName'),
-  avatarUrl: cookie.get('avatarUrl')
+  avatar: cookie.get('avatarUrl')
 }
 
 function App() {
@@ -51,15 +51,7 @@ function App() {
   const [currentConversation, setCurrentConversation] = useState([])
 
   if(!socket) return <Auth />
-  const user ={
-    token: token,
-    id: cookie.get('userId'),
-    hashedPassword: cookie.get('hashedPassword'),
-    firstName: cookie.get('firstName'),
-    lastName: cookie.get('lastName'),
-    avatar: cookie.get('avatarUrl')
-  }
-  
+    
   return (
     <Container fluid id="App" className="App g-0">
       <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
@@ -87,6 +79,7 @@ function App() {
             isEditing={isEditing}
             setIsEditing={setIsEditing}
             createType={createType}
+            conversations={conversations}
             currentConversation={currentConversation}
             user={user}
           />

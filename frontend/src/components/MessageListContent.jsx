@@ -28,14 +28,17 @@ const MessageListContent = ({socket, currentConversation, user}) => {
         console.log(err)
       })
     }
-  },[currentConversation, user, setMessages]);
+  },[currentConversation, user]);
 
   useEffect(() => {
+    console.log(`listening message ${currentConversation.id}`);
     socket.on("message", ({action, data}) => {
+      console.log(data);
       switch (action) {
         case 'newMessage': 
           setMessages(prevMessages => {
             console.log(data);
+            console.log(prevMessages);
             const conversation = prevMessages[data.chat.conversationId];
             console.log(conversation);
             const existed = conversation.find(message => message.id == data.chat.id);
@@ -46,16 +49,6 @@ const MessageListContent = ({socket, currentConversation, user}) => {
             return prevMessages;
           });
           break
-        /* case 'update':
-          const nextConversations = conversations.map(conversation => {
-            if (conversation.id == data.conversation.id) {
-              return data.conversation;
-            } else {
-              return conversation;
-            }
-          });
-          setConversations(nextConversations);
-          break */
         default:
       }
     });
@@ -63,7 +56,7 @@ const MessageListContent = ({socket, currentConversation, user}) => {
     return () => {
       socket.off("message");
     }
-  }, [socket, setMessages, currentConversation]);
+  }, [socket, currentConversation, user]);
 
   /* componentDidUpdate(prevProps) {
     // Typical usage (don't forget to compare props):
@@ -77,7 +70,7 @@ const MessageListContent = ({socket, currentConversation, user}) => {
   }
   useEffect(() => {
     scrollToBottom();
-  })
+  },[])
   const [messageEnd, setMessageEnd] = useState();
   const isFirstOfSenderGroup = (message, index) => {
     return index===0 || messages[currentConversation.id][index-1].userId !== message.userId
