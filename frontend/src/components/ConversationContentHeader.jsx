@@ -31,8 +31,8 @@ const ConversationContentHeader = ({currentConversation, user}) => {
 
         <Dropdown.Menu>
           <Dropdown.Item onClick={() => setIsCreating(true)}>Add Member</Dropdown.Item>
-          <Dropdown.Item >Another action</Dropdown.Item>
-          <Dropdown.Item >Something else</Dropdown.Item>
+          <Dropdown.Item >Placeholder</Dropdown.Item>
+          <Dropdown.Item >Placeholder</Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
       <AddMemberForm 

@@ -22,25 +22,29 @@ const ConversationListContent = ({socket, conversations, setConversations, setCu
       console.log(err)
     })
     
-  },[setConversations])
+  },[setConversations,user])
 
   useEffect(() => {
     socket.on("conversation", ({action, data}) => {
       switch (action) {
         case 'create': 
-          const existed = conversations.find(conversation => conversation.id == data.conversation.id);
-          if (!existed) setConversations(prevConversations => [...prevConversations, data.conversation]);
-          console.log(conversations);
+          setConversations(prevConversations =>{
+            const existed = prevConversations.find(conversation => conversation.id == data.conversation.id);
+            if (!existed) return [...prevConversations, data.conversation];
+            return prevConversations;
+          });
           break
         case 'update':
-          const nextConversations = conversations.map(conversation => {
-            if (conversation.id == data.conversation.id) {
-              return data.conversation;
-            } else {
-              return conversation;
-            }
+          setConversations(prevConversations =>{
+            const nextConversations = prevConversations.map(conversation => {
+              if (conversation.id == data.conversation.id) {
+                return data.conversation;
+              } else {
+                return conversation;
+              }
+            });
+            return nextConversations;
           });
-          setConversations(nextConversations);
           break
         default:
       }
