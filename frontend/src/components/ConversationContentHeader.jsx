@@ -18,7 +18,7 @@ const ConversationContentHeader = ({currentConversation, user}) => {
       <i className="material-icons d-md-none">arrow_back</i>
       <Image 
         roundedCircle alt="Avatar" 
-        src={currentConversation.avatar} 
+        src={currentConversation.avatar||Blank_Avatar} 
         style={{ width: "30px", height: "auto", aspectRatio: "1" }}
         className="d-none d-md-block"
         onError={(event)=>errorHandler(event)}
@@ -39,6 +39,7 @@ const ConversationContentHeader = ({currentConversation, user}) => {
         onHide={() => setIsCreating(false)}
         isCreating={isCreating}
         setIsCreating={setIsCreating}
+        currentConversation={currentConversation}
         user={user}
       />
     </Card.Header>

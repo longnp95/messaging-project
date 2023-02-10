@@ -7,7 +7,7 @@ export const socket = () => {
   const cookie = new Cookies();
   const token = cookie.get('token'); // get jwt token from local storage or cookie
   if (token) {
-    return socketio.connect(serverUrlConfig, {
+    return socketio(serverUrlConfig, {
       auth: {
         token: token
       }

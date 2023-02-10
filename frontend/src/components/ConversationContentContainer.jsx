@@ -7,7 +7,7 @@ import MessageInputContainer from './MessageInputContainer';
 import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
 
-const ConversationContentContainer = ({currentConversation, user}) => {
+const ConversationContentContainer = ({currentConversation, user, socket}) => {
 /*   const messages = [
     {
       id: 1,
@@ -172,8 +172,10 @@ const ConversationContentContainer = ({currentConversation, user}) => {
         style={{ borderRadius: "0" , height: "100vh"}}>
         <ConversationContentHeader
           currentConversation={currentConversation}
+          user={user}
         />
         <MessageListContent
+          socket={socket}
           currentConversation={currentConversation}
           user={user}
         />

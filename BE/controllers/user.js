@@ -490,8 +490,8 @@ exports.postSendMessage = (async (req, res, next) => {
       chat: newMessage
     };
 
-    io.getIO().to("conversation" + conversation.id).emit("conversation", {
-      action: "sendMessage",
+    io.getIO().to("conversation" + conversation.id).emit("message", {
+      action: "newMessage",
       data: data
     });
 
