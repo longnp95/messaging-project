@@ -10,6 +10,7 @@ const MessageListContent = ({socket, currentConversation, user}) => {
   const [messages, setMessages] = useState([]);
   useEffect(() => {
     if (!messages[currentConversation.id]) {
+      console.log('fetching');
       axios.get('/conversation/getMessage', {
         headers: {token: user.token},
         params: {conversationId: currentConversation.id}})
@@ -19,29 +20,31 @@ const MessageListContent = ({socket, currentConversation, user}) => {
             console.log(response.data.error.message)
           )
         }
-        setMessages({...messages, [currentConversation.id]:response.data.data.chats});
-        console.log(messages);
+        console.log(response.data);
+        setMessages(prevMessages=> {
+          return {...prevMessages, [currentConversation.id]:(response.data.data.chats||[])}
+        });
       }).catch((err)=>{
         console.log(err)
       })
     }
-  },[currentConversation, user, messages, setMessages]);
+  },[currentConversation, user, setMessages]);
 
   useEffect(() => {
     socket.on("message", ({action, data}) => {
       switch (action) {
         case 'newMessage': 
-          console.log(data);
-          const conversation = messages[data.chat.conversationId];
-          console.log(messages);
-          console.log(conversation);
-          const existed = conversation.find(message => message.id == data.chat.id);
-          if (!existed){
-            setMessages(prevMessages => {
+          setMessages(prevMessages => {
+            console.log(data);
+            const conversation = prevMessages[data.chat.conversationId];
+            console.log(conversation);
+            const existed = conversation.find(message => message.id == data.chat.id);
+            if (!existed){
+              console.log('new message');
               return {...prevMessages, [data.chat.conversationId]:[...(prevMessages[data.chat.conversationId]||[]), data.chat]}
-            });
-            console.log(messages);
-          }
+            }
+            return prevMessages;
+          });
           break
         /* case 'update':
           const nextConversations = conversations.map(conversation => {
@@ -60,7 +63,7 @@ const MessageListContent = ({socket, currentConversation, user}) => {
     return () => {
       socket.off("message");
     }
-  }, [socket, messages, setMessages, currentConversation.id]);
+  }, [socket, setMessages, currentConversation]);
 
   /* componentDidUpdate(prevProps) {
     // Typical usage (don't forget to compare props):
