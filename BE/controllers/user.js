@@ -426,7 +426,8 @@ exports.getMessageByConversationId = (async (req, res, next) => {
     include: {
       model: Chat,
       include: {
-        model: User
+        model: User,
+        attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender']
       }
     }
   });
@@ -486,12 +487,21 @@ exports.postSendMessage = (async (req, res, next) => {
   });
 
   if (newMessage) {
+    const messageToSend = await Chat.findOne({
+      where: {
+        id: newMessage.id
+      },
+      include: {
+        model: User,
+        attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender']
+      }
+    })
     const data = {
-      chat: newMessage
+      chat: messageToSend
     };
 
-    io.getIO().to("conversation" + conversation.id).emit("conversation", {
-      action: "sendMessage",
+    io.getIO().to("conversation" + conversation.id).emit("message", {
+      action: "newMessage",
       data: data
     });
 

@@ -14,18 +14,20 @@ const AddMemberForm = ({user, currentConversation, isCreating, setIsCreating, cr
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const response = await axios.post('/conversation/create',{
+    const response = await axios.post('/conversation/addMember',{
       memberId: form.memberId
     },{
       headers: {token: user.token},
-      params: {userId: user.id},
+      params: {
+        userId: user.id,
+        conversationId: currentConversation.id
+      },
     });
-    if (response.data.error.status == 500) {
-      alert(response.data.error.message);
-      return;
-    }
     console.log(response.data.data);
     setIsCreating(false);
+    if (response.data.error.status == 500) {
+      alert(response.data.error.message);
+    }
   }
 
   const handleChange = (e) => {

@@ -6,7 +6,7 @@ import Col from 'react-bootstrap/Col';
 import Stack from 'react-bootstrap/Stack';
 import ImageLoader from '../services/ImageLoader.services';
 
-const ConversationListContent = ({conversations, setConversations, setCurrentConversation, user}) => {
+const ConversationListContent = ({socket, conversations, setConversations, setCurrentConversation, user}) => {
   useEffect(() => {
     axios.get('/conversation', {
       headers: {token: user.token},
@@ -21,7 +21,40 @@ const ConversationListContent = ({conversations, setConversations, setCurrentCon
     }).catch((err)=>{
       console.log(err)
     })
-  },[])
+    
+  },[setConversations,user])
+
+  useEffect(() => {
+    socket.on("conversation", ({action, data}) => {
+      switch (action) {
+        case 'create': 
+          setConversations(prevConversations =>{
+            const existed = prevConversations.find(conversation => conversation.id == data.conversation.id);
+            if (!existed) return [...prevConversations, data.conversation];
+            return prevConversations;
+          });
+          break
+        case 'update':
+          setConversations(prevConversations =>{
+            const nextConversations = prevConversations.map(conversation => {
+              if (conversation.id == data.conversation.id) {
+                return data.conversation;
+              } else {
+                return conversation;
+              }
+            });
+            return nextConversations;
+          });
+          break
+        default:
+      }
+    });
+
+    return () => {
+      socket.off("conversation");
+    }
+  }, [socket, setConversations]);
+
   const handleClick = (conversation) => {
     setCurrentConversation(conversation);
     return;
@@ -56,7 +89,9 @@ const ConversationListContent = ({conversations, setConversations, setCurrentCon
   );
 
   return (
-    <div id="conversation_list-container-content">
+    <div id="conversation_list-container-content"
+    style={{overflowY: 'scroll'}}
+    >
       {conversationItems}
     </div>
   );

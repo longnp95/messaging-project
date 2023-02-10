@@ -16,9 +16,13 @@ const MenuContainer = ({menuToggle, user, setCreateType, setCreateTypeId, create
   return (
     <>
       <Nav className="justify-content-end flex-grow-1 px-0">
+        {/*
         <Navbar.Text >Current User</Navbar.Text>
+        */}
         <Navbar.Text onClick={() => setIsCreating(true)}>Create Group</Navbar.Text>
+        {/*
         <Navbar.Text >Direct Message</Navbar.Text>
+        */}
         <Navbar.Text onClick={Logout}>Log Out</Navbar.Text>
       </Nav>
 

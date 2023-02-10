@@ -1,28 +1,69 @@
 import { useEffect, useState } from 'react';
 import Card from 'react-bootstrap/Card';
-import ImageLoader from '../services/ImageLoader.services';
+import Image from 'react-bootstrap/Image';
+import Blank_Avatar from '../public/Blank-Avatar.png';
 import axios from 'axios';
+import moment from 'moment';
 
 
-const MessageListContent = ({currentConversation, user}) => {
+const MessageListContent = ({socket, currentConversation, user}) => {
   const [messages, setMessages] = useState([]);
-  
   useEffect(() => {
-    axios.get('/conversation/getMessage', {
-      headers: {token: user.token},
-      params: {conversationId: currentConversation.id}})
-    .then((response)=>{
-      if (response.data.error.status === 500) {
-        return (
-          console.log(response.data.error.message)
-        )
+    if (!messages[currentConversation.id]) {
+      console.log('fetching');
+      axios.get('/conversation/getMessage', {
+        headers: {token: user.token},
+        params: {conversationId: currentConversation.id}})
+      .then((response)=>{
+        if (response.data.error.status === 500) {
+          return (
+            console.log(response.data.error.message)
+          )
+        }
+        console.log(response.data);
+        setMessages(prevMessages=> {
+          return {...prevMessages, [currentConversation.id]:(response.data.data.chats||[])}
+        });
+      }).catch((err)=>{
+        console.log(err)
+      })
+    }
+  },[currentConversation, user, setMessages]);
+
+  useEffect(() => {
+    socket.on("message", ({action, data}) => {
+      switch (action) {
+        case 'newMessage': 
+          setMessages(prevMessages => {
+            console.log(data);
+            const conversation = prevMessages[data.chat.conversationId];
+            console.log(conversation);
+            const existed = conversation.find(message => message.id == data.chat.id);
+            if (!existed){
+              console.log('new message');
+              return {...prevMessages, [data.chat.conversationId]:[...(prevMessages[data.chat.conversationId]||[]), data.chat]}
+            }
+            return prevMessages;
+          });
+          break
+        /* case 'update':
+          const nextConversations = conversations.map(conversation => {
+            if (conversation.id == data.conversation.id) {
+              return data.conversation;
+            } else {
+              return conversation;
+            }
+          });
+          setConversations(nextConversations);
+          break */
+        default:
       }
-      console.log(response.data);
-      setMessages(response.data.data.chats);
-    }).catch((err)=>{
-      console.log(err)
-    })
-  },[currentConversation.id, user]);
+    });
+
+    return () => {
+      socket.off("message");
+    }
+  }, [socket, setMessages, currentConversation]);
 
   /* componentDidUpdate(prevProps) {
     // Typical usage (don't forget to compare props):
@@ -39,28 +80,36 @@ const MessageListContent = ({currentConversation, user}) => {
   })
   const [messageEnd, setMessageEnd] = useState();
   const isFirstOfSenderGroup = (message, index) => {
-    return index===0 || messages[index-1].userId !== message.userId
+    return index===0 || messages[currentConversation.id][index-1].userId !== message.userId
   }
 
   const isNewDay = (message, index) => {
     return index===0 || false
   }
-  if (!(messages&&messages.length)) return (
+  if (!(messages[currentConversation.id]&&messages[currentConversation.id].length)) return (
     <Card.Body 
       id="message_list-container-content"
       style={{overflowY: 'scroll'}}
-      className="d-flex flex-row justify-content-center"
     >
-      <div className='justify-content-center'>
-        No Messages Loaded.
+      <div className="divider d-flex flex-row justify-content-center mb-4">
+        <p
+          className="text-center mx-3 mb-0"
+          style={{ color: "#a2aab7" }}
+        >
+          No Messages Loaded.
+        </p>
       </div>
     </Card.Body>
   )
   
-  const listItems = messages.map((message, index) => {
+  const listItems = messages[currentConversation.id].map((message, index) => {
     const newDay = isNewDay(message, index);
     const firstInGroup = isFirstOfSenderGroup(message, index);
-    
+    const createdAt = new Date(message.createdAt);
+    const errorHandler = (event) => {
+      console.log('ImgErrorHandler');
+      event.currentTarget.src = Blank_Avatar;
+    };
     return (
       <div 
         id="message_list-container-content-item-wrapper" 
@@ -84,11 +133,12 @@ const MessageListContent = ({currentConversation, user}) => {
         >
           {/*Avatar*/}
           {message.userId!=user.id && (newDay || firstInGroup) && (
-            <ImageLoader
+            <Image
               roundedCircle
-              src={message.user.avatar}
+              src={message.user.avatar||Blank_Avatar}
               alt="avatar"
               style={{ width: "40px", height: "40px", position: "absolute"}}
+              onError={(event)=>errorHandler(event)}
             />
           )}
           {/*senderName, message */}
@@ -108,7 +158,7 @@ const MessageListContent = ({currentConversation, user}) => {
           </div>
           {/*SendTime*/}
           <div className="small ms-2 rounded-3 text-muted align-self-end">
-            23:58
+            {moment(createdAt).format('hh:mm')}
           </div>
         </div>
       </div>
