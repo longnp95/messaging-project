@@ -8,6 +8,7 @@ import ImageLoader from '../services/ImageLoader.services';
 
 const ConversationListContent = ({socket, conversations, setConversations, setCurrentConversation, user}) => {
   useEffect(() => {
+    console.log('getting conversations list');
     axios.get('/conversation', {
       headers: {token: user.token},
       params: {userId: user.id}})
@@ -22,9 +23,10 @@ const ConversationListContent = ({socket, conversations, setConversations, setCu
       console.log(err)
     })
     
-  },[setConversations,user])
+  },[user])
 
   useEffect(() => {
+    console.log('listening conversation socket')
     socket.on("conversation", ({action, data}) => {
       switch (action) {
         case 'create': 
@@ -53,7 +55,7 @@ const ConversationListContent = ({socket, conversations, setConversations, setCu
     return () => {
       socket.off("conversation");
     }
-  }, [socket, setConversations]);
+  }, [socket]);
 
   const handleClick = (conversation) => {
     setCurrentConversation(conversation);
