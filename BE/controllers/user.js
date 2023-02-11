@@ -5,6 +5,7 @@ const Conversation = require('../models/conversation');
 const Role = require('../models/role');
 const Type = require('../models/type');
 const Chat = require('../models/chat');
+const { getIO } = require('../socket');
 
 const apiData = (async (res, status, message, data) => {
   return res.status(200).json({
@@ -22,6 +23,7 @@ const checkStatusAccount = (async (res, id, table) => {
       where: {
         id: id
       },
+      attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
       include: Conversation
     });
 
@@ -67,13 +69,17 @@ exports.postCreateConversation = (async (req, res, next) => {
 
   const userId = req.query.userId;
 
-  if (!(conversationName && typeConversation && userId)) {
+  if (!(conversationName && typeConversation)) {
     const data = {};
 
     return await apiData(res, 500, 'Where your field ?', data);
   }
 
   const user = await checkStatusAccount(res, userId, User);
+
+  if (!user) {
+    return user;
+  }
 
   let last_message = '';
 
@@ -116,22 +122,22 @@ exports.postCreateConversation = (async (req, res, next) => {
     });
   }
 
+  const data = {
+    conversation: conversation
+  };
+
+  const sockets = await io.getIO().in("user" + user.id).fetchSockets();
+
+  for (const socket of sockets ) {
+    socket.join("conversation" + conversation.id);
+  }
+
   io.getIO().to(["user" + user.id, "conversation" + conversation.id]).emit('conversation', {
     action: 'create',
-    data: {
-      conversation: conversation,
-    }
+    data: data
   });
 
-  res.status(200).json({
-    error: {
-      status: 200,
-      message: 'Create a group successfully!'
-    },
-    data: {
-      conversation: conversation,
-    }
-  });
+  await apiData(res, 200, 'Create a group successfully!', data);
 });
 
 exports.postUpdateConversation = (async (req, res, next) => {
@@ -381,10 +387,17 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
   }
 
   const data = {
-    member: member
+    conversation: group
   };
 
-  io.getIO().to("conversation" + conversationId).emit('group', {
+  // io.in("user" + member.id).socketsJoin(["conversation" + group.id]);
+  const sockets = await io.getIO().in("user" + member.id).fetchSockets();
+
+  for (const socket of sockets ) {
+    socket.join("conversation" + group.id);
+  }
+
+  io.getIO().to("conversation" + group.id).emit('group', {
     action: 'addMember',
     data: data
   });
