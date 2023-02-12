@@ -5,7 +5,7 @@ const Conversation = require('../models/conversation');
 const Role = require('../models/role');
 const Type = require('../models/type');
 const Chat = require('../models/chat');
-const { getIO } = require('../socket');
+const { Op } = require('sequelize');
 
 const apiData = (async (res, status, message, data) => {
   return res.status(200).json({
@@ -307,14 +307,28 @@ exports.getMembersInGroup = (async (req, res, next) => {
     return await apiData(res, 500, 'This group doesn\'t exists!', data);
   }
 
-  const members = await Group_Member.findAll({
+  const conversation = await Conversation.findAll({
     where: {
-      conversationId: conversationId
-    }
+      id: conversationId
+    },
+    attributes: ["id", "name", "avatar"],
+    include: [
+      {
+        model: User,
+        attributes: ["id", "username", "firstName", "lastname", "avatar"],
+        where: {
+          status: 1
+        }
+      },
+      {
+        model: Type,
+        attributes: ["id", "name"],
+      }
+    ]
   });
 
   const data = {
-    members: members
+    conversation: conversation
   };
 
   return await apiData(res, 200, 'OK', data);
@@ -337,72 +351,77 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
     return await apiData(res, 200, 'Where body ?', data);
   }
 
-  const group = await Conversation.findOne({
-    where: {
-      id: conversationId
+  try{
+    const group = await Conversation.findOne({
+      where: {
+        id: conversationId
+      }
+    });
+
+    if (!group) {
+      const data = {};
+
+      return await apiData(res, 500, 'This group doesn\'t exists!', data);
     }
-  });
 
-  if (!group) {
-    const data = {};
+    const user = await checkStatusAccount(res, userId, User);
 
-    return await apiData(res, 500, 'This group doesn\'t exists!', data);
-  }
-
-  const user = await checkStatusAccount(res, userId, User);
-
-  if (!user) {
-    return user;
-  }
-
-  const member = await checkStatusAccount(res, memberId, User);
-
-  if (!member) {
-    return member;
-  }
-
-  const memberInGroup = await Group_Member.findOne({
-    where: {
-      conversationId: group.id,
-      userId: member.id
+    if (!user) {
+      return user;
     }
-  });
 
-  if (memberInGroup) {
-    const data = {};
+    const member = await checkStatusAccount(res, memberId, User);
 
-    return await apiData(res, 500, 'This user is exists in group!', data);
+    if (!member) {
+      return member;
+    }
+
+    const memberInGroup = await Group_Member.findOne({
+      where: {
+        conversationId: group.id,
+        userId: member.id
+      }
+    });
+
+    if (memberInGroup) {
+      const data = {};
+
+      return await apiData(res, 500, 'This user is exists in group!', data);
+    }
+
+    const newMember = await Group_Member.create({
+      conversationId: conversationId,
+      userId: memberId,
+      roleId: 2
+    });
+
+    if (!newMember) {
+      const data = {};
+
+      return await apiData(res, 500, 'Add member in group fail!', data);
+    }
+
+    const data = {
+      conversation: group
+    };
+
+    // io.in("user" + member.id).socketsJoin(["conversation" + group.id]);
+    const sockets = await io.getIO().in("user" + member.id).fetchSockets();
+
+    for (const socket of sockets ) {
+      socket.join("conversation" + group.id);
+    }
+
+    io.getIO().to("conversation" + group.id).emit('group', {
+      action: 'addMember',
+      data: data
+    });
+
+    await apiData(res, 500, 'Add member in group successfully!', data);
+  }catch(err) {
+    var data = {};
+    return await apiData(res, 401, 'Add member in group fail!', data);
   }
-
-  const newMember = await Group_Member.create({
-    conversationId: conversationId,
-    userId: memberId,
-    roleId: 2
-  });
-
-  if (!newMember) {
-    const data = {};
-
-    return await apiData(res, 500, 'Add member in group fail!', data);
-  }
-
-  const data = {
-    conversation: group
-  };
-
-  // io.in("user" + member.id).socketsJoin(["conversation" + group.id]);
-  const sockets = await io.getIO().in("user" + member.id).fetchSockets();
-
-  for (const socket of sockets ) {
-    socket.join("conversation" + group.id);
-  }
-
-  io.getIO().to("conversation" + group.id).emit('group', {
-    action: 'addMember',
-    data: data
-  });
-
-  await apiData(res, 500, 'Add member in group successfully!', data);
 });
 
 exports.getMessageByConversationId = (async (req, res, next) => {
@@ -413,30 +432,37 @@ exports.getMessageByConversationId = (async (req, res, next) => {
 
     return await apiData(res, 500, 'Where your params ?', data);
   }
-
-  const conversation = await Conversation.findOne({
-    where: {
-      id: conversationId
-    },
-    include: {
-      model: Chat,
+  try{
+    const conversation = await Conversation.findOne({
+      where: {
+        id: conversationId
+      },
       include: {
-        model: User,
-        attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender']
+        model: Chat,
+        include: {
+          model: User,
+          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender'],
+          where: {
+            status: 1
+          }
+        }
       }
+    });
+
+    if (!conversation) {
+      const data = {};
+
+      return await apiData(res, 500, 'Please create conversaion!', data);
+    } else {
+      const data = {
+        chats: conversation.chats
+      };
+
+      return await apiData(res, 200, 'OK', data);
     }
-  });
-
-  if (!conversation) {
-    const data = {};
-
-    return await apiData(res, 500, 'Please create conversaion!', data);
-  } else {
-    const data = {
-      chats: conversation.chats
-    };
-
-    return await apiData(res, 200, 'OK', data);
+  }catch(err) {
+    var data = {};
+    return await apiData(res, 401, 'Fail', data);
   }
 });
 
@@ -451,37 +477,37 @@ exports.postSendMessage = (async (req, res, next) => {
     return await apiData(res, 500, 'Where your params ?', data);
   }
 
-  const user = await checkStatusAccount(res, userId, User);
+  try {
+    const user = await checkStatusAccount(res, userId, User);
 
-  if (!user) {
-    return user;
-  }
-
-  const conversation = await Conversation.findOne({
-    where: {
-      id: conversationId
+    if (!user) {
+      return user;
     }
-  });
 
-  if (!conversation) {
-    const data = {};
+    const conversation = await Conversation.findOne({
+      where: {
+        id: conversationId
+      }
+    });
 
-    return await apiData(res, 500, 'Please create conversaion!', data);
-  }
+    if (!conversation) {
+      const data = {};
 
-  conversation.update({
-    last_message: message
-  });
-  conversation.save();
+      return await apiData(res, 500, 'Please create conversaion!', data);
+    }
 
-  const newMessage = await Chat.create({
-    message: message,
-    status: 1,
-    userId: user.id,
-    conversationId: conversation.id
-  });
+    conversation.update({
+      last_message: message
+    });
+    conversation.save();
 
-  if (newMessage) {
+    const newMessage = await Chat.create({
+      message: message,
+      status: 1,
+      userId: user.id,
+      conversationId: conversation.id
+    });
+
     const messageToSend = await Chat.findOne({
       where: {
         id: newMessage.id
@@ -501,9 +527,40 @@ exports.postSendMessage = (async (req, res, next) => {
     });
 
     await apiData(res, 200, 'Send message successfully!', data);
-  } else {
+  }catch(err) {
+    var data = {};
+    return await apiData(res, 401, 'Send message fail!', data);
+  }
+});
+
+exports.getFindUserByUsername = (async (req, res, next) => {
+  const username = req.query.username;
+
+  if(!username){
     const data = {};
 
-    return await apiData(res, 500, 'Send message faild!', data);
+    return await apiData(res, 500, 'Where your params ?', data);
+  }
+
+  try{
+    const users = await User.findAll({
+      where: {
+        username: {
+          [Op.startsWith]: '%' + username
+        },
+        status: 1
+      },
+      attributes: ["id", "username", "firstName", "lastname", "avatar"],
+      limit: 10
+    });
+
+    var data = {
+      users: users
+    };
+  
+    return await apiData(res, 200, 'OK', data);
+  }catch(err) {
+    var data = {};
+    return await apiData(res, 401, 'Fail', data);
   }
 });
