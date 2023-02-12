@@ -47,9 +47,9 @@ const io = socketFile.init(server);
 
 io.on('connection', socket => {
   const token = socket.handshake.auth.token;
+
   if (socketFile.checkToken(token)) {
     socketFile.joinRoomByToken(socket, token);
-    console.log('Client connected');
   } else {
     socket.disconnect();
     console.log('Token wrong');
