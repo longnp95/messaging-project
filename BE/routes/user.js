@@ -10,9 +10,12 @@ routes.get('/conversation', isUser, userController.getConversationsByUserId);
 routes.post('/conversation/create', isUser, haveBody, userController.postCreateConversation);
 routes.post('/conversation/update', isUser, haveBody, userController.postUpdateConversation);
 routes.post('/conversation/setrole', isUser, haveBody, userController.postSetRole);
-routes.get('/conversation/getMessage', isUser, haveBody, userController.getMessageByConversationId);
+routes.get('/conversation/getMessage', isUser, userController.getMessageByConversationId);
 routes.post('/conversation/sendMessage', isUser, haveBody, userController.postSendMessage);
+routes.get('/conversation/getMember', isUser, haveBody, userController.getMembersInGroup);
 routes.post('/conversation/addMember', isUser, haveBody, userController.postAddMemberInGroup);
+
+routes.get('/user', isUser, userController.getFindUserByUsername);
 
 routes.get('/role', userController.getRoles);
 
