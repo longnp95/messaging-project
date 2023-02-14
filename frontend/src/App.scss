@@ -35,6 +35,7 @@ body {
 }
 #conversation-item-container:hover {
   background: $blue;
+  cursor: pointer;
 }
 
 #conversation-name{
@@ -65,4 +66,5 @@ img[alt~="avatar"] {
 
 #suggestion-item-container:hover {
   background: $blue;
+  cursor: pointer;
 }

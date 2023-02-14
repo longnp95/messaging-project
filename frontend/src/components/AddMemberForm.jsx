@@ -10,11 +10,7 @@ import ImageLoader from "../services/ImageLoader.services";
 const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, createType, createTypeId}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
-  const initialForm = {
-    memberId: "",
-  }
-  
-  const [form,setForm] = useState(initialForm)
+  const [selected, setSelected] = useState([])
 
   useEffect(() => {
     setSuggestions([]);
@@ -38,7 +34,7 @@ const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, create
     e.preventDefault();
 
     const response = await axios.post('/conversation/addMember',{
-      memberId: form.memberId
+      memberId: selected.id
     },{
       headers: {token: user.token},
       params: {
@@ -49,13 +45,14 @@ const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, create
     console.log(response.data.data);
     setIsAdding(false);
     if (response.data.error.status == 500) {
-      alert(response.data.error.message);
+      console.log(response.data.error.message);
     }
-    setSearchQuery('')
+    setSearchQuery('');
+    setSelected();
   }
 
   const handleClick = (suggestion) => {
-    setForm({...form, memberId: suggestion.id})
+    setSelected(suggestion);
   }
 
   const handleChange = (e) => {
@@ -109,12 +106,40 @@ const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, create
           style={{height: '100%'}}
         >
           <Form.Group controlId="memberId" onChange={handleChange}>
-            <Form.Control type="text" placeholder="Search for username" required/>
+            <Form.Control type="text" placeholder="Search for username"/>
           </Form.Group>
           <div className="flex-grow-1" style={{overflowY: 'auto'}}>
             {listSuggestions}
           </div>
-          <Button variant="primary" type="submit">
+          {selected
+          ? (<div>
+            <div>Selected</div>
+            <Row
+              id="selected-item-container"
+              className="mx-0 py-1 ps-1 flex-nowrap"
+            >
+              <Col className="g-0 border-right">
+                <ImageLoader
+                  roundedCircle alt="Avatar" 
+                  src={selected.avatar}
+                  style={{ width: "50px", height: "auto", aspectRatio: "1"}}
+                />
+              </Col>
+              <Col xs={8} className="ms-1 flex-grow-1 px-0 px-sm-1">
+                <div id='conversation-name'>
+                  {[selected.firstName, selected.lastName].filter(e=>e).join(' ')}
+                </div>
+                <div id='conversation-preview'
+                  className='text-truncate'
+                >
+                  {'@'+selected.username}
+                </div>
+              </Col>
+            </Row>
+          </div>)
+          : <div>Select an user</div>
+          }
+          <Button variant="primary" type="submit" disabled={!selected}>
             Add
           </Button>
         </form>

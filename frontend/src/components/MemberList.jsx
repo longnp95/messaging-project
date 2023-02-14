@@ -75,7 +75,7 @@ const MemberList = ({user, currentConversation, showMembers, setShowMembers, set
       >
         <Modal.Header closeButton>
           <Modal.Title id="contained-modal-title-vcenter">
-            Add Member
+            {`${currentConversation.name}`}
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="flex-grow-1">

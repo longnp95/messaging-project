@@ -40,6 +40,10 @@ const MessageListContent = ({socket, currentConversation, user}) => {
             console.log(data);
             console.log(prevMessages);
             const conversation = prevMessages[data.chat.conversationId];
+            if (!conversation) {
+              console.log('Not loaded yet');
+              return;
+            }
             console.log(conversation);
             const existed = conversation.find(message => message.id == data.chat.id);
             if (!existed){
@@ -58,13 +62,6 @@ const MessageListContent = ({socket, currentConversation, user}) => {
     }
   }, [socket, currentConversation, user]);
 
-  /* componentDidUpdate(prevProps) {
-    // Typical usage (don't forget to compare props):
-    if (this.props.userID !== prevProps.userID) {
-      this.fetchData(this.props.userID);
-    }
-  } */
-
   const scrollToBottom = () => {
     messageEnd && messageEnd.scrollIntoView({ behavior: "smooth" });
   }
@@ -77,12 +74,29 @@ const MessageListContent = ({socket, currentConversation, user}) => {
   }
 
   const isNewDay = (message, index) => {
-    return index===0 || false
+    if (index===0) return true;
+    const date1 = new Date(messages[currentConversation.id][index-1].createdAt);
+    const date2 = new Date(message.createdAt);
+    if (date1.toDateString() === date2.toDateString()){
+      return false;
+    } else {
+      return true;
+    }
   }
+
+  const isToday = (date) => {
+    const now = new Date();
+    if (now.toDateString() === date.toDateString()){
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   if (!(messages[currentConversation.id]&&messages[currentConversation.id].length)) return (
     <Card.Body 
       id="message_list-container-content"
-      style={{overflowY: 'scroll'}}
+      style={{overflowY: 'auto'}}
     >
       <div className="divider d-flex flex-row justify-content-center mb-4">
         <p
@@ -115,7 +129,7 @@ const MessageListContent = ({socket, currentConversation, user}) => {
               className="text-center mx-3 mb-0"
               style={{ color: "#a2aab7" }}
             >
-              Today
+              {isToday(createdAt)? "Today" : moment(createdAt).format("dddd, MMMM Do YYYY")}
             </p>
           </div>
         )}

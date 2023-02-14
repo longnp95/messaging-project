@@ -5,10 +5,15 @@ import Image from 'react-bootstrap/Image';
 import Blank_Avatar from '../public/Blank-Avatar.png';
 import AddMemberForm from './AddMemberForm';
 import MemberList from './MemberList';
+import ConfirmationModal from './ConfirmationModal';
 
 const ConversationContentHeader = ({currentConversation, user}) => {
   const [isAdding, setIsAdding] = useState(false);
   const [showMembers, setShowMembers] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const deleteConversation = () => {
+    console.log("Delete conversation");
+  }
   const errorHandler = (event) => {
     event.currentTarget.src = Blank_Avatar;
   };
