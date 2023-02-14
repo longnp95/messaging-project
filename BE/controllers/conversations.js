@@ -38,32 +38,43 @@ const checkConversation = (async (res, id) => {
 });
 
 exports.getAllConversation = (async (req, res, next) => {
-  const conversations = await Conversation.findAll({
-    order: [
-      ['updatedAt', 'DESC'],
-    ]
-  });
+  try {
+    const conversations = await Conversation.findAll({
+      order: [
+        ['updatedAt', 'DESC'],
+      ]
+    });
 
-  const data = {
-    conversations: conversations
-  };
-  await apiData(res, 200, 'OK', data);
+    const data = {
+      conversations: conversations
+    };
+    return await apiData(res, 200, 'OK', data);
+  } catch (err) {
+    const data = {};
+    return await apiData(res, 500, 'Fail', data);
+  }
 });
 
 exports.getConversation = (async (req, res, next) => {
-  const conversationId = req.query.conversationId;
+  try {
+    const conversationId = req.query.conversationId;
 
-  const conversation = await checkConversation(res, conversationId);
+    const conversation = await checkConversation(res, conversationId);
 
-  if (conversation) {
+    if (!conversation) {
+      return conversation;
+    }
+
     const data = {
       conversation: conversation
     };
-    await apiData(res, 200, 'OK', data);
-  } else {
+
+    return await apiData(res, 200, 'OK', data);
+  } catch (err) {
     const data = {};
-    await apiData(res, 500, 'Fail', data);
+    return await apiData(res, 500, 'Fail', data);
   }
+
 });
 
 exports.postDeleteConversation = (async (req, res, next) => {
@@ -71,41 +82,101 @@ exports.postDeleteConversation = (async (req, res, next) => {
 
   if (!conversationId) {
     const data = {};
-    await apiData(res, 500, 'Where your params ?', data);
+    return await apiData(res, 500, 'Where your params ?', data);
   }
 
-  const conversation = await checkConversation(res, conversationId);
+  try {
+    const conversation = await checkConversation(res, conversationId);
 
-  if (conversation) {
+    if (!conversation) {
+      return conversation;
+    }
+
     await Group_Member.destroy({
       where: {
-        conversationId: conversationId
+        conversationId: conversation.id
       }
     });
 
     await Chat.destroy({
       where: {
-        conversationId: conversationId
+        conversationId: conversation.id
       }
     });
 
     conversation.destroy();
 
-    await apiData(res, 200, 'Delete this conversation successfully!', data);
-  } else {
     const data = {};
-    await apiData(res, 500, 'Fail', data);
+
+    io.getIO().to("conversation" + conversation.id).emit("conversation", {
+      action: 'delete',
+      message: "Conversation has been deleted!"
+    });
+    io.getIO().socketsLeave("conversation" + conversation.id);
+
+    await apiData(res, 200, 'Delete this conversation successfully!', data);
+  } catch (err) {
+    const data = {};
+    return await apiData(res, 500, 'Fail', data);
   }
 });
 
 exports.postUpdateMaxMember = (async (req, res, next) => {
   const conversationId = req.query.conversationId;
+  const maxMember = req.body.maxMember;
 
   if (!conversationId) {
     const data = {};
 
-    await apiData(res, 500, 'Where your params!', data);
+    return await apiData(res, 500, 'Where your params!', data);
   }
 
+  if (!maxMember) {
+    const data = {};
 
+    return await apiData(res, 500, 'Where your body!', data);
+  }
+  
+  try {
+    const conversation = await checkConversation(res, conversationId);
+
+    if (!conversation) {
+      return conversation;
+    }
+
+    if (maxMember < conversation.max_member) {
+      const members = await Group_Member.findAll({
+        conversationId: conversationId
+      });
+
+      for (var i = (maxMember - 1); i < conversation.max_member; i++) {
+        var message = username + " was kicked!";
+        var userId = members[i].userId;
+        var username = members[i].username;
+
+        await Group_Member.destroy({
+          conversationId: conversationId,
+          userId: userId
+        });
+
+        io.getIO().to(["user" + userId, "conversation" + conversation.id]).emit("conversation", {
+          action: "updateMaxMember",
+          message: message
+        });
+        io.getIO().in("user" + userId).socketsLeave("conversation" + conversation.id);
+      }
+    }
+
+    conversation.update({
+      max_member: maxMember
+    });
+    conversation.save();
+
+    const data = {};
+
+    await apiData(res, 200, "Update max member successfully!", data);
+  } catch (err) {
+    const data = {};
+    return await apiData(res, 500, 'Fail', data);
+  }
 });

@@ -26,6 +26,10 @@ const Conversation = sequelize.define('conversation', {
   // field with type is String
   last_message: {
     type: Sequelize.STRING
+  },
+
+  max_member: {
+    type: Sequelize.INTEGER
   }
 });
 
