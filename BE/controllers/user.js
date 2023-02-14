@@ -145,8 +145,7 @@ exports.postCreateConversation = (async (req, res, next) => {
     }
 
     const data = {
-      conversation: conversation,
-      message: newMessage
+      conversation: conversation
     };
 
     io.in("user" + member.id).socketsJoin(["conversation" + group.id]);
@@ -215,14 +214,14 @@ exports.postUpdateConversation = (async (req, res, next) => {
     conversation.save();
 
     const data = {
-      conversation: conversation,
-      message: newMessage
+      conversation: conversation
     };
 
     io.getIO().to("conversation" + conversation.id).emit('conversation', {
       action: 'update',
       data: data
     });
+
     return await apiData(res, 200, 'Edit group successfully!', data);
   } catch (err) {
     const data = {};
@@ -484,15 +483,18 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
       return await apiData(res, 500, 'Add ' + member.username + ' fail!', data);
     }
 
+    group.update({
+      last_message: newMessage
+    });
+    group.save();
+
     const data = {
-      conversation: group,
-      message: newMessage
+      conversation: group
     };
 
     io.in("user" + member.id).socketsJoin(["conversation" + group.id]);
-
-    io.getIO().to("conversation" + group.id).emit('group', {
-      action: 'addMember',
+    io.getIO().to("conversation" + group.id).emit('conversation', {
+      action: 'update',
       data: data
     });
 
@@ -595,7 +597,8 @@ exports.postSendMessage = (async (req, res, next) => {
         model: User,
         attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender']
       }
-    })
+    });
+    
     const data = {
       chat: messageToSend
     };
