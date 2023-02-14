@@ -16,6 +16,7 @@ const ConversationListContainer = ({socket, isCreating, setIsCreating, conversat
         user={user}
       />
       <ConversationListContent
+        searchText={searchText}
         socket={socket}
         conversations={conversations}
         setConversations={setConversations}

@@ -6,7 +6,7 @@ import Col from 'react-bootstrap/Col';
 import Stack from 'react-bootstrap/Stack';
 import ImageLoader from '../services/ImageLoader.services';
 
-const ConversationListContent = ({socket, conversations, setConversations, setCurrentConversation, user}) => {
+const ConversationListContent = ({socket, conversations, setConversations, currentConversation, setCurrentConversation, user, searchText}) => {
   useEffect(() => {
     console.log('getting conversations list');
     axios.get('/conversation', {
@@ -63,36 +63,40 @@ const ConversationListContent = ({socket, conversations, setConversations, setCu
   }
   const conversationItems = conversations
   .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
-  .map((conversation) =>
-    <Row
-      key={conversation.id}
-      id="conversation-item-container"
-      onClick={() => handleClick(conversation)}
-      className="mx-0 py-1 ps-1 flex-nowrap"
-    >
-      <Col className="g-0 border-right">
-        <ImageLoader
-          roundedCircle alt="Avatar" 
-          src={conversation.avatar}
-          style={{ width: "50px", height: "auto", aspectRatio: "1"}}
-        />
-      </Col>
-      <Col xs={8} className="ms-1 flex-grow-1 px-0 px-sm-1">
-        <div id='conversation-name'>
-          {conversation.name}
-        </div>
-        <div id='conversation-preview'
-          className='text-truncate'
-        >
-          {conversation.last_message}
-        </div>
-      </Col>
-    </Row>
-  );
+  .map((conversation) => {
+    if (!conversation.name.toLowerCase().includes(searchText.toLowerCase())) return <></>;
+    return (
+      <Row
+        key={conversation.id}
+        id="conversation-item-container"
+        onClick={() => handleClick(conversation)}
+        className={`mx-0 py-1 ps-1 flex-nowrap ${conversation.id==currentConversation.id? 'bg-info' : ''}`}
+      >
+        <Col className="g-0 border-right">
+          <ImageLoader
+            roundedCircle alt="Avatar" 
+            src={conversation.avatar}
+            style={{ width: "50px", height: "auto", aspectRatio: "1"}}
+          />
+        </Col>
+        <Col xs={8} className="ms-1 flex-grow-1 px-0 px-sm-1">
+          <div id='conversation-name'>
+            {conversation.name}
+          </div>
+          <div id='conversation-preview'
+            className='text-truncate'
+          >
+            {conversation.last_message}
+          </div>
+        </Col>
+      </Row>
+    )
+  });
 
   return (
     <div id="conversation_list-container-content"
-    style={{overflowY: 'scroll'}}
+    className='flex-grow-1'
+    style={{overflowY: 'auto'}}
     >
       {conversationItems}
     </div>

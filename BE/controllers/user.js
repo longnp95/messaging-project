@@ -295,19 +295,7 @@ exports.getMembersInGroup = (async (req, res, next) => {
     return await apiData(res, 500, 'Where params ?', data);
   }
 
-  const group = await Conversation.findOne({
-    where: {
-      id: conversationId
-    }
-  });
-
-  if (!group) {
-    const data = {};
-
-    return await apiData(res, 500, 'This group doesn\'t exists!', data);
-  }
-
-  const conversation = await Conversation.findAll({
+  const conversation = await Conversation.findOne({
     where: {
       id: conversationId
     },
@@ -315,7 +303,7 @@ exports.getMembersInGroup = (async (req, res, next) => {
     include: [
       {
         model: User,
-        attributes: ["id", "username", "firstName", "lastname", "avatar"],
+        attributes: ["id", "username", "firstName", "lastName", "avatar"],
         where: {
           status: 1
         }
@@ -326,6 +314,13 @@ exports.getMembersInGroup = (async (req, res, next) => {
       }
     ]
   });
+
+  
+  if (!conversation) {
+    const data = {};
+
+    return await apiData(res, 500, 'This group doesn\'t exists!', data);
+  }
 
   const data = {
     conversation: conversation
@@ -546,11 +541,11 @@ exports.getFindUserByUsername = (async (req, res, next) => {
     const users = await User.findAll({
       where: {
         username: {
-          [Op.startsWith]: '%' + username
+          [Op.startsWith]: username
         },
         status: 1
       },
-      attributes: ["id", "username", "firstName", "lastname", "avatar"],
+      attributes: ["id", "username", "firstName", "lastName", "avatar"],
       limit: 10
     });
 
