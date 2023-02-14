@@ -47,7 +47,7 @@ const checkStatusAccount = (async (res, id, table) => {
 
 exports.getConversationsByUserId = (async (req, res, next) => {
   const userId = req.query.userId;
-  try{
+  try {
     const user = await checkStatusAccount(res, userId, User);
 
     if (!user) {
@@ -59,7 +59,7 @@ exports.getConversationsByUserId = (async (req, res, next) => {
     };
 
     return await apiData(res, 200, 'OK', data);
-  }catch(err){
+  } catch (err) {
     const data = {};
     return await apiData(res, 500, 'Fail', data);
   }
@@ -78,6 +78,7 @@ exports.postCreateConversation = (async (req, res, next) => {
 
     return await apiData(res, 500, 'Where your field ?', data);
   }
+  
   try {
     const user = await checkStatusAccount(res, userId, User);
 
@@ -121,22 +122,34 @@ exports.postCreateConversation = (async (req, res, next) => {
       return res.status(200).json({
         error: {
           status: 500,
-          message: 'Create a group fail!'
+          message: 'Create conversation fail!'
         },
         data: {}
       });
     }
 
-    const data = {
-      conversation: conversation
-    };
+    const newMessage = await Chat.create({
+      conversationId: conversation.id,
+      status: 1,
+      message: last_message
+    });
 
-    const sockets = await io.getIO().in("user" + user.id).fetchSockets();
+    if(!newMessage){
+      const data = {};
 
-    for (const socket of sockets) {
-      socket.join("conversation" + conversation.id);
+      await Conversation.destroy({
+        where: conversation.id
+      });
+      
+      return await apiData(res, 500, 'Create conversation fail!', data);
     }
 
+    const data = {
+      conversation: conversation,
+      message: newMessage
+    };
+    
+    io.in("user" + member.id).socketsJoin(["conversation" + group.id]);
     io.getIO().to(["user" + user.id, "conversation" + conversation.id]).emit('conversation', {
       action: 'create',
       data: data
@@ -178,25 +191,38 @@ exports.postUpdateConversation = (async (req, res, next) => {
       return await apiData(res, 500, 'This conversation doesn\'t exists!', data);
     }
 
+    var message = 'Converastion was updated by ' + user.username;
+
     conversation.update({
       name: conversationName,
       avatar: conversationAvatarUrl,
       typeId: typeConversation,
-      last_message: 'Converastion was updated by ' + user.firstName + user.lastName
+      last_message: message
     });
+
+    const newMessage = await Chat.create({
+      conversationId: conversation.id,
+      status: 1,
+      message: message
+    });
+
+    if(!newMessage){
+      const data = {};
+      
+      return await apiData(res, 500, 'Updated conversation fail!', data);
+    }
+
     conversation.save();
+
+    const data = {
+      conversation: conversation,
+      message: newMessage
+    };
 
     io.getIO().to("conversation" + conversation.id).emit('conversation', {
       action: 'update',
-      data: {
-        conversation: conversation,
-      }
+      data: data
     });
-
-    const data = {
-      conversation: conversation
-    };
-
     return await apiData(res, 200, 'Edit group successfully!', data);
   } catch (err) {
     const data = {};
@@ -443,16 +469,28 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
       return await apiData(res, 500, 'Add member in group fail!', data);
     }
 
+    var message = member.username + ' has add by ' + user.username;
+
+    const newMessage = await Chat.create({
+      conversationId: group.id,
+      status: 1,
+      message: message
+    });
+
+    if(!newMessage){
+      const data = {};
+      await newMember.destroy();
+      await newMember.save();
+      
+      return await apiData(res, 500, 'Add ' + member.username + ' fail!', data);
+    }
+
     const data = {
-      conversation: group
+      conversation: group,
+      message: newMessage
     };
 
-    // io.in("user" + member.id).socketsJoin(["conversation" + group.id]);
-    const sockets = await io.getIO().in("user" + member.id).fetchSockets();
-
-    for (const socket of sockets) {
-      socket.join("conversation" + group.id);
-    }
+    io.in("user" + member.id).socketsJoin(["conversation" + group.id]);
 
     io.getIO().to("conversation" + group.id).emit('group', {
       action: 'addMember',
