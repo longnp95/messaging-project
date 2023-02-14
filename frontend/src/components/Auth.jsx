@@ -127,7 +127,7 @@ const Auth = () => {
               </div>
             )}
             {isSignup && (
-              <p>Let us know more about you, or scroll down to sign up.</p>
+              <p>Let us know more about you, or just hit sign up below.</p>
             )}
             {isSignup && (
               <div id='auth_form-container-fields-content-input'>

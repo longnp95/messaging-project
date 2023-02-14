@@ -62,3 +62,7 @@ img[alt~="avatar"] {
   opacity: 0.5;
   font-size: small;
 }
+
+#suggestion-item-container:hover {
+  background: $blue;
+}

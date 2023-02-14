@@ -19,7 +19,7 @@ const MenuContainer = ({menuToggle, user, setCreateType, setCreateTypeId, create
         {/*
         <Navbar.Text >Current User</Navbar.Text>
         */}
-        <Navbar.Text onClick={() => setIsCreating(true)}>Create Group</Navbar.Text>
+        <Navbar.Text onClick={() => setIsCreating(true)} aria-controls={`offcanvasNavbar-expand-false`}>Create Group</Navbar.Text>
         {/*
         <Navbar.Text >Direct Message</Navbar.Text>
         */}
