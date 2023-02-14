@@ -4,9 +4,11 @@ import Dropdown from 'react-bootstrap/Dropdown'
 import Image from 'react-bootstrap/Image';
 import Blank_Avatar from '../public/Blank-Avatar.png';
 import AddMemberForm from './AddMemberForm';
+import MemberList from './MemberList';
 
 const ConversationContentHeader = ({currentConversation, user}) => {
-  const [isCreating, setIsCreating] = React.useState(false);
+  const [isAdding, setIsAdding] = useState(false);
+  const [showMembers, setShowMembers] = useState(false);
   const errorHandler = (event) => {
     event.currentTarget.src = Blank_Avatar;
   };
@@ -30,15 +32,23 @@ const ConversationContentHeader = ({currentConversation, user}) => {
         </Dropdown.Toggle>
 
         <Dropdown.Menu>
-          <Dropdown.Item onClick={() => setIsCreating(true)}>Add Member</Dropdown.Item>
-          <Dropdown.Item >Placeholder</Dropdown.Item>
+          <Dropdown.Item onClick={() => setIsAdding(true)}>Add Member</Dropdown.Item>
+          <Dropdown.Item onClick={() => setShowMembers(true)}>Show Members</Dropdown.Item>
           <Dropdown.Item >Placeholder</Dropdown.Item>
         </Dropdown.Menu>
       </Dropdown>
       <AddMemberForm 
-        onHide={() => setIsCreating(false)}
-        isCreating={isCreating}
-        setIsCreating={setIsCreating}
+        onHide={() => setIsAdding(false)}
+        isAdding={isAdding}
+        setIsAdding={setIsAdding}
+        currentConversation={currentConversation}
+        user={user}
+      />
+      <MemberList 
+        onHide={() => setShowMembers(false)}
+        showMembers={showMembers}
+        setShowMembers={setShowMembers}
+        setIsAdding={setIsAdding}
         currentConversation={currentConversation}
         user={user}
       />

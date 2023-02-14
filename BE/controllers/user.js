@@ -78,7 +78,7 @@ exports.postCreateConversation = (async (req, res, next) => {
 
     return await apiData(res, 500, 'Where your field ?', data);
   }
-  
+
   try {
     const user = await checkStatusAccount(res, userId, User);
 
@@ -134,13 +134,13 @@ exports.postCreateConversation = (async (req, res, next) => {
       message: last_message
     });
 
-    if(!newMessage){
+    if (!newMessage) {
       const data = {};
 
       await Conversation.destroy({
         where: conversation.id
       });
-      
+
       return await apiData(res, 500, 'Create conversation fail!', data);
     }
 
@@ -148,7 +148,7 @@ exports.postCreateConversation = (async (req, res, next) => {
       conversation: conversation,
       message: newMessage
     };
-    
+
     io.in("user" + member.id).socketsJoin(["conversation" + group.id]);
     io.getIO().to(["user" + user.id, "conversation" + conversation.id]).emit('conversation', {
       action: 'create',
@@ -206,9 +206,9 @@ exports.postUpdateConversation = (async (req, res, next) => {
       message: message
     });
 
-    if(!newMessage){
+    if (!newMessage) {
       const data = {};
-      
+
       return await apiData(res, 500, 'Updated conversation fail!', data);
     }
 
@@ -387,7 +387,6 @@ exports.getMembersInGroup = (async (req, res, next) => {
     const data = {};
     return await apiData(res, 500, 'Fail', data);
   }
-
 });
 
 exports.postAddMemberInGroup = (async (req, res, next) => {
@@ -477,11 +476,11 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
       message: message
     });
 
-    if(!newMessage){
+    if (!newMessage) {
       const data = {};
       await newMember.destroy();
       await newMember.save();
-      
+
       return await apiData(res, 500, 'Add ' + member.username + ' fail!', data);
     }
 
@@ -630,7 +629,7 @@ exports.getFindUserByUsername = (async (req, res, next) => {
         },
         status: 1
       },
-      attributes: ["id", "username", "firstName", "lastname", "avatar"],
+      attributes: ["id", "username", "firstName", "lastName", "avatar"],
       limit: 10
     });
 

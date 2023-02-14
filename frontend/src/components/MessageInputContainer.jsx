@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Card from 'react-bootstrap/Card';
-import Image from 'react-bootstrap/Image';
+import ImageLoader from '../services/ImageLoader.services';
 import Blank_Avatar from '../public/Blank-Avatar.png';
 import axios from 'axios';
 
@@ -27,9 +27,9 @@ const MessageInputContainer = ({currentConversation, user})=>{
 
   return (
     <Card.Footer id="message_input-container" className="text-muted d-flex justify-content-start align-items-center p-1">
-      <Image
+      <ImageLoader
         roundedCircle
-        src={user.avatar||Blank_Avatar}
+        src={user.avatar}
         alt="avatar"
         style={{ width: "45px", height: "45px" }}
       />

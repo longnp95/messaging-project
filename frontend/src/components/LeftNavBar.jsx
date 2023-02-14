@@ -14,17 +14,18 @@ function LeftNavBar({setSearchText, user}) {
   return (
     <>
       {[false].map((expand) => (
-        <Navbar key={expand} bg="info" expand={expand} className="">
+        <Navbar key={expand} bg="info" expand={expand} className="" collapseOnSelect>
           <Container fluid className="g-0 flex-nowrap">
             <Navbar.Toggle aria-controls={`offcanvasNavbar-expand-${expand}`} className="ms-1 p-1">
               <i className="material-icons">menu</i>
             </Navbar.Toggle>
-            <Form className="d-flex flex-grow-1">
+            <Form className="d-flex flex-grow-1" onSubmit={(e) => e.preventDefault()}>
               <Form.Control
                 type="search"
                 placeholder="Search"
                 className="mx-1"
                 aria-label="Search"
+                onChange={(e) => setSearchText(e.target.value)}
               />
             </Form>
             <Navbar.Offcanvas

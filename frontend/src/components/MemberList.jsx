@@ -7,83 +7,57 @@ import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import ImageLoader from "../services/ImageLoader.services";
 
-const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, createType, createTypeId}) => {
+const MemberList = ({user, currentConversation, showMembers, setShowMembers, setIsAdding}) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [suggestions, setSuggestions] = useState([]);
-  const initialForm = {
-    memberId: "",
-  }
-  
-  const [form,setForm] = useState(initialForm)
+  const [members, setMembers] = useState([]);
 
   useEffect(() => {
-    setSuggestions([]);
-    if (searchQuery.length>0) axios.get('/user', {
+    if (!showMembers) return;
+    setMembers([]);
+    axios.get('/conversation/getMember', {
       headers: {token: user.token},
-      params: {username: searchQuery}})
+      params: {conversationId: currentConversation.id}})
     .then((response)=>{
       if (response.data.error.status === 500) {
         return (
           console.log(response.data.error.message)
         )
       }
-      console.log(response.data.data.users)
-      setSuggestions(response.data.data.users);
+      console.log(response.data.data)
+      setMembers(response.data.data.conversation.users);
     }).catch((err)=>{
       console.log(err)
     })
-  },[searchQuery,user])
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    const response = await axios.post('/conversation/addMember',{
-      memberId: form.memberId
-    },{
-      headers: {token: user.token},
-      params: {
-        userId: user.id,
-        conversationId: currentConversation.id
-      },
-    });
-    console.log(response.data.data);
-    setIsAdding(false);
-    if (response.data.error.status == 500) {
-      alert(response.data.error.message);
-    }
-    setSearchQuery('')
-  }
-
-  const handleClick = (suggestion) => {
-    setForm({...form, memberId: suggestion.id})
-  }
+  },[currentConversation,user,showMembers])
 
   const handleChange = (e) => {
     setSearchQuery(e.target.value)
   }
 
-  const listSuggestions = suggestions.map(suggestion => {
+  const listSuggestions = members.map(member => {
+    if (!member.username.toLowerCase().includes(searchQuery.toLowerCase())
+      && ![member.firstName, member.lastName].filter(e=>e).join(' ').toLowerCase().includes(searchQuery.toLowerCase())
+    ) return <></>;
     return <Row
-      key={suggestion.id}
+      key={member.id}
       id="suggestion-item-container"
       className="mx-0 py-1 ps-1 flex-nowrap"
-      onClick={() => handleClick(suggestion)}
     >
       <Col className="g-0 border-right">
         <ImageLoader
           roundedCircle alt="Avatar" 
-          src={suggestion.avatar}
+          src={member.avatar}
           style={{ width: "50px", height: "auto", aspectRatio: "1"}}
         />
       </Col>
       <Col xs={8} className="ms-1 flex-grow-1 px-0 px-sm-1">
         <div id='conversation-name'>
-          {[suggestion.firstName, suggestion.lastName].filter(e=>e).join(' ')}
+          {[member.firstName, member.lastName].filter(e=>e).join(' ')}
         </div>
         <div id='conversation-preview'
           className='text-truncate'
         >
-          {'@'+suggestion.username}
+          {'@'+member.username}
         </div>
       </Col>
     </Row>
@@ -91,8 +65,8 @@ const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, create
   
   return (
     <Modal
-      onHide={() => {setIsAdding(false); setSearchQuery('')}}
-      show={isAdding}
+      onHide={() => {setShowMembers(false); setSearchQuery('')}}
+      show={showMembers}
       size="lg"
       aria-labelledby="contained-modal-title-vcenter"
     >
@@ -105,8 +79,9 @@ const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, create
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="flex-grow-1">
-        <form onSubmit={handleSubmit} className='d-flex flex-column'
+        <form className='d-flex flex-column'
           style={{height: '100%'}}
+          onSubmit={(e)=>e.preventDefault()}
         >
           <Form.Group controlId="memberId" onChange={handleChange}>
             <Form.Control type="text" placeholder="Search for username" required/>
@@ -114,8 +89,8 @@ const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, create
           <div className="flex-grow-1" style={{overflowY: 'auto'}}>
             {listSuggestions}
           </div>
-          <Button variant="primary" type="submit">
-            Add
+          <Button variant="primary" onClick={()=>{setIsAdding(true); setShowMembers(false)}}>
+            Add Member
           </Button>
         </form>
         </Modal.Body>
@@ -124,4 +99,4 @@ const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, create
   )
 }
 
-export default AddMemberForm;
+export default MemberList;
