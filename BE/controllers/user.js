@@ -23,21 +23,7 @@ const checkStatusAccount = (async (res, id, table) => {
       where: {
         id: id
       },
-      attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
-      include: {
-        model: Conversation,
-        include: [
-          {
-            model: User,
-            as: 'creator',
-            attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
-          }, {
-            model: User,
-            as: 'partner',
-            attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
-          }
-        ]
-      }
+      attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status']
     });
 
     if (!data) {
@@ -59,9 +45,28 @@ const checkStatusAccount = (async (res, id, table) => {
 });
 
 exports.getConversationsByUserId = (async (req, res, next) => {
-  const userId = req.query.userId;
+  const userId = req.userId;
+
   try {
-    const user = await checkStatusAccount(res, userId, User);
+    const user = await User.findOne({
+      where: {
+        id: userId
+      },
+      include: {
+        model: Conversation,
+        include: [
+          {
+            model: User,
+            as: 'creator',
+            attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+          }, {
+            model: User,
+            as: 'partner',
+            attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+          }
+        ]
+      }
+    });
 
     if (!user) {
       return user;
@@ -85,7 +90,7 @@ exports.postCreateConversation = (async (req, res, next) => {
   const typeConversation = body.typeConversation;//int
   const partnerId = body.partnerId;//int
 
-  const userId = req.query.userId;
+  const userId = req.userId;
 
   if (!(conversationName && typeConversation)) {
     const data = {};
@@ -99,13 +104,21 @@ exports.postCreateConversation = (async (req, res, next) => {
     if (!user) {
       return user;
     }
+
     let partner = null;
+
     if (typeConversation == 1) {
+      if (!partnerId) {
+        return await apiData(res, 500, 'Where your field?', {});
+      }
+
       partner = await checkStatusAccount(res, partnerId, User);
+
       if (!partner) {
-        return user;
+        return partner;
       }
     }
+
     let last_message = '';
 
     if (typeConversation == 2) {
@@ -113,7 +126,7 @@ exports.postCreateConversation = (async (req, res, next) => {
     } else if (typeConversation == 3) {
       last_message = 'Channel was created by ' + [user.firstName, user.lastName].join(' ');
     } else if (typeConversation == 1) {
-      last_message = 'Direct message started by' + [user.firstName, user.lastName].join(' ');
+      last_message = 'Direct message started by ' + [user.firstName, user.lastName].join(' ');
     }
 
     const conversation = await Conversation.create({
@@ -127,13 +140,7 @@ exports.postCreateConversation = (async (req, res, next) => {
     });
 
     if (!conversation) {
-      return res.status(200).json({
-        error: {
-          status: 500,
-          message: 'Create a group fail!'
-        },
-        data: {}
-      });
+      return await apiData(res, 500, 'Create a conversation fail!', {});
     }
 
     const groupMember = await Group_Member.create({
@@ -143,6 +150,10 @@ exports.postCreateConversation = (async (req, res, next) => {
     });
 
     if (!groupMember) {
+      await Conversation.destroy({
+        where: conversation.id
+      });
+
       return res.status(200).json({
         error: {
           status: 500,
@@ -150,6 +161,28 @@ exports.postCreateConversation = (async (req, res, next) => {
         },
         data: {}
       });
+    }
+
+    if (partner && typeConversation == 1) {
+      const groupPartner = await Group_Member.create({
+        roleId: 1,
+        userId: partnerId,
+        conversationId: conversation.id
+      });
+
+      if (!groupPartner) {
+        await Conversation.destroy({
+          where: conversation.id
+        });
+
+        return res.status(200).json({
+          error: {
+            status: 500,
+            message: 'Create conversation fail!'
+          },
+          data: {}
+        });
+      }
     }
 
     const newMessage = await Chat.create({
@@ -173,10 +206,18 @@ exports.postCreateConversation = (async (req, res, next) => {
     };
 
     io.getIO().in("user" + user.id).socketsJoin(["conversation" + conversation.id]);
-    io.getIO().to(["user" + user.id, "conversation" + conversation.id]).emit('conversation', {
+    io.getIO().to(["user" + user.id]).emit('conversation', {
       action: 'create',
       data: data
     });
+    
+    if (partner) {
+      io.getIO().in("user" + partner.id).socketsJoin(["conversation" + conversation.id]);
+      io.getIO().to(["user" + partner.id]).emit('conversation', {
+        action: 'create',
+        data: data
+      });
+    }
 
     return await apiData(res, 200, 'Create a group successfully!', data);
   } catch (err) {
@@ -455,7 +496,7 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
       }
     });
     console.log(members);
-    if (group.max_member){
+    if (group.max_member) {
       if (members.length + 1 > group.max_member) {
         const data = {};
 
@@ -623,7 +664,7 @@ exports.postSendMessage = (async (req, res, next) => {
         attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender']
       }
     });
-    
+
     const data = {
       chat: messageToSend
     };
