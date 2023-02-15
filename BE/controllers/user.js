@@ -215,7 +215,7 @@ exports.postUpdateConversation = (async (req, res, next) => {
       return await apiData(res, 500, 'This conversation doesn\'t exists!', data);
     }
 
-    var message = 'Converastion was updated by ' + user.username;
+    var message = 'Conversation was updated by ' + user.username;
 
     conversation.update({
       name: conversationName,
@@ -264,7 +264,7 @@ exports.postSetRole = (async (req, res, next) => {
   if (!(userId && conversationId && memberId && roleId)) {
     const data = {};
 
-    return await apiData(res, 500, 'Where your feild ?!', data);
+    return await apiData(res, 500, 'Where your field ?!', data);
   }
 
   try {
@@ -378,7 +378,7 @@ exports.getMembersInGroup = (async (req, res, next) => {
       include: [
         {
           model: User,
-          attributes: ["id", "username", "firstName", "lastname", "avatar"],
+          attributes: ["id", "username", "firstName", "lastName", "avatar"],
           where: {
             status: 1
           }
