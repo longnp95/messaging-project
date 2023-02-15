@@ -42,7 +42,7 @@ function App() {
     setSocket(newSocket);
     return () => newSocket.close();
   }, [setSocket, token]);
-
+  const [newPartner, setNewPartner] = useState();
   const [createType, setCreateType] = useState('');
   const [createTypeId, setCreateTypeId] = useState(0);
   const [isCreating, setIsCreating] = useState(false);

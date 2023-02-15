@@ -44,7 +44,7 @@ const MemberList = ({user, currentConversation, showMembers, setShowMembers, set
       && ![member.firstName, member.lastName].filter(e=>e).join(' ').toLowerCase().includes(searchQuery.toLowerCase())
     ) return <></>;
     return <Row
-      key={member.id}
+      key={member.group_member.id}
       id="suggestion-item-container"
       className="mx-0 py-1 ps-1 flex-nowrap"
     >
@@ -94,7 +94,7 @@ const MemberList = ({user, currentConversation, showMembers, setShowMembers, set
           onSubmit={(e)=>e.preventDefault()}
         >
           <Form.Group controlId="memberId" onChange={handleChange}>
-            <Form.Control type="text" placeholder="Search for username" required/>
+            <Form.Control type="text" placeholder="Search for username" autocomplete="off"/>
           </Form.Group>
           <div className="flex-grow-1" style={{overflowY: 'auto'}}>
             {listSuggestions}

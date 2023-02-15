@@ -7,31 +7,10 @@ import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import ImageLoader from "../services/ImageLoader.services";
 
-const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, createType, createTypeId}) => {
+const NewDirectMessage = ({user, currentConversation, isAdding, setIsAdding, setNewPartner}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [selected, setSelected] = useState()
-  const [members, setMembers] = useState([]);
-
-  useEffect(() => {
-    if (!isAdding) return;
-    setMembers([]);
-    axios.get('/conversation/getMember', {
-      headers: {token: user.token},
-      params: {conversationId: currentConversation.id}})
-    .then((response)=>{
-      if (response.data.error.status === 500) {
-        return (
-          console.log(response.data.error.message)
-        )
-      }
-      console.log(response.data.data)
-      console.log(response.data.data.conversation.users);
-      setMembers(response.data.data.conversation.users);
-    }).catch((err)=>{
-      console.log(err)
-    })
-  },[currentConversation,user,isAdding])
 
   useEffect(() => {
     setSuggestions([]);
@@ -53,21 +32,7 @@ const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, create
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const response = await axios.post('/conversation/addMember',{
-      memberId: selected.id
-    },{
-      headers: {token: user.token},
-      params: {
-        userId: user.id,
-        conversationId: currentConversation.id
-      },
-    });
-    console.log(response.data.data);
-    setIsAdding(false);
-    if (response.data.error.status == 500) {
-      console.log(response.data.error.message);
-    }
+    setNewPartner(selected);
     setSearchQuery('');
     setSelected();
   }
@@ -82,27 +47,22 @@ const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, create
 
   const listSuggestions = suggestions.map(suggestion => {
     if (suggestion.id == user.id) return <div key={suggestion.id} className="d-none"></div>;
-    const isGroupMember = members.findIndex(el => el.id == suggestion.id);
-    console.log(isGroupMember);
     return <Row
       key={suggestion.id}
       id="suggestion-item-container"
       className={`mx-0 py-1 ps-1 flex-nowrap ${selected && suggestion.id == selected.id ? 'bg-info' : ''}`}
-      onClick={() => {
-        if (isGroupMember!=-1) return;
-        handleClick(suggestion)
-      }}
+      onClick={() => handleClick(suggestion)}
     >
-      <Col xs="auto" className="g-0 border-right">
+      <Col className="g-0 border-right">
         <ImageLoader
           roundedCircle alt="Avatar" 
           src={suggestion.avatar}
           style={{ width: "50px", height: "auto", aspectRatio: "1"}}
         />
       </Col>
-      <Col className="me-md-2 ms-1 flex-grow-1 px-0 px-sm-1">
+      <Col xs={8} className="ms-1 flex-grow-1 px-0 px-sm-1">
         <div id='conversation-name'>
-          {[suggestion.firstName, suggestion.lastName].filter(e=>e).join(' ') + ((isGroupMember!=-1)? ' (Already a member)':'')}
+          {[suggestion.firstName, suggestion.lastName].filter(e=>e).join(' ')}
         </div>
         <div id='conversation-preview'
           className='text-truncate'
@@ -125,7 +85,7 @@ const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, create
       >
         <Modal.Header closeButton>
           <Modal.Title id="contained-modal-title-vcenter">
-            Add Member
+            Direct Message
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="flex-grow-1">
@@ -133,7 +93,7 @@ const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, create
           style={{height: '100%'}}
         >
           <Form.Group controlId="memberId" onChange={handleChange}>
-            <Form.Control type="text" placeholder="Search for username" autocomplete="off"/>
+            <Form.Control type="text" placeholder="Search for username"/>
           </Form.Group>
           <div className="flex-grow-1" style={{overflowY: 'auto'}}>
             {listSuggestions}
@@ -176,4 +136,4 @@ const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, create
   )
 }
 
-export default AddMemberForm;
+export default NewDirectMessage;
