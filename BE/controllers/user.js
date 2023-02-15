@@ -109,6 +109,7 @@ exports.postCreateConversation = (async (req, res, next) => {
 
     if (typeConversation == 1) {
       if (!partnerId) {
+        console.log(partnerId);
         return await apiData(res, 500, 'Where your field?', {});
       }
 
@@ -210,7 +211,7 @@ exports.postCreateConversation = (async (req, res, next) => {
       action: 'create',
       data: data
     });
-    
+
     if (partner) {
       io.getIO().in("user" + partner.id).socketsJoin(["conversation" + conversation.id]);
       io.getIO().to(["user" + partner.id]).emit('conversation', {
@@ -231,10 +232,9 @@ exports.postUpdateConversation = (async (req, res, next) => {
   const body = req.body;
   const conversationId = body.conversationId;
   const conversationName = body.conversationName;
-  const typeConversation = body.typeConversation;//int
   const conversationAvatarUrl = body.conversationAvatarUrl;
 
-  const userId = req.query.userId;
+  const userId = req.userId;
 
   if (!(userId && conversationId && conversationName)) {
     const data = {};
@@ -261,7 +261,6 @@ exports.postUpdateConversation = (async (req, res, next) => {
     conversation.update({
       name: conversationName,
       avatar: conversationAvatarUrl,
-      typeId: typeConversation,
       last_message: message
     });
 
@@ -449,11 +448,11 @@ exports.getMembersInGroup = (async (req, res, next) => {
 });
 
 exports.postAddMemberInGroup = (async (req, res, next) => {
-  const userId = req.query.userId;
+  const userId = req.userId;
   const conversationId = req.query.conversationId;
   const memberId = req.body.memberId;
 
-  if (!(conversationId && userId)) {
+  if (!(conversationId)) {
     const data = {};
 
     return await apiData(res, 200, 'Where params ?', data);
@@ -495,7 +494,7 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
         conversationId: group.id
       }
     });
-    console.log(members);
+    
     if (group.max_member) {
       if (members.length + 1 > group.max_member) {
         const data = {};
@@ -716,5 +715,170 @@ exports.getFindUserByUsername = (async (req, res, next) => {
   } catch (err) {
     var data = {};
     return await apiData(res, 401, 'Fail', data);
+  }
+});
+
+exports.postLeaveGroup = (async (req, res, next) => {
+  const conversaionId = req.query.conversationId;
+  const userId = req.userId;
+
+  if (!conversaionId) {
+    const data = {};
+    return await apiData(res, 500, 'Where params ?', data);
+  }
+
+  try {
+    const conversation = await Conversation.findOne({
+      where: {
+        id: conversaionId
+      }
+    });
+
+    if (!conversation) {
+      const data = {};
+      await apiData(res, 500, 'THis conversation doesn\'t exists!', data);
+    }
+
+    const user = await User.findOne({
+      where: {
+        id: userId
+      }
+    });
+
+    const userInGroup = await Group_Member.findOne({
+      where: {
+        conversaionId: conversaionId,
+        userId: userId
+      }
+    });
+
+    if (!userInGroup) {
+      const data = {};
+
+      return await apiData(res, 500, 'You was leave this conversation!', data);
+    }
+
+    var message = user.username + ' has been leave group!';
+
+    const newMessage = await Chat.create({
+      message: message,
+      status: 1,
+      conversationId: conversation.id
+    });
+
+    if (!newMessage) {
+      const data = {};
+      return await apiData(res, 500, 'Leave this conversation fail!', data);
+    }
+
+    const members = await Group_Member.findOne({
+      where: {
+        conversaionId: conversaionId
+      }
+    });
+
+    if (members.length() < 2) {
+      await Chat.destroy({
+        where: {
+          conversaionId: conversaionId
+        }
+      });
+
+      await Conversation.destroy({
+        where: {
+          conversaionId: conversaionId
+        }
+      });
+
+      io.getIO().to("conversation" + conversation.id).emit("conversation", {
+        action: 'delete',
+        message: "Conversation has been deleted!"
+      });
+      io.getIO().socketsLeave("conversation" + conversation.id);
+
+      await apiData(res, 200, "Conversation has been deleted!", {});
+    }
+
+    if (userInGroup.roleId == 1) {
+      members.forEach(member => {
+        if (member.userId != userId) {
+          Group_Member.findOne({
+            where: {
+              conversaionId: conversaionId,
+              userId: member.id
+            },
+            include: [
+              {
+                model: User,
+                attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+              }
+            ]
+          })
+            .then(memberToSet => {
+              if (memberToSet) {
+                memberToSet.update({
+                  roleId: 1
+                });
+                memberToSet.save();
+
+                Chat.create({
+                  message: [memberToSet.user.firstName, memberToSet.user.lastName].join(' ') + " has been Owner",
+                  status: 1,
+                  conversationId: conversation.id
+                })
+                  .then(newMessage => {
+                    conversation.update({
+                      last_message: newMessage.message
+                    });
+                    conversation.save();
+
+                    io.getIO().to("conversation" + conversaionId).emit("conversation", {
+                      action: "newMessage",
+                      data: {
+                        chat: newMessage
+                      }
+                    });
+                  });
+
+                io.getIO().to("conversation" + conversaionId).emit("conversation", {
+                  action: "update",
+                  data: {
+                    conversation: conversation
+                  }
+                })
+              }
+            });
+        }
+      });
+    }
+
+    await conversation.update({
+      last_message: message
+    });
+    conversation.save();
+
+    userInGroup.destroy();
+
+    const data = {
+      conversation: conversation
+    }
+
+    io.getIO().to("conversation" + conversation.id).emit("message", {
+      action: "newMessage",
+      data: {
+        message: newMessage
+      }
+    });
+    io.getIO().in("user" + user.id).socketsLeave("conversation" + conversation.id);
+    io.getIO().to("conversation" + conversation.id).emit("conversation", {
+      action: 'update',
+      data: data
+    });
+
+    await apiData(res, 200, message, data);
+  } catch (err) {
+    const data = {};
+
+    return await apiData(res, 500, 'Fail', data);
   }
 });
