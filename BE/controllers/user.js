@@ -24,7 +24,20 @@ const checkStatusAccount = (async (res, id, table) => {
         id: id
       },
       attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
-      include: Conversation
+      include: {
+        model: Conversation,
+        include: [
+          {
+            model: User,
+            as: 'creator',
+            attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+          }, {
+            model: User,
+            as: 'partner',
+            attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+          }
+        ]
+      }
     });
 
     if (!data) {
@@ -70,6 +83,7 @@ exports.postCreateConversation = (async (req, res, next) => {
   const conversationName = body.conversationName;//string
   const conversationAvatarUrl = body.conversationAvatarUrl;//string
   const typeConversation = body.typeConversation;//int
+  const partnerId = body.partnerId;//int
 
   const userId = req.query.userId;
 
@@ -85,13 +99,21 @@ exports.postCreateConversation = (async (req, res, next) => {
     if (!user) {
       return user;
     }
-
+    let partner = null;
+    if (typeConversation == 1) {
+      partner = await checkStatusAccount(res, partnerId, User);
+      if (!partner) {
+        return user;
+      }
+    }
     let last_message = '';
 
     if (typeConversation == 2) {
-      last_message = 'Group was created by ' + user.firstName + user.lastName;
+      last_message = 'Group was created by ' + [user.firstName, user.lastName].join(' ');
     } else if (typeConversation == 3) {
-      last_message = 'Channel was created by ' + user.firstName + user.lastName;
+      last_message = 'Channel was created by ' + [user.firstName, user.lastName].join(' ');
+    } else if (typeConversation == 1) {
+      last_message = 'Direct message started by' + [user.firstName, user.lastName].join(' ');
     }
 
     const conversation = await Conversation.create({
@@ -99,7 +121,9 @@ exports.postCreateConversation = (async (req, res, next) => {
       avatar: conversationAvatarUrl,
       typeId: typeConversation,
       last_message: last_message,
-      max_member: 50
+      max_member: 50,
+      creatorId: user.id,
+      partnerId: partnerId
     });
 
     if (!conversation) {
