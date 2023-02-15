@@ -21,6 +21,8 @@ exports.init = (() => {
   Conversation.belongsTo(Type, { constraints: true, onDelete: 'CASCADE' });
   User.belongsToMany(Conversation, { through: Group_Member });
   Conversation.belongsToMany(User, { through: Group_Member });
+  Conversation.belongsTo(User, {as: 'creator'});
+  Conversation.belongsTo(User, {as: 'partner'});
   User.hasMany(Chat);
   Chat.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
   Conversation.hasMany(Chat);

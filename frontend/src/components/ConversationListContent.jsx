@@ -18,6 +18,7 @@ const ConversationListContent = ({socket, conversations, setConversations, curre
           console.log(response.data.error.message)
         )
       }
+      console.log(response.data.data.conversations);
       setConversations(response.data.data.conversations);
     }).catch((err)=>{
       console.log(err)
