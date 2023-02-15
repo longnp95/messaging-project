@@ -8,6 +8,7 @@ import moment from 'moment';
 
 const MessageListContent = ({socket, currentConversation, user}) => {
   const [messages, setMessages] = useState([]);
+  const [messageEnd, setMessageEnd] = useState();
   useEffect(() => {
     if (!messages[currentConversation.id]) {
       console.log('fetching');
@@ -28,7 +29,7 @@ const MessageListContent = ({socket, currentConversation, user}) => {
         console.log(err)
       })
     }
-  },[currentConversation, user]);
+  },[currentConversation, user, messages]);
 
   useEffect(() => {
     console.log(`listening message ${currentConversation.id}`);
@@ -62,13 +63,9 @@ const MessageListContent = ({socket, currentConversation, user}) => {
     }
   }, [socket, currentConversation, user]);
 
-  const scrollToBottom = () => {
-    messageEnd && messageEnd.scrollIntoView({ behavior: "smooth" });
-  }
   useEffect(() => {
-    scrollToBottom();
-  },[])
-  const [messageEnd, setMessageEnd] = useState();
+    messageEnd && messageEnd.scrollIntoView({ behavior: "smooth" });
+  },[messageEnd])
   const isFirstOfSenderGroup = (message, index) => {
     return index===0 || messages[currentConversation.id][index-1].userId !== message.userId
   }
@@ -134,40 +131,51 @@ const MessageListContent = ({socket, currentConversation, user}) => {
           </div>
         )}
         {/*Display [avatar], [senderName], message, sendTime*/}
-        <div 
-          className={`d-flex flex-row justify-content-${message.userId!=user.id ? 'start': 'end'}`}
-          style={{position: "relative"}}
-        >
-          {/*Avatar*/}
-          {message.userId!=user.id && (newDay || firstInGroup) && (
-            <Image
-              roundedCircle
-              src={message.user.avatar||Blank_Avatar}
-              alt="avatar"
-              style={{ width: "40px", height: "40px", position: "absolute"}}
-              onError={(event)=>errorHandler(event)}
-            />
-          )}
-          {/*senderName, message */}
-          <div>
-            <div
-              className={`small p-2 mb-1 rounded-3 ${message.userId==user.id ? 'text-white bg-primary': ''}`}
-              style={{ 
-                backgroundColor: "#f5f6f7", 
-                marginLeft: message.userId===user.id ? 'auto':"45px"
-              }}
+        {/*Check if system message (no user) */}
+        {(!message.user)
+        ? <div className="divider d-flex flex-row justify-content-center mb-4">
+            <p
+              className="text-center mx-3 mb-0"
+              style={{ color: "#a2aab7" }}
             >
-              {message.userId!=user.id && (newDay || firstInGroup) && (
-                <div className="senderName">{message.user.firstName}</div>
-              )}
-              <div>{message.message}</div>
+              {message.message}
+            </p>
+          </div>
+        : <div 
+            className={`d-flex flex-row justify-content-${message.userId!=user.id ? 'start': 'end'}`}
+            style={{position: "relative"}}
+          >
+            {/*Avatar*/}
+            {message.userId!=user.id && (newDay || firstInGroup) && (
+              <Image
+                roundedCircle
+                src={message.user.avatar||Blank_Avatar}
+                alt="avatar"
+                style={{ width: "40px", height: "40px", position: "absolute"}}
+                onError={(event)=>errorHandler(event)}
+              />
+            )}
+            {/*senderName, message */}
+            <div>
+              <div
+                className={`small p-2 mb-1 rounded-3 ${message.userId==user.id ? 'text-white bg-primary': ''}`}
+                style={{ 
+                  backgroundColor: "#f5f6f7", 
+                  marginLeft: message.userId===user.id ? 'auto':"45px"
+                }}
+              >
+                {message.userId!=user.id && (newDay || firstInGroup) && (
+                  <div className="senderName">{message.user.firstName}</div>
+                )}
+                <div>{message.message}</div>
+              </div>
+            </div>
+            {/*SendTime*/}
+            <div className="small ms-2 rounded-3 text-muted align-self-end">
+              {moment(createdAt).format('hh:mm')}
             </div>
           </div>
-          {/*SendTime*/}
-          <div className="small ms-2 rounded-3 text-muted align-self-end">
-            {moment(createdAt).format('hh:mm')}
-          </div>
-        </div>
+        }
       </div>
     )
   });

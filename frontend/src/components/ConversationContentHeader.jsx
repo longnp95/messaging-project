@@ -7,7 +7,7 @@ import AddMemberForm from './AddMemberForm';
 import MemberList from './MemberList';
 import ConfirmationModal from './ConfirmationModal';
 
-const ConversationContentHeader = ({currentConversation, user}) => {
+const ConversationContentHeader = ({currentConversation, user, roles}) => {
   const [isAdding, setIsAdding] = useState(false);
   const [showMembers, setShowMembers] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -56,6 +56,7 @@ const ConversationContentHeader = ({currentConversation, user}) => {
         setIsAdding={setIsAdding}
         currentConversation={currentConversation}
         user={user}
+        roles={roles}
       />
     </Card.Header>
   )

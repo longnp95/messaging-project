@@ -148,14 +148,15 @@ exports.postCreateConversation = (async (req, res, next) => {
       conversation: conversation
     };
 
-    io.in("user" + member.id).socketsJoin(["conversation" + group.id]);
+    io.getIO().in("user" + user.id).socketsJoin(["conversation" + conversation.id]);
     io.getIO().to(["user" + user.id, "conversation" + conversation.id]).emit('conversation', {
       action: 'create',
       data: data
     });
 
-    await apiData(res, 200, 'Create a group successfully!', data);
+    return await apiData(res, 200, 'Create a group successfully!', data);
   } catch (err) {
+    console.log(err);
     const data = {};
     return await apiData(res, 500, 'Fail', data);
   }
@@ -328,7 +329,7 @@ exports.getRoles = (async (req, res, next) => {
       roles: roles
     };
 
-    return await apiData(res, 200, 'You cannot set role for this account!', data);
+    return await apiData(res, 200, 'OK!', data);
   } catch (err) {
     const data = {};
     return await apiData(res, 500, 'Fail', data);
@@ -345,19 +346,7 @@ exports.getMembersInGroup = (async (req, res, next) => {
   }
 
   try {
-    const group = await Conversation.findOne({
-      where: {
-        id: conversationId
-      }
-    });
-
-    if (!group) {
-      const data = {};
-
-      return await apiData(res, 500, 'This group doesn\'t exists!', data);
-    }
-
-    const conversation = await Conversation.findAll({
+    const conversation = await Conversation.findOne({
       where: {
         id: conversationId
       },
@@ -376,6 +365,12 @@ exports.getMembersInGroup = (async (req, res, next) => {
         }
       ]
     });
+
+    if (!conversation) {
+      const data = {};
+
+      return await apiData(res, 500, 'This group doesn\'t exists!', data);
+    }
 
     const data = {
       conversation: conversation
@@ -435,11 +430,13 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
         conversationId: group.id
       }
     });
+    console.log(members);
+    if (group.max_member){
+      if (members.length + 1 > group.max_member) {
+        const data = {};
 
-    if (members.length() + 1 > group.max_member) {
-      const data = {};
-
-      return await apiData(res, 500, 'This conversation have max member is: ' + group.max_member, data);
+        return await apiData(res, 500, 'This conversation have max member is: ' + group.max_member, data);
+      }
     }
 
     const memberInGroup = await Group_Member.findOne({
@@ -467,7 +464,7 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
       return await apiData(res, 500, 'Add member in group fail!', data);
     }
 
-    var message = member.username + ' has add by ' + user.username;
+    var message = '@' + member.username + ' was added by ' + '@' + user.username;
 
     const newMessage = await Chat.create({
       conversationId: group.id,
@@ -484,7 +481,7 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
     }
 
     group.update({
-      last_message: newMessage
+      last_message: message
     });
     group.save();
 
@@ -492,7 +489,13 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
       conversation: group
     };
 
-    io.in("user" + member.id).socketsJoin(["conversation" + group.id]);
+    io.getIO().in("user" + member.id).socketsJoin(["conversation" + group.id]);
+    io.getIO().to("conversation" + group.id).emit('message', {
+      action: 'newMessage',
+      data: {
+        chat: newMessage
+      }
+    });
     io.getIO().to("conversation" + group.id).emit('conversation', {
       action: 'update',
       data: data
@@ -500,6 +503,7 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
 
     await apiData(res, 500, 'Add member in group successfully!', data);
   } catch (err) {
+    console.log(err);
     var data = {};
     return await apiData(res, 401, 'Add member in group fail!', data);
   }
@@ -523,9 +527,6 @@ exports.getMessageByConversationId = (async (req, res, next) => {
         include: {
           model: User,
           attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender'],
-          where: {
-            status: 1
-          }
         }
       }
     });
@@ -606,6 +607,12 @@ exports.postSendMessage = (async (req, res, next) => {
     io.getIO().to("conversation" + conversation.id).emit("message", {
       action: "newMessage",
       data: data
+    });
+    io.getIO().to("conversation" + conversation.id).emit("conversation", {
+      action: "update",
+      data: {
+        conversation: conversation
+      }
     });
 
     await apiData(res, 200, 'Send message successfully!', data);
