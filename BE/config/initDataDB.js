@@ -28,7 +28,7 @@ exports.init = (() => {
 
   sequelize
     // .sync({ force: true })
-    .sync()
+    .sync({ alter: true })
     .then(() => {
       const permissions = [
         {

@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import Cookies from 'universal-cookie';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import ConversationContentHeader from './ConversationContentHeader';
 import MessageListContent from './MessageListContent';
@@ -8,162 +7,24 @@ import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
 
 const ConversationContentContainer = ({currentConversation, user, socket}) => {
-/*   const messages = [
-    {
-      id: 1,
-      userId: 1,
-      content: 'First Message',
-      user: {
-        id: 1,
-        firstName: 'Tuan',
-        lastName:'',
-        avatar:''
+  const [roles, setRoles] = useState([]);
+
+  useEffect(() => {
+    axios.get('/role', {
+      headers: {token: user.token}})
+    .then((response)=>{
+      if (response.data.error.status === 500) {
+        return (
+          console.log(response.data.error.message)
+        )
       }
-    },
-    {
-      id: 2,
-      userId: 2,
-      content: 'Second Message',
-      user: {
-        id: 2,
-        firstName: 'Hung',
-        lastName:'',
-        avatar:''
-      }
-    },
-    {
-      id: 3,
-      userId: 1,
-      content: 'Third Message',
-      user: {
-        id: 1,
-        firstName: 'Tuan',
-        lastName:'',
-        avatar:''
-      }
-    },
-    {
-      id: 4,
-      userId: 2,
-      content: 'Second Message',
-      user: {
-        id: 2,
-        firstName: 'Hung',
-        lastName:'',
-        avatar:''
-      }
-    },
-    {
-      id: 2352,
-      userId: 2,
-      content: 'Third Message',
-      user: {
-        id: 2,
-        firstName: 'Hung',
-        lastName:'',
-        avatar:''
-      }
-    },
-    {
-      id: 4563454,
-      userId: 1,
-      content: 'First Message',
-      user: {
-        id: 1,
-        firstName: 'Tuan',
-        lastName:'',
-        avatar:''
-      }
-    },
-    {
-      id: 23245,
-      userId: 2,
-      content: 'Second Message',
-      user: {
-        id: 2,
-        firstName: 'Hung',
-        lastName:'',
-        avatar:''
-      }
-    },
-    {
-      id: 334,
-      userId: 1,
-      content: 'Third Message',
-      user: {
-        id: 1,
-        firstName: 'Tuan',
-        lastName:'',
-        avatar:''
-      }
-    },
-    {
-      id: 1245634,
-      userId: 2,
-      content: 'Second Message',
-      user: {
-        id: 2,
-        firstName: 'Hung',
-        lastName:'',
-        avatar:''
-      }
-    },
-    {
-      id: 224541,
-      userId: 2,
-      content: 'Third Message',
-      user: {
-        id: 2,
-        firstName: 'Hung',
-        lastName:'',
-        avatar:''
-      }
-    },
-    {
-      id: 245673245,
-      userId: 2,
-      content: 'Second Message',
-      user: {
-        id: 2,
-        firstName: 'Hung',
-        lastName:'',
-        avatar:''
-      }
-    },
-    {
-      id: 357434,
-      userId: 1,
-      content: 'Third Message',
-      user: {
-        id: 1,
-        firstName: 'Tuan',
-        lastName:'',
-        avatar:''
-      }
-    },
-    {
-      id: 12345687,
-      userId: 2,
-      content: 'Second Message',
-      user: {
-        id: 2,
-        firstName: 'Hung',
-        lastName:'',
-        avatar:''
-      }
-    },
-    {
-      id: 8567456,
-      userId: 2,
-      content: 'Third Message',
-      user: {
-        id: 2,
-        firstName: 'Hung',
-        lastName:'',
-        avatar:''
-      }
-    },
-  ]; */
+      console.log(response.data.data)
+      setRoles(response.data.data.roles);
+    }).catch((err)=>{
+      console.log(err)
+    })
+  },[user])
+
   return (
     <Col xs={8} id='conversation_content-container-wrapper' className='g-0 border-left border-white '>
       <Card 
@@ -173,6 +34,7 @@ const ConversationContentContainer = ({currentConversation, user, socket}) => {
         <ConversationContentHeader
           currentConversation={currentConversation}
           user={user}
+          roles={roles}
         />
         <MessageListContent
           socket={socket}
