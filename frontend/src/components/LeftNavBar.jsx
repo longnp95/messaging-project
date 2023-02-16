@@ -5,7 +5,7 @@ import Offcanvas from 'react-bootstrap/Offcanvas';
 import MenuContainer from './MenuContainer';
 import ImageLoader from '../services/ImageLoader.services';
 
-function LeftNavBar({setSearchText, user}) {
+function LeftNavBar({setSearchText, user, setCurrentConversation, conversations}) {
   return (
     <>
       {[false].map((expand) => (
@@ -44,6 +44,8 @@ function LeftNavBar({setSearchText, user}) {
               <Offcanvas.Body className='px-0'>
                 <MenuContainer
                   user={user}
+                  setCurrentConversation={setCurrentConversation}
+                  conversations={conversations}
                 />
               </Offcanvas.Body>
             </Navbar.Offcanvas>

@@ -12,7 +12,13 @@ module.exports = (async (req, res, next) => {
   });
 
   if (userInGroup.roleId != 1) {
-    return await apiData(res, 500, 'Don\'t have permission!', {});
+    return await res.status(200).json({
+      error: {
+        status: 500,
+        message: 'Don\'t have permission!'
+      },
+      data: {}
+    });
   }
 
   next();

@@ -8,12 +8,15 @@ const ConversationListContainer = ({socket, isCreating, setIsCreating, conversat
   const [searchText, setSearchText] = useState('');
 
   return (
-    <Col xs={4} id="conversation_list-container" className="flex d-flex flex-column g-0 border-right bg-light"
+    <Col sm={4} lg={3} id="conversation_list-container" 
+    className={`flex flex-column g-0 border-right bg-light d-${currentConversation.length==0 ? 'flex': 'none'} d-sm-flex`}
     style={{ borderRadius: "0" , height: "100vh"}}
     >
       <LeftNavBar 
         setSearchText={setSearchText}
         user={user}
+        conversations={conversations}
+        setCurrentConversation={setCurrentConversation}
       />
       <ConversationListContent
         searchText={searchText}

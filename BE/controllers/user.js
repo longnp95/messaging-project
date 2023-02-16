@@ -247,7 +247,18 @@ exports.postUpdateConversation = (async (req, res, next) => {
     const conversation = await Conversation.findOne({
       where: {
         id: conversationId
-      }
+      },
+      include: [
+        {
+          model: User,
+          as: 'creator',
+          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+        }, {
+          model: User,
+          as: 'partner',
+          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+        }
+      ]
     });
 
     if (!conversation) {
@@ -323,7 +334,18 @@ exports.postSetRole = (async (req, res, next) => {
     const conversation = await Conversation.findOne({
       where: {
         id: conversationId
-      }
+      },
+      include: [
+        {
+          model: User,
+          as: 'creator',
+          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+        }, {
+          model: User,
+          as: 'partner',
+          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+        }
+      ]
     });
 
     if (!conversation) {
@@ -468,7 +490,18 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
     const group = await Conversation.findOne({
       where: {
         id: conversationId
-      }
+      },
+      include: [
+        {
+          model: User,
+          as: 'creator',
+          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+        }, {
+          model: User,
+          as: 'partner',
+          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+        }
+      ]
     });
 
     if (!group) {
@@ -633,7 +666,18 @@ exports.postSendMessage = (async (req, res, next) => {
     const conversation = await Conversation.findOne({
       where: {
         id: conversationId
-      }
+      },
+      include: [
+        {
+          model: User,
+          as: 'creator',
+          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+        }, {
+          model: User,
+          as: 'partner',
+          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+        }
+      ]
     });
 
     if (!conversation) {
@@ -731,7 +775,18 @@ exports.postLeaveGroup = (async (req, res, next) => {
   const conversation = await Conversation.findOne({
     where: {
       id: conversationId
-    }
+    },
+    include: [
+      {
+        model: User,
+        as: 'creator',
+        attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+      }, {
+        model: User,
+        as: 'partner',
+        attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+      }
+    ]
   });
 
   if (!conversation) {
@@ -758,7 +813,7 @@ exports.postLeaveGroup = (async (req, res, next) => {
     return await apiData(res, 500, 'You was leave this conversation!', data);
   }
 
-  var message = user.username + ' has been leave group!';
+  var message = '@' + user.username + ' has left conversation!';
 
   const newMessage = await Chat.create({
     message: message,
@@ -786,17 +841,18 @@ exports.postLeaveGroup = (async (req, res, next) => {
 
     await Conversation.destroy({
       where: {
-        conversationId: conversationId
+        id: conversationId
       }
     });
 
-    io.getIO().to("conversation" + conversation.id).emit("conversation", {
+    io.getIO().to("conversation" + conversationId).emit("conversation", {
       action: 'delete',
-      message: "Conversation has been deleted!"
+      message: "Conversation has been deleted!",
+      conversationId: conversationId
     });
-    io.getIO().socketsLeave("conversation" + conversation.id);
+    io.getIO().socketsLeave("conversation" + conversationId);
 
-    await apiData(res, 200, "Conversation has been deleted!", {});
+    return await apiData(res, 200, "Conversation has been deleted!", {});
   }
 
   if (userInGroup.roleId == 1) {
@@ -805,7 +861,7 @@ exports.postLeaveGroup = (async (req, res, next) => {
         Group_Member.findOne({
           where: {
             conversationId: conversationId,
-            userId: member.id
+            userId: member.userId
           }
         })
           .then(memberToSet => {
@@ -821,7 +877,7 @@ exports.postLeaveGroup = (async (req, res, next) => {
                 }
               }).then(ur => {
                 Chat.create({
-                  message: [ur.firstName, ur.lastName].join(' ') + " has been Owner",
+                  message: [ur.firstName, ur.lastName].join(' ') + " has been promoted to Leader",
                   status: 1,
                   conversationId: conversation.id
                 })
@@ -831,7 +887,7 @@ exports.postLeaveGroup = (async (req, res, next) => {
                     });
                     conversation.save();
 
-                    io.getIO().to("conversation" + conversationId).emit("conversation", {
+                    io.getIO().to("conversation" + conversationId).emit("message", {
                       action: "newMessage",
                       data: {
                         chat: newMessage
@@ -862,14 +918,14 @@ exports.postLeaveGroup = (async (req, res, next) => {
   const data = {
     conversation: conversation
   }
-
+  io.getIO().in("user" + user.id).socketsLeave("conversation" + conversation.id);
   io.getIO().to("conversation" + conversation.id).emit("message", {
     action: "newMessage",
     data: {
-      message: newMessage
+      chat: newMessage
     }
   });
-  io.getIO().in("user" + user.id).socketsLeave("conversation" + conversation.id);
+  
   io.getIO().to("conversation" + conversation.id).emit("conversation", {
     action: 'update',
     data: data
