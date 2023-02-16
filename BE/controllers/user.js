@@ -23,21 +23,7 @@ const checkStatusAccount = (async (res, id, table) => {
       where: {
         id: id
       },
-      attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
-      include: {
-        model: Conversation,
-        include: [
-          {
-            model: User,
-            as: 'creator',
-            attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
-          }, {
-            model: User,
-            as: 'partner',
-            attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
-          }
-        ]
-      }
+      attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status']
     });
 
     if (!data) {
@@ -59,9 +45,28 @@ const checkStatusAccount = (async (res, id, table) => {
 });
 
 exports.getConversationsByUserId = (async (req, res, next) => {
-  const userId = req.query.userId;
+  const userId = req.userId;
+
   try {
-    const user = await checkStatusAccount(res, userId, User);
+    const user = await User.findOne({
+      where: {
+        id: userId
+      },
+      include: {
+        model: Conversation,
+        include: [
+          {
+            model: User,
+            as: 'creator',
+            attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+          }, {
+            model: User,
+            as: 'partner',
+            attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+          }
+        ]
+      }
+    });
 
     if (!user) {
       return user;
@@ -85,7 +90,7 @@ exports.postCreateConversation = (async (req, res, next) => {
   const typeConversation = body.typeConversation;//int
   const partnerId = body.partnerId;//int
 
-  const userId = req.query.userId;
+  const userId = req.userId;
 
   if (!(conversationName && typeConversation)) {
     const data = {};
@@ -99,13 +104,22 @@ exports.postCreateConversation = (async (req, res, next) => {
     if (!user) {
       return user;
     }
+
     let partner = null;
+
     if (typeConversation == 1) {
+      if (!partnerId) {
+        console.log(partnerId);
+        return await apiData(res, 500, 'Where your field?', {});
+      }
+
       partner = await checkStatusAccount(res, partnerId, User);
+
       if (!partner) {
-        return user;
+        return partner;
       }
     }
+
     let last_message = '';
 
     if (typeConversation == 2) {
@@ -113,7 +127,7 @@ exports.postCreateConversation = (async (req, res, next) => {
     } else if (typeConversation == 3) {
       last_message = 'Channel was created by ' + [user.firstName, user.lastName].join(' ');
     } else if (typeConversation == 1) {
-      last_message = 'Direct message started by' + [user.firstName, user.lastName].join(' ');
+      last_message = 'Direct message started by ' + [user.firstName, user.lastName].join(' ');
     }
 
     const conversation = await Conversation.create({
@@ -127,13 +141,7 @@ exports.postCreateConversation = (async (req, res, next) => {
     });
 
     if (!conversation) {
-      return res.status(200).json({
-        error: {
-          status: 500,
-          message: 'Create a group fail!'
-        },
-        data: {}
-      });
+      return await apiData(res, 500, 'Create a conversation fail!', {});
     }
 
     const groupMember = await Group_Member.create({
@@ -143,6 +151,10 @@ exports.postCreateConversation = (async (req, res, next) => {
     });
 
     if (!groupMember) {
+      await Conversation.destroy({
+        where: conversation.id
+      });
+
       return res.status(200).json({
         error: {
           status: 500,
@@ -150,6 +162,28 @@ exports.postCreateConversation = (async (req, res, next) => {
         },
         data: {}
       });
+    }
+
+    if (partner && typeConversation == 1) {
+      const groupPartner = await Group_Member.create({
+        roleId: 1,
+        userId: partnerId,
+        conversationId: conversation.id
+      });
+
+      if (!groupPartner) {
+        await Conversation.destroy({
+          where: conversation.id
+        });
+
+        return res.status(200).json({
+          error: {
+            status: 500,
+            message: 'Create conversation fail!'
+          },
+          data: {}
+        });
+      }
     }
 
     const newMessage = await Chat.create({
@@ -173,10 +207,18 @@ exports.postCreateConversation = (async (req, res, next) => {
     };
 
     io.getIO().in("user" + user.id).socketsJoin(["conversation" + conversation.id]);
-    io.getIO().to(["user" + user.id, "conversation" + conversation.id]).emit('conversation', {
+    io.getIO().to(["user" + user.id]).emit('conversation', {
       action: 'create',
       data: data
     });
+
+    if (partner) {
+      io.getIO().in("user" + partner.id).socketsJoin(["conversation" + conversation.id]);
+      io.getIO().to(["user" + partner.id]).emit('conversation', {
+        action: 'create',
+        data: data
+      });
+    }
 
     return await apiData(res, 200, 'Create a group successfully!', data);
   } catch (err) {
@@ -190,10 +232,9 @@ exports.postUpdateConversation = (async (req, res, next) => {
   const body = req.body;
   const conversationId = body.conversationId;
   const conversationName = body.conversationName;
-  const typeConversation = body.typeConversation;//int
   const conversationAvatarUrl = body.conversationAvatarUrl;
 
-  const userId = req.query.userId;
+  const userId = req.userId;
 
   if (!(userId && conversationId && conversationName)) {
     const data = {};
@@ -220,7 +261,6 @@ exports.postUpdateConversation = (async (req, res, next) => {
     conversation.update({
       name: conversationName,
       avatar: conversationAvatarUrl,
-      typeId: typeConversation,
       last_message: message
     });
 
@@ -408,11 +448,11 @@ exports.getMembersInGroup = (async (req, res, next) => {
 });
 
 exports.postAddMemberInGroup = (async (req, res, next) => {
-  const userId = req.query.userId;
+  const userId = req.userId;
   const conversationId = req.query.conversationId;
   const memberId = req.body.memberId;
 
-  if (!(conversationId && userId)) {
+  if (!(conversationId)) {
     const data = {};
 
     return await apiData(res, 200, 'Where params ?', data);
@@ -454,8 +494,8 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
         conversationId: group.id
       }
     });
-    console.log(members);
-    if (group.max_member){
+
+    if (group.max_member) {
       if (members.length + 1 > group.max_member) {
         const data = {};
 
@@ -623,7 +663,7 @@ exports.postSendMessage = (async (req, res, next) => {
         attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender']
       }
     });
-    
+
     const data = {
       chat: messageToSend
     };
@@ -676,4 +716,169 @@ exports.getFindUserByUsername = (async (req, res, next) => {
     var data = {};
     return await apiData(res, 401, 'Fail', data);
   }
+});
+
+exports.postLeaveGroup = (async (req, res, next) => {
+  const conversationId = req.query.conversationId;
+  const userId = req.userId;
+
+  if (!conversationId) {
+    const data = {};
+    return await apiData(res, 500, 'Where params ?', data);
+  }
+
+  // try {
+  const conversation = await Conversation.findOne({
+    where: {
+      id: conversationId
+    }
+  });
+
+  if (!conversation) {
+    const data = {};
+    await apiData(res, 500, 'THis conversation doesn\'t exists!', data);
+  }
+
+  const user = await User.findOne({
+    where: {
+      id: userId
+    }
+  });
+
+  const userInGroup = await Group_Member.findOne({
+    where: {
+      conversationId: conversationId,
+      userId: userId
+    }
+  });
+
+  if (!userInGroup) {
+    const data = {};
+
+    return await apiData(res, 500, 'You was leave this conversation!', data);
+  }
+
+  var message = user.username + ' has been leave group!';
+
+  const newMessage = await Chat.create({
+    message: message,
+    status: 1,
+    conversationId: conversation.id
+  });
+
+  if (!newMessage) {
+    const data = {};
+    return await apiData(res, 500, 'Leave this conversation fail!', data);
+  }
+
+  const members = await Group_Member.findAll({
+    where: {
+      conversationId: conversationId
+    }
+  });
+
+  if (members.length < 2) {
+    await Chat.destroy({
+      where: {
+        conversationId: conversationId
+      }
+    });
+
+    await Conversation.destroy({
+      where: {
+        conversationId: conversationId
+      }
+    });
+
+    io.getIO().to("conversation" + conversation.id).emit("conversation", {
+      action: 'delete',
+      message: "Conversation has been deleted!"
+    });
+    io.getIO().socketsLeave("conversation" + conversation.id);
+
+    await apiData(res, 200, "Conversation has been deleted!", {});
+  }
+
+  if (userInGroup.roleId == 1) {
+    members.forEach(member => {
+      if (member.userId != userId) {
+        Group_Member.findOne({
+          where: {
+            conversationId: conversationId,
+            userId: member.id
+          }
+        })
+          .then(memberToSet => {
+            if (memberToSet) {
+              memberToSet.update({
+                roleId: 1
+              });
+              memberToSet.save();
+
+              User.findOne({
+                where: {
+                  id: memberToSet.userId
+                }
+              }).then(ur => {
+                Chat.create({
+                  message: [ur.firstName, ur.lastName].join(' ') + " has been Owner",
+                  status: 1,
+                  conversationId: conversation.id
+                })
+                  .then(newMessage => {
+                    conversation.update({
+                      last_message: newMessage.message
+                    });
+                    conversation.save();
+
+                    io.getIO().to("conversation" + conversationId).emit("conversation", {
+                      action: "newMessage",
+                      data: {
+                        chat: newMessage
+                      }
+                    });
+                  });
+
+                io.getIO().to("conversation" + conversationId).emit("conversation", {
+                  action: "update",
+                  data: {
+                    conversation: conversation
+                  }
+                });
+              });
+            }
+          });
+      }
+    });
+  }
+
+  await conversation.update({
+    last_message: message
+  });
+  conversation.save();
+
+  userInGroup.destroy();
+
+  const data = {
+    conversation: conversation
+  }
+
+  io.getIO().to("conversation" + conversation.id).emit("message", {
+    action: "newMessage",
+    data: {
+      message: newMessage
+    }
+  });
+  io.getIO().in("user" + user.id).socketsLeave("conversation" + conversation.id);
+  io.getIO().to("conversation" + conversation.id).emit("conversation", {
+    action: 'update',
+    data: data
+  });
+
+  await apiData(res, 200, message, data);
+  // } catch (err) {
+  //   const data = {};
+
+  //   return await apiData(res, 500, 'Fail', data);
+  // }
 });
