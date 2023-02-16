@@ -71,7 +71,9 @@ function App() {
         />
 
         {currentConversation.length==0
-          ? <div className="col-8">Select a conversation to start messaging.</div>
+          ? <div className={`col-8 d-${currentConversation.length==0 ? 'none': 'block'} d-sm-block`}>
+              Select a conversation to start messaging.
+            </div>
           : <ConversationContentContainer
             socket={socket}
             isCreating={isCreating}
@@ -80,6 +82,8 @@ function App() {
             setIsEditing={setIsEditing}
             createType={createType}
             conversations={conversations}
+            setConversations={setConversations}
+            setCurrentConversation={setCurrentConversation}
             currentConversation={currentConversation}
             user={user}
           />

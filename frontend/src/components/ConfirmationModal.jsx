@@ -8,15 +8,15 @@ const ConfirmationModal = ({message, show, setShow, confirmAction, cancelAction}
 
   return (
     <Modal
-      onHide={() => {setShow(false)}}
+      onHide={() => {setShow(false); cancelAction()}}
       show={show}
-      size="lg"
+      size="sm"
       aria-labelledby="contained-modal-title-vcenter"
       centered
     >
       <div className= "d-flex flex-column"
       >
-        <Modal.Header closeButton>
+        <Modal.Header>
           <Modal.Title id="contained-modal-title-vcenter">
             {message}
           </Modal.Title>
@@ -25,14 +25,14 @@ const ConfirmationModal = ({message, show, setShow, confirmAction, cancelAction}
         <form onSubmit={(e)=>e.preventDefault()} className='d-flex flex-column'
           style={{height: '100%'}}
         >
-          <Row>
-            <Col>
+          <Row className="justify-content-center">
+            <Col className='d-flex flex-column'>
               <Button variant="info" onClick={()=>{setShow(false); confirmAction()}}>
                 Confirm
               </Button>
             </Col>
-            <Col>
-              <Button variant="info" onClick={()=>{setShow(false); confirmAction()}}>
+            <Col className='d-flex flex-column'>
+              <Button variant="info" onClick={()=>{setShow(false); cancelAction()}}>
                 Cancel
               </Button>            
             </Col>

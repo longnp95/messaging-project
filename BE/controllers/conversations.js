@@ -110,7 +110,10 @@ exports.postDeleteConversation = (async (req, res, next) => {
 
     io.getIO().to("conversation" + conversation.id).emit("conversation", {
       action: 'delete',
-      message: "Conversation has been deleted!"
+      data: {
+        message: "Conversation has been deleted!",
+        conversationId: conversationId
+      }
     });
     io.getIO().socketsLeave("conversation" + conversation.id);
 

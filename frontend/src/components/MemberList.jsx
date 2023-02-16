@@ -6,8 +6,9 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import ImageLoader from "../services/ImageLoader.services";
+import Dropdown from "react-bootstrap/Dropdown";
 
-const MemberList = ({user, currentConversation, showMembers, setShowMembers, setIsAdding, roles}) => {
+const MemberList = ({user, currentConversation, showMembers, setShowMembers, setIsAdding, roles, setConfirmMessage, setConfirmAction, setConfirming, setConversations, setCurrentConversation}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [members, setMembers] = useState([]);
 
@@ -36,6 +37,26 @@ const MemberList = ({user, currentConversation, showMembers, setShowMembers, set
   }
   console.log(members);
   console.log(roles);
+  const deleteConversation = () => {
+    axios.post('/conversation/delete',{}, {
+      headers: {token: user.token},
+      params: {conversationId: currentConversation.id}})
+    .then((response)=>{
+      if (response.data.error.status === 500) {
+        return (
+          console.log(response.data.error.message)
+        )
+      }
+      console.log(response.data);
+      setCurrentConversation([]);
+      setConversations(prevConversations => prevConversations.filter(conversation => conversation.id!=currentConversation.id));
+    }).catch((err)=>{
+      console.log(err)
+    })
+  }
+
+  const isLeader = members.find(el=>el.id==user.id && el.group_member.roleId==1)
+
   const listSuggestions = members.map(member => {
     let role = "N/A"
     const roleItem = roles.find(el => el.id == member.group_member.roleId);
@@ -65,17 +86,19 @@ const MemberList = ({user, currentConversation, showMembers, setShowMembers, set
           {'@'+member.username}
         </div>
       </Col>
-      <Col xs="auto" className="ms-2 px-0 px-sm-1 align-self-center">
-        <div id='Role'>
-          {role}
-        </div>
-      </Col>
+      {(currentConversation.typeId!=1)&&
+        <Col xs="auto" className="ms-2 px-0 px-sm-1 align-self-center">
+          <div id='Role'>
+            {role}
+          </div>
+        </Col>
+      } 
     </Row>
   })
   
   return (
     <Modal
-      onHide={() => {setShowMembers(false); setSearchQuery('')}}
+      onHide={() => {setShowMembers(false); setSearchQuery(''); setMembers([])}}
       show={showMembers}
       size="lg"
       aria-labelledby="contained-modal-title-vcenter"
@@ -83,10 +106,30 @@ const MemberList = ({user, currentConversation, showMembers, setShowMembers, set
       <div className= "d-flex flex-column"
         style={{height: '75vh'}}
       >
-        <Modal.Header closeButton>
+        <Modal.Header>
           <Modal.Title id="contained-modal-title-vcenter">
             {`${currentConversation.name}`}
           </Modal.Title>
+          {(currentConversation.typeId!=1)&&isLeader&&
+          <Dropdown>
+              <Dropdown.Toggle id="dropdown-basic" variant="white" className='p-0'>
+                <i className="material-icons">more_vert</i>
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu>
+                <Dropdown.Item 
+                  onClick={() => {
+                    setConfirmMessage('Are you sure to delete current group?'); 
+                    setConfirmAction(()=>deleteConversation); 
+                    setConfirming(true);
+                    setShowMembers(false);
+                  }}
+                >
+                  Delete Group
+                </Dropdown.Item>
+              </Dropdown.Menu>
+            </Dropdown>
+          }
         </Modal.Header>
         <Modal.Body className="flex-grow-1">
         <form className='d-flex flex-column'
@@ -94,14 +137,16 @@ const MemberList = ({user, currentConversation, showMembers, setShowMembers, set
           onSubmit={(e)=>e.preventDefault()}
         >
           <Form.Group controlId="memberId" onChange={handleChange}>
-            <Form.Control type="text" placeholder="Search for username" autocomplete="off"/>
+            <Form.Control type="text" placeholder="Search for username" autoComplete="off"/>
           </Form.Group>
           <div className="flex-grow-1" style={{overflowY: 'auto'}}>
             {listSuggestions}
           </div>
-          <Button variant="primary" onClick={()=>{setIsAdding(true); setShowMembers(false)}}>
-            Add Member
-          </Button>
+          {(currentConversation.typeId!=1)&&
+            <Button variant="primary" onClick={()=>{setIsAdding(true); setShowMembers(false)}}>
+              Add Member
+            </Button>
+          }
         </form>
         </Modal.Body>
       </div>

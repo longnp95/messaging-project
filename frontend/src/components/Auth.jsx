@@ -13,6 +13,7 @@ const initialForm = {
   lastName: '',
   username: '',
   password: '',
+  confirmPassword: '',
   gender: 0,
   avatarUrl: '',
   dob: '',

@@ -40,10 +40,11 @@ const MessageListContent = ({socket, currentConversation, user}) => {
           setMessages(prevMessages => {
             console.log(data);
             console.log(prevMessages);
-            const conversation = prevMessages[data.chat.conversationId];
+            let conversation = null
+            if (data.chat.conversationId) conversation = prevMessages[data.chat.conversationId];
             if (!conversation) {
               console.log('Not loaded yet');
-              return;
+              return prevMessages;
             }
             console.log(conversation);
             const existed = conversation.find(message => message.id == data.chat.id);
@@ -89,7 +90,7 @@ const MessageListContent = ({socket, currentConversation, user}) => {
       return false;
     }
   }
-
+  console.log(messages);
   if (!(messages[currentConversation.id]&&messages[currentConversation.id].length)) return (
     <Card.Body 
       id="message_list-container-content"

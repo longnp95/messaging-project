@@ -39,15 +39,22 @@ const ConversationListContent = ({socket, conversations, setConversations, curre
           break
         case 'update':
           setConversations(prevConversations =>{
+            let found = false;
             const nextConversations = prevConversations.map(conversation => {
               if (conversation.id == data.conversation.id) {
+                found = true;
                 return data.conversation;
               } else {
                 return conversation;
               }
             });
+            if (!found) return [...nextConversations, data.conversation];
             return nextConversations;
           });
+          break
+        case 'delete':
+          if (currentConversation.id == data.conversationId) setCurrentConversation([]);
+          setConversations(prevConversations => prevConversations.filter(conversation => conversation.id!=data.conversationId));
           break
         default:
       }
@@ -65,7 +72,18 @@ const ConversationListContent = ({socket, conversations, setConversations, curre
   const conversationItems = conversations
   .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
   .map((conversation) => {
-    if (!conversation.name.toLowerCase().includes(searchText.toLowerCase())) return <></>;
+    let nameToDisplay = conversation.name;
+    let avatarToDisplay = conversation.avatar;
+    if (conversation.typeId==1) {
+      if (conversation.partnerId != user.id && conversation.partner) {
+        nameToDisplay = [conversation.partner.firstName, conversation.partner.lastName].join(' ');
+        avatarToDisplay = conversation.partner.avatar;
+      } else if (conversation.creatorId != user.id && conversation.creator) {
+        nameToDisplay = [conversation.creator.firstName, conversation.creator.lastName].join(' ');
+        avatarToDisplay = conversation.creator.avatar;
+      }
+    }
+    if (!nameToDisplay.toLowerCase().includes(searchText.toLowerCase())) return <></>;
     return (
       <Row
         key={conversation.id}
@@ -76,13 +94,13 @@ const ConversationListContent = ({socket, conversations, setConversations, curre
         <Col className="g-0 border-right">
           <ImageLoader
             roundedCircle alt="Avatar" 
-            src={conversation.avatar}
+            src={avatarToDisplay}
             style={{ width: "50px", height: "auto", aspectRatio: "1"}}
           />
         </Col>
         <Col xs={8} className="ms-1 flex-grow-1 px-0 px-sm-1">
           <div id='conversation-name'>
-            {conversation.name}
+            {nameToDisplay}
           </div>
           <div id='conversation-preview'
             className='text-truncate'
