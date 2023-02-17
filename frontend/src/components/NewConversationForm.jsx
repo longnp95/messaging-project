@@ -4,7 +4,7 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 
-const NewConversationForm = ({user, isCreating, setIsCreating, createType, createTypeId}) => {
+const NewConversationForm = ({user, isCreating, setIsCreating, setCurrentConversation, setIsAdding}) => {
   const initialForm = {
     conversationName: "",
     conversationAvatarUrl: "",
@@ -28,8 +28,10 @@ const NewConversationForm = ({user, isCreating, setIsCreating, createType, creat
       alert(response.data.error.message);
       return;
     }
+    setCurrentConversation(response.data.data.conversation)
     console.log(response.data.data);
     setIsCreating(false);
+    setIsAdding(true);
   }
 
   const handleChange = (e) => {

@@ -49,7 +49,8 @@ function App() {
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [conversations, setConversations] = useState([]);
-  const [currentConversation, setCurrentConversation] = useState([])
+  const [currentConversation, setCurrentConversation] = useState([]);
+  const [isAdding, setIsAdding] = useState(false);
 
   if(!socket) return <Auth />
     
@@ -69,6 +70,8 @@ function App() {
           currentConversation={currentConversation}
           setCurrentConversation={setCurrentConversation}
           user={user}
+          isAdding={isAdding}
+          setIsAdding={setIsAdding}
         />
 
         {currentConversation.length==0
@@ -89,6 +92,8 @@ function App() {
             setCurrentConversation={setCurrentConversation}
             currentConversation={currentConversation}
             user={user}
+            isAdding={isAdding}
+            setIsAdding={setIsAdding}
           />
         }
       </Row>

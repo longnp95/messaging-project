@@ -6,7 +6,7 @@ import MessageInputContainer from './MessageInputContainer';
 import Col from 'react-bootstrap/Col';
 import Card from 'react-bootstrap/Card';
 
-const ConversationContentContainer = ({currentConversation, user, socket, setCurrentConversation, setConversations}) => {
+const ConversationContentContainer = ({currentConversation, user, socket, setCurrentConversation, setConversations, isAdding, setIsAdding}) => {
   const [roles, setRoles] = useState([]);
 
   useEffect(() => {
@@ -39,6 +39,8 @@ const ConversationContentContainer = ({currentConversation, user, socket, setCur
           currentConversation={currentConversation}
           user={user}
           roles={roles}
+          isAdding={isAdding}
+          setIsAdding={setIsAdding}
         />
         <MessageListContent
           socket={socket}

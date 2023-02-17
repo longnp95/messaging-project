@@ -8,7 +8,7 @@ import DirectMessage from './DirectMessage';
 import ImageLoader from '../services/ImageLoader.services';
 import { useState } from 'react';
 
-function LeftNavBar({setSearchText, user, setCurrentConversation, conversations}) {
+function LeftNavBar({setSearchText, user, setCurrentConversation, conversations, isAdding, setIsAdding}) {
   const [showOffcanvas, setShowOffcanvas] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isDMing, setIsDMing] = useState(false);
@@ -56,10 +56,13 @@ function LeftNavBar({setSearchText, user, setCurrentConversation, conversations}
             </Offcanvas>
             
             <NewConversationForm 
+              setCurrentConversation={setCurrentConversation}
               onHide={() => setIsCreating(false)}
               isCreating={isCreating}
               setIsCreating={setIsCreating}
               user={user}
+              isAdding={isAdding}
+              setIsAdding={setIsAdding}
             />
 
             <DirectMessage 

@@ -8,8 +8,7 @@ import AddMemberForm from './AddMemberForm';
 import MemberList from './MemberList';
 import ConfirmationModal from './ConfirmationModal';
 
-const ConversationContentHeader = ({currentConversation, user, roles, setCurrentConversation, setConversations}) => {
-  const [isAdding, setIsAdding] = useState(false);
+const ConversationContentHeader = ({currentConversation, user, roles, setCurrentConversation, setConversations, isAdding, setIsAdding}) => {
   const [showMembers, setShowMembers] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState('Are you sure?');
