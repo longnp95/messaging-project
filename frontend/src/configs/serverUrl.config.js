@@ -1,1 +1,1 @@
-export default "http://10.5.3.208:8080"
+export default "http://localhost:8080"

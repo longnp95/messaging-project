@@ -4,7 +4,7 @@ import ConversationListContent from './ConversationListContent';
 import LeftNavBar from './LeftNavBar';
 import Col from 'react-bootstrap/Col';
 
-const ConversationListContainer = ({socket, isCreating, setIsCreating, conversations, setConversations, setCurrentConversation, currentConversation, user}) => {
+const ConversationListContainer = ({socket, isAdding, setIsAdding, conversations, setConversations, setCurrentConversation, currentConversation, user}) => {
   const [searchText, setSearchText] = useState('');
 
   return (
@@ -17,6 +17,8 @@ const ConversationListContainer = ({socket, isCreating, setIsCreating, conversat
         user={user}
         conversations={conversations}
         setCurrentConversation={setCurrentConversation}
+        isAdding={isAdding}
+        setIsAdding={setIsAdding}
       />
       <ConversationListContent
         searchText={searchText}

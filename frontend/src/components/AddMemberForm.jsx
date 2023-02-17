@@ -7,31 +7,10 @@ import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import ImageLoader from "../services/ImageLoader.services";
 
-const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, createType, createTypeId}) => {
+const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, members, setMembers}) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState([]);
-  const [selected, setSelected] = useState()
-  const [members, setMembers] = useState([]);
-
-  useEffect(() => {
-    if (!isAdding) return;
-    setMembers([]);
-    axios.get('/conversation/getMember', {
-      headers: {token: user.token},
-      params: {conversationId: currentConversation.id}})
-    .then((response)=>{
-      if (response.data.error.status === 500) {
-        return (
-          console.log(response.data.error.message)
-        )
-      }
-      console.log(response.data.data)
-      console.log(response.data.data.conversation.users);
-      setMembers(response.data.data.conversation.users);
-    }).catch((err)=>{
-      console.log(err)
-    })
-  },[currentConversation,user,isAdding])
+  const [selecteds, setSelecteds] = useState([]);
 
   useEffect(() => {
     setSuggestions([]);
@@ -53,43 +32,54 @@ const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, create
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    const response = await axios.post('/conversation/addMember',{
-      memberId: selected.id
-    },{
-      headers: {token: user.token},
-      params: {
-        userId: user.id,
-        conversationId: currentConversation.id
-      },
-    });
-    console.log(response.data.data);
     setIsAdding(false);
-    if (response.data.error.status == 500) {
-      console.log(response.data.error.message);
+    if (!selecteds.length) return
+    for (const selected of selecteds) {
+      const response = await axios.post('/conversation/addMember',{
+        memberId: selected.id
+      },{
+        headers: {token: user.token},
+        params: {
+          userId: user.id,
+          conversationId: currentConversation.id
+        },
+      });
+      console.log(response.data.data);
     }
+    
+    
     setSearchQuery('');
-    setSelected();
+    setSelecteds([]);
+  }
+
+  const isSelected = (suggestion) => {
+    return selecteds.findIndex(el => el.id == suggestion.id) != -1;
+  }
+
+  const isGroupMember = (suggestion) => {
+    return members.findIndex(el => el.id == suggestion.id) != -1;
   }
 
   const handleClick = (suggestion) => {
-    setSelected(suggestion);
+    if (isSelected(suggestion)) return;
+    setSelecteds(prevSelecteds => [...prevSelecteds, suggestion]);
   }
 
   const handleChange = (e) => {
     setSearchQuery(e.target.value)
   }
 
+  const handleRemove = (selected) => {
+    setSelecteds(prevSelecteds => prevSelecteds.filter(el => el.id != selected.id));
+  }
+
   const listSuggestions = suggestions.map(suggestion => {
     if (suggestion.id == user.id) return <div key={suggestion.id} className="d-none"></div>;
-    const isGroupMember = members.findIndex(el => el.id == suggestion.id);
-    console.log(isGroupMember);
     return <Row
       key={suggestion.id}
       id="suggestion-item-container"
-      className={`mx-0 py-1 ps-1 flex-nowrap ${selected && suggestion.id == selected.id ? 'bg-info' : ''}`}
+      className={`mx-0 py-1 ps-1 flex-nowrap ${isSelected(suggestion)||isGroupMember(suggestion) ? 'd-none' : ''}`}
       onClick={() => {
-        if (isGroupMember!=-1) return;
         handleClick(suggestion)
       }}
     >
@@ -102,7 +92,7 @@ const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, create
       </Col>
       <Col className="me-md-2 ms-1 flex-grow-1 px-0 px-sm-1">
         <div id='conversation-name'>
-          {[suggestion.firstName, suggestion.lastName].filter(e=>e).join(' ') + ((isGroupMember!=-1)? ' (Already a member)':'')}
+          {[suggestion.firstName, suggestion.lastName].filter(e=>e).join(' ')}
         </div>
         <div id='conversation-preview'
           className='text-truncate'
@@ -115,13 +105,13 @@ const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, create
   
   return (
     <Modal
-      onHide={() => {setIsAdding(false); setSearchQuery(''); setSelected(); setMembers([])}}
+      onHide={() => {setIsAdding(false); setSearchQuery(''); setSelecteds([]); setMembers([])}}
       show={isAdding}
       size="lg"
       aria-labelledby="contained-modal-title-vcenter"
     >
       <div className= "d-flex flex-column"
-        style={{height: '75vh'}}
+        style={{height: 'auto'}}
       >
         <Modal.Header closeButton>
           <Modal.Title id="contained-modal-title-vcenter">
@@ -130,7 +120,7 @@ const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, create
         </Modal.Header>
         <Modal.Body className="flex-grow-1">
         <form onSubmit={handleSubmit} className='d-flex flex-column'
-          style={{height: '100%'}}
+          style={{height: '75vh'}}
         >
           <Form.Group controlId="memberId" onChange={handleChange}>
             <Form.Control type="text" placeholder="Search for username" autocomplete="off"/>
@@ -138,35 +128,33 @@ const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, create
           <div className="flex-grow-1" style={{overflowY: 'auto'}}>
             {listSuggestions}
           </div>
-          {selected
+          {selecteds.length
           ? (<div>
             <div>Selected</div>
-            <Row
-              id="selected-item-container"
-              className="mx-0 py-1 ps-1 flex-nowrap bg-info"
-            >
-              <Col className="g-0 border-right">
-                <ImageLoader
-                  roundedCircle alt="Avatar" 
-                  src={selected.avatar}
-                  style={{ width: "50px", height: "auto", aspectRatio: "1"}}
-                />
-              </Col>
-              <Col xs={8} className="ms-1 flex-grow-1 px-0 px-sm-1">
-                <div id='conversation-name'>
-                  {[selected.firstName, selected.lastName].filter(e=>e).join(' ')}
-                </div>
-                <div id='conversation-preview'
-                  className='text-truncate'
+            <div className="d-flex flex-row flex-wrap py-2">
+              {selecteds.map((selected) => <div 
+                  key={selected.id}
+                  className="bg-info p-1 d-flex flex-row flex-nowrap me-1 my-1 align-items-center text-white"
+                  style={{borderRadius: "2rem"}}
                 >
-                  {'@'+selected.username}
+                  <ImageLoader
+                    roundedCircle alt="Avatar" 
+                    src={selected.avatar}
+                    style={{ width: "20px", height: "auto", aspectRatio: "1"}}
+                    className="me-2"
+                  />
+                  <div style={{fontSize: "15px", verticalAlign: "middle"}}>{[selected.firstName, selected.lastName].filter(e=>e).join(' ')}</div>
+                  <div className="material-icons font-weight-light ms-2 my-0"
+                    style={{fontSize: "15px", verticalAlign: "middle"}}
+                    onClick={() => handleRemove(selected)}
+                  >close</div>
                 </div>
-              </Col>
-            </Row>
+              )}
+            </div>
           </div>)
           : <div>Select an user</div>
           }
-          <Button variant="primary" type="submit" disabled={!selected}>
+          <Button variant="primary" type="submit" disabled={!selecteds.length}>
             Add
           </Button>
         </form>

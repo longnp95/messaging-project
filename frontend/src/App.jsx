@@ -10,7 +10,6 @@ import MenuContainer from './components/MenuContainer';
 import ConversationListContainer from './components/ConversationListContainer';
 import ConversationContentContainer from './components/ConversationContentContainer';
 import Auth from './components/Auth';
-import serverUrlConfig from './configs/serverUrl.config';
 
 console.log(window.location.hostname);
 
@@ -35,7 +34,7 @@ function App() {
   const [token, setToken] = useState(cookie.get('token'));
   useEffect(() => {
     if(!token) return;
-    const newSocket = io(serverUrlConfig, {
+    const newSocket = io("http://" + window.location.hostname + ":8080", {
       extraHeaders: {token: token, "Content-Type": "application/json"},
       auth: {
         token: token
@@ -50,7 +49,8 @@ function App() {
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [conversations, setConversations] = useState([]);
-  const [currentConversation, setCurrentConversation] = useState([])
+  const [currentConversation, setCurrentConversation] = useState([]);
+  const [isAdding, setIsAdding] = useState(false);
 
   if(!socket) return <Auth />
     
@@ -70,10 +70,14 @@ function App() {
           currentConversation={currentConversation}
           setCurrentConversation={setCurrentConversation}
           user={user}
+          isAdding={isAdding}
+          setIsAdding={setIsAdding}
         />
 
         {currentConversation.length==0
-          ? <div className={`col-8 d-${currentConversation.length==0 ? 'none': 'block'} d-sm-block`}>
+          ? <div className={`col-8 d-${currentConversation.length==0 ? 'none': 'block'} d-sm-block`}
+            style={{margin: "auto", textAlign: "center"}}
+            >
               Select a conversation to start messaging.
             </div>
           : <ConversationContentContainer
@@ -88,6 +92,8 @@ function App() {
             setCurrentConversation={setCurrentConversation}
             currentConversation={currentConversation}
             user={user}
+            isAdding={isAdding}
+            setIsAdding={setIsAdding}
           />
         }
       </Row>
