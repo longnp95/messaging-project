@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Card from 'react-bootstrap/Card';
 import Dropdown from 'react-bootstrap/Dropdown'
@@ -14,11 +14,46 @@ const ConversationContentHeader = ({currentConversation, user, roles, setCurrent
   const [confirming, setConfirming] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState('Are you sure?');
   const [confirmAction, setConfirmAction] = useState(() => () => {});
+  const [members, setMembers] = useState([]);
+
+  useEffect(() => {
+    axios.get('/conversation/getMember', {
+      headers: {token: user.token},
+      params: {conversationId: currentConversation.id}})
+    .then((response)=>{
+      if (response.data.error.status === 500) {
+        return (
+          console.log(response.data.error.message)
+        )
+      }
+      console.log(response.data.data)
+      console.log(response.data.data.conversation.users);
+      setMembers(response.data.data.conversation.users);
+    }).catch((err)=>{
+      console.log(err)
+    })
+  },[currentConversation,user,isAdding,showMembers])
+
+  const isLeader = members.find(el=>el.id==user.id && el.group_member.roleId==1)
 
   const deleteConversation = () => {
-    console.log("Delete conversation");
+    axios.post('/conversation/delete',{}, {
+      headers: {token: user.token},
+      params: {conversationId: currentConversation.id}})
+    .then((response)=>{
+      if (response.data.error.status === 500) {
+        return (
+          console.log(response.data.error.message)
+        )
+      }
+      console.log(response.data);
+      setCurrentConversation([]);
+      setConversations(prevConversations => prevConversations.filter(conversation => conversation.id!=currentConversation.id));
+    }).catch((err)=>{
+      console.log(err)
+    })
   }
-  console.log(currentConversation);
+  console.log("currentConversation:",currentConversation);
   const leaveConversation = () => {
     axios.post('/conversation/leaveGroup',{}, {
       headers: {token: user.token},
@@ -79,7 +114,7 @@ const ConversationContentHeader = ({currentConversation, user, roles, setCurrent
           {(currentConversation.typeId!=1)&&
             <Dropdown.Item onClick={() => setIsAdding(true)}>Add Member</Dropdown.Item>
           }
-          <Dropdown.Item onClick={() => setShowMembers(true)}>Manage Conversation</Dropdown.Item>
+          <Dropdown.Item onClick={() => setShowMembers(true)}>Member List</Dropdown.Item>
           {(currentConversation.typeId!=1)&&
             <Dropdown.Item 
               onClick={() => {
@@ -91,15 +126,30 @@ const ConversationContentHeader = ({currentConversation, user, roles, setCurrent
               Leave Group
             </Dropdown.Item>
           }
+          {(currentConversation.typeId!=1)&&isLeader&&
+            <Dropdown.Item 
+            onClick={() => {
+              setConfirmMessage('Are you sure to delete group?'); 
+              setConfirmAction(()=>deleteConversation); 
+              setConfirming(true)
+            }}
+          >
+            Delete Group
+          </Dropdown.Item>
+        }
         </Dropdown.Menu>
       </Dropdown>
       <AddMemberForm
+        members={members}
+        setMembers={setMembers}
         isAdding={isAdding}
         setIsAdding={setIsAdding}
         currentConversation={currentConversation}
         user={user}
       />
       <MemberList 
+        members={members}
+        setMembers={setMembers}
         showMembers={showMembers}
         setShowMembers={setShowMembers}
         setIsAdding={setIsAdding}

@@ -8,54 +8,12 @@ import Modal from 'react-bootstrap/Modal';
 import ImageLoader from "../services/ImageLoader.services";
 import Dropdown from "react-bootstrap/Dropdown";
 
-const MemberList = ({user, currentConversation, showMembers, setShowMembers, setIsAdding, roles, setConfirmMessage, setConfirmAction, setConfirming, setConversations, setCurrentConversation}) => {
+const MemberList = ({user, currentConversation, members, setMembers, showMembers, setShowMembers, setIsAdding, roles, setConfirmMessage, setConfirmAction, setConfirming, setConversations, setCurrentConversation}) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [members, setMembers] = useState([]);
-
-  useEffect(() => {
-    if (!showMembers) return;
-    setMembers([]);
-    axios.get('/conversation/getMember', {
-      headers: {token: user.token},
-      params: {conversationId: currentConversation.id}})
-    .then((response)=>{
-      if (response.data.error.status === 500) {
-        return (
-          console.log(response.data.error.message)
-        )
-      }
-      console.log(response.data.data)
-      console.log(response.data.data.conversation.users);
-      setMembers(response.data.data.conversation.users);
-    }).catch((err)=>{
-      console.log(err)
-    })
-  },[currentConversation,user,showMembers])
 
   const handleChange = (e) => {
     setSearchQuery(e.target.value)
   }
-  console.log(members);
-  console.log(roles);
-  const deleteConversation = () => {
-    axios.post('/conversation/delete',{}, {
-      headers: {token: user.token},
-      params: {conversationId: currentConversation.id}})
-    .then((response)=>{
-      if (response.data.error.status === 500) {
-        return (
-          console.log(response.data.error.message)
-        )
-      }
-      console.log(response.data);
-      setCurrentConversation([]);
-      setConversations(prevConversations => prevConversations.filter(conversation => conversation.id!=currentConversation.id));
-    }).catch((err)=>{
-      console.log(err)
-    })
-  }
-
-  const isLeader = members.find(el=>el.id==user.id && el.group_member.roleId==1)
 
   const listSuggestions = members.map(member => {
     let role = "N/A"
@@ -104,36 +62,16 @@ const MemberList = ({user, currentConversation, showMembers, setShowMembers, set
       aria-labelledby="contained-modal-title-vcenter"
     >
       <div className= "d-flex flex-column"
-        style={{height: '75vh'}}
+        style={{height: 'auto'}}
       >
-        <Modal.Header>
+        <Modal.Header closeButton>
           <Modal.Title id="contained-modal-title-vcenter">
             {`${currentConversation.name}`}
           </Modal.Title>
-          {(currentConversation.typeId!=1)&&isLeader&&
-          <Dropdown>
-              <Dropdown.Toggle id="dropdown-basic" variant="white" className='p-0'>
-                <i className="material-icons">more_vert</i>
-              </Dropdown.Toggle>
-
-              <Dropdown.Menu>
-                <Dropdown.Item 
-                  onClick={() => {
-                    setConfirmMessage('Are you sure to delete current group?'); 
-                    setConfirmAction(()=>deleteConversation); 
-                    setConfirming(true);
-                    setShowMembers(false);
-                  }}
-                >
-                  Delete Group
-                </Dropdown.Item>
-              </Dropdown.Menu>
-            </Dropdown>
-          }
         </Modal.Header>
         <Modal.Body className="flex-grow-1">
         <form className='d-flex flex-column'
-          style={{height: '100%'}}
+          style={{height: '70vh'}}
           onSubmit={(e)=>e.preventDefault()}
         >
           <Form.Group controlId="memberId" onChange={handleChange}>
