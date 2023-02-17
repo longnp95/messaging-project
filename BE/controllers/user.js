@@ -6,6 +6,8 @@ const Role = require('../models/role');
 const Type = require('../models/type');
 const Chat = require('../models/chat');
 const { Op } = require('sequelize');
+const Sequelize = require('sequelize');
+const sequelize = require('../config/db');
 
 const apiData = (async (res, status, message, data) => {
   return res.status(200).json({
@@ -738,36 +740,57 @@ exports.postSendMessage = (async (req, res, next) => {
   }
 });
 
-exports.getFindUserByUsername = (async (req, res, next) => {
-  const username = req.query.username;
+exports.getFindUser = (async (req, res, next) => {
+  let searchQuery = req.query.search;
 
-  if (!username) {
+  if (!searchQuery) {
     const data = {};
 
     return await apiData(res, 500, 'Where your params ?', data);
   }
-
-  try {
-    const users = await User.findAll({
-      where: {
-        username: {
-          [Op.startsWith]: username
+  let users;
+  // try {
+    console.log(searchQuery);
+    if (searchQuery == "") {
+      users = await User.findAll({
+        attributes: ["id", "username", "firstName", "lastName", "avatar", "status"],
+        limit: 10
+      });
+    } else {
+      users = await User.findAll({
+        where: {
+          [Op.and]: [
+            {
+              [Op.or]: [
+                { 
+                  username: {
+                    [Op.startsWith]: searchQuery
+                  } 
+                },
+                Sequelize.where(Sequelize.fn('CONCAT', 'firstName', 'lastName'), {
+                  [Op.startsWith]: searchQuery
+                })
+              ]
+            },
+            {
+              status: 1
+            }
+          ]
         },
-        status: 1
-      },
-      attributes: ["id", "username", "firstName", "lastName", "avatar"],
-      limit: 10
-    });
+        attributes: ["id", "username", "firstName", "lastName", "avatar", "status"],
+        limit: 10
+      });
+    }
 
     var data = {
       users: users
     };
 
     return await apiData(res, 200, 'OK', data);
-  } catch (err) {
-    var data = {};
-    return await apiData(res, 401, 'Fail', data);
-  }
+  // } catch (err) {
+  //   var data = {};
+  //   return await apiData(res, 401, 'Fail', data);
+  // }
 });
 
 exports.postLeaveGroup = (async (req, res, next) => {

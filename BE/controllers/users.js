@@ -6,7 +6,8 @@ const checkStatusAccount = (async (res, id, table) => {
     const data = await table.findOne({
       where: {
         id: id
-      }
+      },
+      attributes: ["id", "username", "firstName", "lastName", "avatar", "gender", "dob", "mobile", "email", "address", "status"]
     });
 
     if (!data) {
@@ -62,7 +63,8 @@ exports.getAllUser = (async (req, res, next) => {
   const users = await User.findAll({
     order: [
       ['updatedAt', 'DESC'],
-    ]
+    ],
+    attributes: ["id", "username", "firstName", "lastName", "avatar", "gender", "dob", "mobile", "email", "address", "status"]
   });
 
   const data = {
@@ -77,17 +79,19 @@ exports.getUser = (async (req, res, next) => {
 
   if (!userId) {
     const data = {};
-    await apiData(res, 500, 'Where params ?', data);
+    return await apiData(res, 500, 'Where params ?', data);
   }
 
   const user = await checkStatusAccount(res, userId, User);
 
-  if (user) {
-    const data = {
-      user: user
-    }
-    await apiData(res, 200, 'OK', data);
+  if (!user) {
+    return user;
   }
+
+  const data = {
+    user: user
+  }
+  return await apiData(res, 200, 'OK', data);
 });
 
 exports.postCreateUser = (async (req, res, next) => {
@@ -144,6 +148,7 @@ exports.postUpdateUser = (async (req, res, next) => {
   const dob = body.dateOfBirth;
   const mobile = body.phoneNumber;
   const email = body.email;
+  const address = body.address;
   const userId = req.query.userId;
 
   if (!(id && username && password && firstName && lastName && gender && avatarUrl && dob && mobile && email)) {
@@ -158,31 +163,45 @@ exports.postUpdateUser = (async (req, res, next) => {
 
   const user = await checkStatusAccount(res, userId, User);
 
-  if (user) {
-    await user.update({
-      username: username,
-      password: password,
-      firstName: firstName,
-      lastName: lastName,
-      gender: gender,
-      avatarUrl: avatarUrl,
-      dob: dob,
-      mobile: mobile,
-      email: email
+  if (!user) {
+    return user;
+  }
+
+  if (user.username != username) {
+    const userExists = await User.findOne({
+      where: {
+        username: username
+      }
     });
-    await user.save();
 
-    if (!user) {
-      const data = {};
-      await apiData(res, 500, 'Update an account fail!', data);
-    } else {
-      const data = {
-        user: user
-      };
-
-      await apiData(res, 200, 'Update an account successfullly!', data);
+    if (userExists) {
+      return await apiData(res, 500, 'Account with username:' + username + ' is exists!', {});
     }
   }
+
+  await user.update({
+    username: username,
+    firstName: firstName,
+    lastName: lastName,
+    gender: gender,
+    avatar: avatarUrl,
+    dob: dob,
+    mobile: mobile,
+    email: email,
+    address: address
+  });
+  await user.save();
+
+  const data = {
+    user: user
+  };
+
+  io.getIO().to("user" + user.id).emit("profile", {
+    action: "update",
+    data: data
+  });
+
+  return await apiData(res, 200, 'Update an account successfullly!', data);
 });
 
 exports.postActivavteUser = (async (req, res, next) => {

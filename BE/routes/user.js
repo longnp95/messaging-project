@@ -7,6 +7,7 @@ const userInGroup = require('../middlewares/inConversation');
 const isOwnerInGroup = require('../middlewares/isOwnerInGroup');
 
 const userController = require('../controllers/user');
+const accountUserController = require('../controllers/users');
 const conversationController = require('../controllers/conversations');
 
 routes.get('/conversation', isUser, userController.getConversationsByUserId);
@@ -20,7 +21,9 @@ routes.get('/conversation/getMember', isUser, haveBody, userInGroup, userControl
 routes.post('/conversation/addMember', isUser, haveBody, userInGroup, userController.postAddMemberInGroup);
 routes.post('/conversation/leaveGroup', isUser, haveBody, userInGroup, userController.postLeaveGroup);
 
-routes.get('/user', isUser, userController.getFindUserByUsername);
+routes.get('/users', isUser, accountUserController.getAllUser);
+routes.get('/user/search', isUser, userController.getFindUser);
+routes.post('/user/profile', isUser, accountUserController.postUpdateUser);
 
 routes.get('/role', userController.getRoles);
 
