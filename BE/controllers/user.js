@@ -813,7 +813,7 @@ exports.postLeaveGroup = (async (req, res, next) => {
     return await apiData(res, 500, 'You was leave this conversation!', data);
   }
 
-  var message = '@' + user.username + ' has left conversation!';
+  var message = '@' + user.username + ' has left the conversation!';
 
   const newMessage = await Chat.create({
     message: message,

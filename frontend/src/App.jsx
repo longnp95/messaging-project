@@ -12,8 +12,10 @@ import ConversationContentContainer from './components/ConversationContentContai
 import Auth from './components/Auth';
 import serverUrlConfig from './configs/serverUrl.config';
 
-axios.defaults.baseURL = serverUrlConfig;
+console.log(window.location.hostname);
 
+// axios.defaults.baseURL = serverUrlConfig;
+axios.defaults.baseURL = "http://" + window.location.hostname + ":8080";
 const cookie = new Cookies();
 const authToken = cookie.get('token');
 if (authToken) {
