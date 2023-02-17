@@ -472,7 +472,9 @@ exports.getMembersInGroup = (async (req, res, next) => {
 exports.postAddMemberInGroup = (async (req, res, next) => {
   const userId = req.userId;
   const conversationId = req.query.conversationId;
-  const memberId = req.body.memberId;
+  const memberIds = req.body.memberIds;
+  let memberIdArray = [];
+  let membersUpdated = [];
 
   if (!(conversationId)) {
     const data = {};
@@ -480,10 +482,16 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
     return await apiData(res, 200, 'Where params ?', data);
   }
 
-  if (!(memberId)) {
+  var memberBodyType = typeof (memberIds);
+
+  if (!(memberIds)) {
     const data = {};
 
     return await apiData(res, 200, 'Where body ?', data);
+  } else if (memberBodyType == "string" || memberBodyType == "number") {
+    memberIdArray.push(memberIds);
+  } else if (Array.isArray(memberIds)) {
+    memberIdArray = Array.from(memberIds);
   }
 
   try {
@@ -510,18 +518,6 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
       return await apiData(res, 500, 'This group doesn\'t exists!', data);
     }
 
-    const user = await checkStatusAccount(res, userId, User);
-
-    if (!user) {
-      return user;
-    }
-
-    const member = await checkStatusAccount(res, memberId, User);
-
-    if (!member) {
-      return member;
-    }
-
     const members = await Group_Member.findAll({
       where: {
         conversationId: group.id
@@ -529,74 +525,86 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
     });
 
     if (group.max_member) {
-      if (members.length + 1 > group.max_member) {
+      if (members.length + memberIdArray.length > group.max_member) {
         const data = {};
 
         return await apiData(res, 500, 'This conversation have max member is: ' + group.max_member, data);
       }
     }
 
-    const memberInGroup = await Group_Member.findOne({
+    const user = await User.findOne({
       where: {
-        conversationId: group.id,
-        userId: member.id
+        id: userId
       }
     });
 
-    if (memberInGroup) {
-      const data = {};
-
-      return await apiData(res, 500, 'This user is exists in group!', data);
+    if (!user) {
+      return user;
     }
 
-    const newMember = await Group_Member.create({
-      conversationId: conversationId,
-      userId: memberId,
-      roleId: 2
-    });
+    for (var memberId of memberIds) {
+      const member = await checkStatusAccount(res, memberId, User);
 
-    if (!newMember) {
-      const data = {};
+      if (member) {
+        const memberInGroup = await Group_Member.findOne({
+          where: {
+            conversationId: group.id,
+            userId: member.id
+          }
+        });
 
-      return await apiData(res, 500, 'Add member in group fail!', data);
+        if (!memberInGroup) {
+          const newMember = await Group_Member.create({
+            conversationId: conversationId,
+            userId: memberId,
+            roleId: 2
+          });
+
+          if (newMember) {
+            var message = '@' + member.username + ' was added by ' + '@' + user.username;
+
+            const newMessage = await Chat.create({
+              conversationId: group.id,
+              status: 1,
+              message: message
+            });
+
+            if (!newMessage) {
+              const data = {};
+              await newMember.destroy();
+              await newMember.save();
+            } else {
+              membersUpdated.push(member);
+
+              group.update({
+                last_message: message
+              });
+              group.save();
+
+              const data = {
+                conversation: group
+              };
+
+              io.getIO().in("user" + member.id).socketsJoin(["conversation" + group.id]);
+              io.getIO().to("conversation" + group.id).emit('message', {
+                action: 'newMessage',
+                data: {
+                  chat: newMessage
+                }
+              });
+              io.getIO().to("conversation" + group.id).emit('conversation', {
+                action: 'update',
+                data: data
+              });
+            }
+          }
+        }
+      }
     }
-
-    var message = '@' + member.username + ' was added by ' + '@' + user.username;
-
-    const newMessage = await Chat.create({
-      conversationId: group.id,
-      status: 1,
-      message: message
-    });
-
-    if (!newMessage) {
-      const data = {};
-      await newMember.destroy();
-      await newMember.save();
-
-      return await apiData(res, 500, 'Add ' + member.username + ' fail!', data);
-    }
-
-    group.update({
-      last_message: message
-    });
-    group.save();
 
     const data = {
-      conversation: group
+      membersUpdated: membersUpdated
     };
-
-    io.getIO().in("user" + member.id).socketsJoin(["conversation" + group.id]);
-    io.getIO().to("conversation" + group.id).emit('message', {
-      action: 'newMessage',
-      data: {
-        chat: newMessage
-      }
-    });
-    io.getIO().to("conversation" + group.id).emit('conversation', {
-      action: 'update',
-      data: data
-    });
 
     await apiData(res, 500, 'Add member in group successfully!', data);
   } catch (err) {
@@ -925,7 +933,7 @@ exports.postLeaveGroup = (async (req, res, next) => {
       chat: newMessage
     }
   });
-  
+
   io.getIO().to("conversation" + conversation.id).emit("conversation", {
     action: 'update',
     data: data
