@@ -2,13 +2,8 @@ import React, { useState } from 'react';
 import Navbar from 'react-bootstrap/Navbar';
 import Nav from 'react-bootstrap/Nav';
 import Cookies from 'universal-cookie';
-import NewConversationForm from './NewConversationForm';
-import DirectMessage from './DirectMessage';
 
-const MenuContainer = ({menuToggle, user, setCurrentConversation, conversations}) => {
-  const [isCreating, setIsCreating] = useState(false);
-  const [isDMing, setIsDMing] = useState(false);
-  
+const MenuContainer = ({setShowOffcanvas, setIsCreating, setIsDMing}) => {
   const Logout = () => {
     const cookie = new Cookies();
     cookie.remove('token');
@@ -21,28 +16,13 @@ const MenuContainer = ({menuToggle, user, setCurrentConversation, conversations}
         {/*
         <Navbar.Text >Current User</Navbar.Text>
         */}
-        <Navbar.Text onClick={() => setIsCreating(true)} aria-controls={`offcanvasNavbar-expand-false`}>Create Group</Navbar.Text>
+        <Navbar.Text onClick={() => {setShowOffcanvas(false); setIsCreating(true)}}>Create Group</Navbar.Text>
         
-        <Navbar.Text onClick={() => setIsDMing(true)}>Direct Message</Navbar.Text>
+        <Navbar.Text onClick={() => {setShowOffcanvas(false); setIsDMing(true)}}>Direct Message</Navbar.Text>
        
         <Navbar.Text onClick={Logout}>Log Out</Navbar.Text>
       </Nav>
 
-      <NewConversationForm 
-        onHide={() => setIsCreating(false)}
-        isCreating={isCreating}
-        setIsCreating={setIsCreating}
-        user={user}
-      />
-
-      <DirectMessage 
-        onHide={() => setIsDMing(false)}
-        isDMing={isDMing}
-        setIsDMing={setIsDMing}
-        user={user}
-        setCurrentConversation={setCurrentConversation}
-        conversations={conversations}
-      />
     </>
   )
 }
