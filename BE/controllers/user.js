@@ -6,6 +6,8 @@ const Role = require('../models/role');
 const Type = require('../models/type');
 const Chat = require('../models/chat');
 const { Op } = require('sequelize');
+const Sequelize = require('sequelize');
+const sequelize = require('../config/db');
 
 const apiData = (async (res, status, message, data) => {
   return res.status(200).json({
@@ -472,7 +474,9 @@ exports.getMembersInGroup = (async (req, res, next) => {
 exports.postAddMemberInGroup = (async (req, res, next) => {
   const userId = req.userId;
   const conversationId = req.query.conversationId;
-  const memberId = req.body.memberId;
+  const memberIds = req.body.memberIds;
+  let memberIdArray = [];
+  let membersUpdated = [];
 
   if (!(conversationId)) {
     const data = {};
@@ -480,10 +484,16 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
     return await apiData(res, 200, 'Where params ?', data);
   }
 
-  if (!(memberId)) {
+  var memberBodyType = typeof (memberIds);
+
+  if (!(memberIds)) {
     const data = {};
 
     return await apiData(res, 200, 'Where body ?', data);
+  } else if (memberBodyType == "string" || memberBodyType == "number") {
+    memberIdArray.push(memberIds);
+  } else if (Array.isArray(memberIds)) {
+    memberIdArray = Array.from(memberIds);
   }
 
   try {
@@ -510,18 +520,6 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
       return await apiData(res, 500, 'This group doesn\'t exists!', data);
     }
 
-    const user = await checkStatusAccount(res, userId, User);
-
-    if (!user) {
-      return user;
-    }
-
-    const member = await checkStatusAccount(res, memberId, User);
-
-    if (!member) {
-      return member;
-    }
-
     const members = await Group_Member.findAll({
       where: {
         conversationId: group.id
@@ -529,74 +527,86 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
     });
 
     if (group.max_member) {
-      if (members.length + 1 > group.max_member) {
+      if (members.length + memberIdArray.length > group.max_member) {
         const data = {};
 
         return await apiData(res, 500, 'This conversation have max member is: ' + group.max_member, data);
       }
     }
 
-    const memberInGroup = await Group_Member.findOne({
+    const user = await User.findOne({
       where: {
-        conversationId: group.id,
-        userId: member.id
+        id: userId
       }
     });
 
-    if (memberInGroup) {
-      const data = {};
-
-      return await apiData(res, 500, 'This user is exists in group!', data);
+    if (!user) {
+      return user;
     }
 
-    const newMember = await Group_Member.create({
-      conversationId: conversationId,
-      userId: memberId,
-      roleId: 2
-    });
+    for (var memberId of memberIds) {
+      const member = await checkStatusAccount(res, memberId, User);
 
-    if (!newMember) {
-      const data = {};
+      if (member) {
+        const memberInGroup = await Group_Member.findOne({
+          where: {
+            conversationId: group.id,
+            userId: member.id
+          }
+        });
 
-      return await apiData(res, 500, 'Add member in group fail!', data);
+        if (!memberInGroup) {
+          const newMember = await Group_Member.create({
+            conversationId: conversationId,
+            userId: memberId,
+            roleId: 2
+          });
+
+          if (newMember) {
+            var message = '@' + member.username + ' was added by ' + '@' + user.username;
+
+            const newMessage = await Chat.create({
+              conversationId: group.id,
+              status: 1,
+              message: message
+            });
+
+            if (!newMessage) {
+              const data = {};
+              await newMember.destroy();
+              await newMember.save();
+            } else {
+              membersUpdated.push(member);
+
+              group.update({
+                last_message: message
+              });
+              group.save();
+
+              const data = {
+                conversation: group
+              };
+
+              io.getIO().in("user" + member.id).socketsJoin(["conversation" + group.id]);
+              io.getIO().to("conversation" + group.id).emit('message', {
+                action: 'newMessage',
+                data: {
+                  chat: newMessage
+                }
+              });
+              io.getIO().to("conversation" + group.id).emit('conversation', {
+                action: 'update',
+                data: data
+              });
+            }
+          }
+        }
+      }
     }
-
-    var message = '@' + member.username + ' was added by ' + '@' + user.username;
-
-    const newMessage = await Chat.create({
-      conversationId: group.id,
-      status: 1,
-      message: message
-    });
-
-    if (!newMessage) {
-      const data = {};
-      await newMember.destroy();
-      await newMember.save();
-
-      return await apiData(res, 500, 'Add ' + member.username + ' fail!', data);
-    }
-
-    group.update({
-      last_message: message
-    });
-    group.save();
 
     const data = {
-      conversation: group
+      membersUpdated: membersUpdated
     };
-
-    io.getIO().in("user" + member.id).socketsJoin(["conversation" + group.id]);
-    io.getIO().to("conversation" + group.id).emit('message', {
-      action: 'newMessage',
-      data: {
-        chat: newMessage
-      }
-    });
-    io.getIO().to("conversation" + group.id).emit('conversation', {
-      action: 'update',
-      data: data
-    });
 
     await apiData(res, 500, 'Add member in group successfully!', data);
   } catch (err) {
@@ -730,36 +740,57 @@ exports.postSendMessage = (async (req, res, next) => {
   }
 });
 
-exports.getFindUserByUsername = (async (req, res, next) => {
-  const username = req.query.username;
-
-  if (!username) {
-    const data = {};
-
-    return await apiData(res, 500, 'Where your params ?', data);
-  }
-
-  try {
-    const users = await User.findAll({
+exports.getFindUser = (async (req, res, next) => {
+  let limitReturnData = 10;
+  let searchQuery = req.query.search;
+  let users;
+  // try {
+  if (!searchQuery || searchQuery == '') {
+    users = await User.findAll({
+      order: Sequelize.literal('rand()'),
       where: {
-        username: {
-          [Op.startsWith]: username
-        },
         status: 1
       },
-      attributes: ["id", "username", "firstName", "lastName", "avatar"],
-      limit: 10
+      attributes: ["id", "username", "firstName", "lastName", "avatar", "status"],
+      limit: limitReturnData
     });
-
-    var data = {
-      users: users
-    };
-
-    return await apiData(res, 200, 'OK', data);
-  } catch (err) {
-    var data = {};
-    return await apiData(res, 401, 'Fail', data);
+  } else {
+    users = await User.findAll({
+      where: {
+        [Op.and]: [
+          {
+            [Op.or]: [
+              {
+                username: {
+                  [Op.startsWith]: searchQuery
+                }
+              },
+              Sequelize.where(
+                Sequelize.fn('concat', Sequelize.col('firstName'), ' ', Sequelize.col('lastName')), {
+                  [Op.startsWith]: searchQuery
+                }
+              )
+            ]
+          },
+          {
+            status: 1
+          }
+        ]
+      },
+      attributes: ["id", "username", "firstName", "lastName", "avatar", "status"],
+      limit: limitReturnData
+    });
   }
+
+  var data = {
+    users: users
+  };
+
+  return await apiData(res, 200, 'OK', data);
+  // } catch (err) {
+  //   var data = {};
+  //   return await apiData(res, 401, 'Fail', data);
+  // }
 });
 
 exports.postLeaveGroup = (async (req, res, next) => {
@@ -925,7 +956,7 @@ exports.postLeaveGroup = (async (req, res, next) => {
       chat: newMessage
     }
   });
-  
+
   io.getIO().to("conversation" + conversation.id).emit("conversation", {
     action: 'update',
     data: data

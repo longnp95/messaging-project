@@ -25,7 +25,7 @@ app.use(express.static(path.join(__dirname, 'public'))); //public file in web ap
 app.use((req, res, next) => {
   const allPort = "*";
   const FEPort = "http://localhost:3000";
-  res.setHeader('Access-Control-Allow-Origin', req.get('origin'));
+  res.setHeader('Access-Control-Allow-Origin', req.get('origin') || allPort);
   // res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT'); // [OPTIONAL SETTING]
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, token');
   next();
