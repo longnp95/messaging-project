@@ -741,52 +741,52 @@ exports.postSendMessage = (async (req, res, next) => {
 });
 
 exports.getFindUser = (async (req, res, next) => {
+  let limitReturnData = 10;
   let searchQuery = req.query.search;
-
-  if (!searchQuery) {
-    const data = {};
-
-    return await apiData(res, 500, 'Where your params ?', data);
-  }
   let users;
   // try {
-    console.log(searchQuery);
-    if (searchQuery == "") {
-      users = await User.findAll({
-        attributes: ["id", "username", "firstName", "lastName", "avatar", "status"],
-        limit: 10
-      });
-    } else {
-      users = await User.findAll({
-        where: {
-          [Op.and]: [
-            {
-              [Op.or]: [
-                { 
-                  username: {
-                    [Op.startsWith]: searchQuery
-                  } 
-                },
-                Sequelize.where(Sequelize.fn('CONCAT', 'firstName', 'lastName'), {
+  if (!searchQuery || searchQuery == '') {
+    users = await User.findAll({
+      order: Sequelize.literal('rand()'),
+      where: {
+        status: 1
+      },
+      attributes: ["id", "username", "firstName", "lastName", "avatar", "status"],
+      limit: limitReturnData
+    });
+  } else {
+    users = await User.findAll({
+      where: {
+        [Op.and]: [
+          {
+            [Op.or]: [
+              {
+                username: {
                   [Op.startsWith]: searchQuery
-                })
-              ]
-            },
-            {
-              status: 1
-            }
-          ]
-        },
-        attributes: ["id", "username", "firstName", "lastName", "avatar", "status"],
-        limit: 10
-      });
-    }
+                }
+              },
+              Sequelize.where(
+                Sequelize.fn('concat', Sequelize.col('firstName'), ' ', Sequelize.col('lastName')), {
+                  [Op.startsWith]: searchQuery
+                }
+              )
+            ]
+          },
+          {
+            status: 1
+          }
+        ]
+      },
+      attributes: ["id", "username", "firstName", "lastName", "avatar", "status"],
+      limit: limitReturnData
+    });
+  }
 
-    var data = {
-      users: users
-    };
+  var data = {
+    users: users
+  };
 
-    return await apiData(res, 200, 'OK', data);
+  return await apiData(res, 200, 'OK', data);
   // } catch (err) {
   //   var data = {};
   //   return await apiData(res, 401, 'Fail', data);
