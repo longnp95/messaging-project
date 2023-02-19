@@ -14,9 +14,9 @@ const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, member
 
   useEffect(() => {
     setSuggestions([]);
-    if (searchQuery.length>0) axios.get('/user', {
+    axios.get('/user/search', {
       headers: {token: user.token},
-      params: {username: searchQuery}})
+      params: {search: searchQuery}})
     .then((response)=>{
       if (response.data.error.status === 500) {
         return (
