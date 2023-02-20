@@ -2,6 +2,7 @@ const io = require('../socket');
 const User = require('../models/user');
 const Group_Member = require('../models/group_member');
 const Conversation = require('../models/conversation');
+const Image = require('../models/image');
 const Role = require('../models/role');
 const Type = require('../models/type');
 const Chat = require('../models/chat');
@@ -991,20 +992,37 @@ exports.postLeaveGroup = (async (req, res, next) => {
   // }
 });
 
+exports.getImagesByUserId = (async (req, res, next) => {
+  const userId = req.userId;
+  
+  const images = await Image.findAll({
+    where: userId
+  });
+
+  return await apiData(res, 200, 'OK', {
+    images: images
+  });
+});
+
 exports.postUploadImage = (async (req, res, next) => {
+  const userId = req.userId;
   const files = req.files;
-  const pathArray = [];
+  const images = [];
 
   for (let i = 0; i < files.length; i++) {
     var file = req.files[0];
     var path = await pathFileInUrl(file);
-    var obj = {
-      path: path
-    };
-    pathArray.push(obj);
+    var image = await Image.create({
+      path: path,
+      userId: userId
+    });
+    images.push(image);
   }
 
   return await apiData(res, 200, 'Upload avatar successfully', {
-    images: pathArray
+    images: images
   });
+});
+
+exports.postDeleteImage = (async (req, res, next) => {
 });

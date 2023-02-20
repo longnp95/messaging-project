@@ -35,7 +35,7 @@ module.exports = (req, res, next) => {
 
     const file = req.files;
 
-    if (file.length < 1) {
+    if (!file || file.length < 1) {
       return res.status(200).json({
         error: {
           status: 401,
@@ -44,7 +44,7 @@ module.exports = (req, res, next) => {
         data: {}
       });
     }
-    
+
     next();
   });
 }
