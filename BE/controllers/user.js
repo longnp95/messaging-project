@@ -1004,7 +1004,6 @@ exports.postUploadImage = (async (req, res, next) => {
     pathArray.push(obj);
   }
 
-
   return await apiData(res, 200, 'Upload avatar successfully', {
     images: pathArray
   });
