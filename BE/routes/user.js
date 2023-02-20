@@ -1,5 +1,6 @@
 const express = require('express');
 const routes = express.Router();
+const uploadImage = require('../config/uploadImage');
 
 const haveBody = require('../middlewares/haveBody');
 const isUser = require('../middlewares/isUser');
@@ -9,6 +10,7 @@ const isOwnerInGroup = require('../middlewares/isOwnerInGroup');
 const userController = require('../controllers/user');
 const accountUserController = require('../controllers/users');
 const conversationController = require('../controllers/conversations');
+const multerError = require('../middlewares/multerError');
 
 routes.get('/conversation', isUser, userController.getConversationsByUserId);
 routes.post('/conversation/create', isUser, haveBody, userController.postCreateConversation);
@@ -24,6 +26,8 @@ routes.post('/conversation/leaveGroup', isUser, haveBody, userInGroup, userContr
 routes.get('/users', isUser, accountUserController.getAllUser);
 routes.get('/user/search', isUser, userController.getFindUser);
 routes.post('/user/profile', isUser, accountUserController.postUpdateUser);
+routes.post('/user/media/images', isUser, userController.getImagesByUserId);
+routes.post('/user/media/images/uploads', isUser, multerError, userController.postUploadImage);
 
 routes.get('/role', userController.getRoles);
 

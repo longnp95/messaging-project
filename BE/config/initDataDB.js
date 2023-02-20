@@ -10,6 +10,7 @@ const Group_Member = require('../models/group_member');
 const Role = require('../models/role');
 const Type = require('../models/type');
 const User = require('../models/user');
+const Image = require('../models/image');
 
 // Run database and run server
 exports.init = (() => {
@@ -27,6 +28,8 @@ exports.init = (() => {
   Chat.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
   Conversation.hasMany(Chat);
   Chat.belongsTo(Conversation, { constraints: true, onDelete: 'CASCADE' });
+  User.hasMany(Image);
+  Image.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
 
   sequelize
     // .sync({ force: true })

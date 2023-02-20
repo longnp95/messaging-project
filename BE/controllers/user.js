@@ -2,6 +2,7 @@ const io = require('../socket');
 const User = require('../models/user');
 const Group_Member = require('../models/group_member');
 const Conversation = require('../models/conversation');
+const Image = require('../models/image');
 const Role = require('../models/role');
 const Type = require('../models/type');
 const Chat = require('../models/chat');
@@ -44,6 +45,27 @@ const checkStatusAccount = (async (res, id, table) => {
 
     await apiData(res, 500, 'Where your params ?', returnData);
   }
+});
+
+const pathFileInUrl = (async (file) => {
+  let path = "";
+  const destination = file.destination;
+  const destinationArray = destination.split('/');
+
+  for (var i = 0; i < destinationArray.length; i++) {
+    var des = destinationArray[i];
+
+    if (i == 0) {
+      continue;
+    }
+
+    path += "/";
+    path += destinationArray[i];
+  }
+  path += "/";
+  path += file.filename;
+
+  return path;
 });
 
 exports.getConversationsByUserId = (async (req, res, next) => {
@@ -767,8 +789,8 @@ exports.getFindUser = (async (req, res, next) => {
               },
               Sequelize.where(
                 Sequelize.fn('concat', Sequelize.col('firstName'), ' ', Sequelize.col('lastName')), {
-                  [Op.startsWith]: searchQuery
-                }
+                [Op.startsWith]: searchQuery
+              }
               )
             ]
           },
@@ -968,4 +990,39 @@ exports.postLeaveGroup = (async (req, res, next) => {
 
   //   return await apiData(res, 500, 'Fail', data);
   // }
+});
+
+exports.getImagesByUserId = (async (req, res, next) => {
+  const userId = req.userId;
+  
+  const images = await Image.findAll({
+    where: userId
+  });
+
+  return await apiData(res, 200, 'OK', {
+    images: images
+  });
+});
+
+exports.postUploadImage = (async (req, res, next) => {
+  const userId = req.userId;
+  const files = req.files;
+  const images = [];
+
+  for (let i = 0; i < files.length; i++) {
+    var file = req.files[0];
+    var path = await pathFileInUrl(file);
+    var image = await Image.create({
+      path: path,
+      userId: userId
+    });
+    images.push(image);
+  }
+
+  return await apiData(res, 200, 'Upload avatar successfully', {
+    images: images
+  });
+});
+
+exports.postDeleteImage = (async (req, res, next) => {
 });
