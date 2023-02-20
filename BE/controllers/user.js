@@ -46,6 +46,27 @@ const checkStatusAccount = (async (res, id, table) => {
   }
 });
 
+const pathFileInUrl = (async (file) => {
+  let path = "";
+  const destination = file.destination;
+  const destinationArray = destination.split('/');
+
+  for (var i = 0; i < destinationArray.length; i++) {
+    var des = destinationArray[i];
+
+    if (i == 0) {
+      continue;
+    }
+
+    path += "/";
+    path += destinationArray[i];
+  }
+  path += "/";
+  path += file.filename;
+
+  return path;
+});
+
 exports.getConversationsByUserId = (async (req, res, next) => {
   const userId = req.userId;
 
@@ -767,8 +788,8 @@ exports.getFindUser = (async (req, res, next) => {
               },
               Sequelize.where(
                 Sequelize.fn('concat', Sequelize.col('firstName'), ' ', Sequelize.col('lastName')), {
-                  [Op.startsWith]: searchQuery
-                }
+                [Op.startsWith]: searchQuery
+              }
               )
             ]
           },
@@ -968,4 +989,26 @@ exports.postLeaveGroup = (async (req, res, next) => {
 
   //   return await apiData(res, 500, 'Fail', data);
   // }
+});
+
+exports.postUploadAvatar = (async (req, res, next) => {
+  const file = req.files[0];
+  const userId = req.userId;
+
+  const user = await checkStatusAccount(res, userId, User);
+
+  if (!user) {
+    return user;
+  }
+
+  const path = await pathFileInUrl(file);
+
+  await user.update({
+    avatar: path
+  });
+  await user.save();
+
+  return await apiData(res, 200, 'Upload avatar successfully', {
+    user: user
+  });
 });
