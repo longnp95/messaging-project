@@ -992,11 +992,20 @@ exports.postLeaveGroup = (async (req, res, next) => {
 });
 
 exports.postUploadImage = (async (req, res, next) => {
-  const file = req.files[0];
+  const files = req.files;
+  const pathArray = [];
 
-  const path = await pathFileInUrl(file);
+  for (let i = 0; i < files.length; i++) {
+    var file = req.files[0];
+    var path = await pathFileInUrl(file);
+    var obj = {
+      path: path
+    };
+    pathArray.push(obj);
+  }
+
 
   return await apiData(res, 200, 'Upload avatar successfully', {
-    pathImage: path
+    images: pathArray
   });
 });

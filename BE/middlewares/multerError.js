@@ -33,6 +33,18 @@ module.exports = (req, res, next) => {
       }
     }
 
+    const file = req.files;
+
+    if (file.length < 1) {
+      return res.status(200).json({
+        error: {
+          status: 401,
+          message: 'Must upload file!'
+        },
+        data: {}
+      });
+    }
+    
     next();
   });
 }
