@@ -991,24 +991,12 @@ exports.postLeaveGroup = (async (req, res, next) => {
   // }
 });
 
-exports.postUploadAvatar = (async (req, res, next) => {
+exports.postUploadImage = (async (req, res, next) => {
   const file = req.files[0];
-  const userId = req.userId;
-
-  const user = await checkStatusAccount(res, userId, User);
-
-  if (!user) {
-    return user;
-  }
 
   const path = await pathFileInUrl(file);
 
-  await user.update({
-    avatar: path
-  });
-  await user.save();
-
   return await apiData(res, 200, 'Upload avatar successfully', {
-    user: user
+    pathImage: path
   });
 });
