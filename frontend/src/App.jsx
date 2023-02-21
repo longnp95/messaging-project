@@ -20,14 +20,7 @@ const authToken = cookie.get('token');
 if (authToken) {
   axios.defaults.headers.common['token'] = 'authToken';
 }
-const user ={
-  token: authToken,
-  id: cookie.get('userId'),
-  hashedPassword: cookie.get('hashedPassword'),
-  firstName: cookie.get('firstName'),
-  lastName: cookie.get('lastName'),
-  avatar: cookie.get('avatarUrl')
-}
+const user = cookie.get('user');
 
 function App() {
   const [socket, setSocket] = useState(null);

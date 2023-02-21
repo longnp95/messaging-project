@@ -15,6 +15,7 @@ const initialForm = {
   password: '',
   confirmPassword: '',
   gender: 0,
+  avatar: null,
   avatarUrl: '',
   dob: '',
   mobile: '',
@@ -27,7 +28,23 @@ const Auth = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const { username, avatarUrl} = form;
+    const { username} = form;
+    let avatarUrl = form.avatarUrl;
+    if (isSignup&&form.avatar) {
+      var formData = new FormData();
+      formData.append("images", form.avatar);
+      const imgUploadRes = await axios.post('/user/media/images/uploads', formData,{
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+      if (imgUploadRes.data.error.status == 500) {
+        alert(imgUploadRes.data.error.message);
+      }
+      console.log(imgUploadRes.data);
+      avatarUrl = imgUploadRes.data.data.images[0].path
+      setForm({...form, ["avatarUrl"]:avatarUrl})
+    }
 
     const response = await axios.post(`/auth/${isSignup ? 'signup' : 'signin'}`, {
       username, 
@@ -35,7 +52,7 @@ const Auth = () => {
       firstName: form.firstName,
       lastName: form.lastName,
       gender: form.gender,
-      avatarUrl: form.avatarUrl,
+      avatarUrl: avatarUrl,
       dob: form.dob,
       mobile: form.mobile,
       email: form.email
@@ -52,6 +69,7 @@ const Auth = () => {
       firstName, 
       lastName } 
     } = response.data.data;
+    cookie.set('user', response.data.data.user);
     cookie.set('token', token);
     cookie.set('userId', id);
     cookie.set('hashedPassword', password);
@@ -62,10 +80,15 @@ const Auth = () => {
   }
 
   const handleChange = (e) => {
-    setForm({...form, [e.target.name]:e.target.value})
+    setForm({...form, [e.target.name]:e.target.value});
+
   }
 
   const switchMode = () => {
+    if (!isSignup) {
+      document.getElementById('username').value = "";
+      document.getElementById('password').value = "";
+    }
     setIsSignup((prevIsSignup) => !prevIsSignup);
   }
 
@@ -102,26 +125,31 @@ const Auth = () => {
               </Col>
             </Row>
           )}
-          <div id='auth_form-container-fields-content-Form.Control'>
-            <Form.Label htmlFor="username">Username</Form.Label>
+          <Form.Group controlId='username'>
+            <Form.Label>Username</Form.Label>
             <Form.Control
               name='username'
               type="text"
               placeholder='Username'
+              pattern='[A-Za-z0-9_@.]*'
               onChange={handleChange}
+              autoComplete="off"
               required
+              title='Use character A-Z, a-z, _, @, or .'
             />
-          </div>
-          <div id='auth_form-container-fields-content-Form.Control'>
-            <Form.Label htmlFor="password">Password</Form.Label>
+          </Form.Group>
+          <Form.Group controlId='password'>
+            <Form.Label>Password</Form.Label>
             <Form.Control
               name='password'
               type="password"
               placeholder='Password'
               onChange={handleChange}
+              autoComplete="off"
+              minLength={isSignup? 8 : 1}
               required
             />
-          </div>            
+          </Form.Group>            
           {isSignup && (
             <div id='auth_form-container-fields-content-Form.Control'>
               <Form.Label htmlFor="confirmPassword">Confirm Password</Form.Label>
@@ -129,14 +157,21 @@ const Auth = () => {
                 name='confirmPassword'
                 type="password"
                 placeholder='Confirm Password'
-                onChange={handleChange}
+                onChange={(e) => {
+                  if (e.target.value != document.getElementById('password').value) {
+                    e.target.setCustomValidity("Not matched!");
+                  } else {
+                    e.target.setCustomValidity("");
+                  }
+                  handleChange(e);
+                }}
                 required
               />
             </div>
           )}
           {isSignup && (
             <>
-              <p3>Let us know more about you, or just hit sign up below.</p3>
+              <div>Let us know more about you, or just hit sign up below.</div>
               <Form.Group id='auth_form-container-fields-content-Form.Control'>
                 <Form.Label htmlFor="gender">Gender</Form.Label>
                 <Form.Select name="gender" onChange={handleChange}>
@@ -147,15 +182,14 @@ const Auth = () => {
                   <option value={0}>I prefer not to tell</option>
                 </Form.Select>
               </Form.Group>
-              <div id='auth_form-container-fields-content-Form.Control'>
-                <Form.Label htmlFor="avatarUrl">Profile picture</Form.Label>
+              <Form.Group id='auth_form-container-fields-content-Form.Control'>
+                <Form.Label htmlFor="avatar">Profile picture</Form.Label>
                 <Form.Control
-                  name='avatarUrl'
-                  type="url"
-                  placeholder='Profile picture URL'
-                  onChange={handleChange}
+                  name='avatar'
+                  type="file" placeholder="Avatar" size="sm" accept="image/*"
+                  onChange={(e)=>setForm({...form, avatar:e.target.files[0]})}
                 />
-              </div>
+              </Form.Group>
               <Row className='g-0'>
                 <Col className='pe-1'>
                   <div id='auth_form-container-fields-content-Form.Control'>

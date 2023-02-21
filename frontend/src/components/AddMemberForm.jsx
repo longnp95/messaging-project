@@ -28,24 +28,22 @@ const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, member
     }).catch((err)=>{
       console.log(err)
     })
-  },[searchQuery,user])
+  },[searchQuery,user,isAdding])
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsAdding(false);
     if (!selecteds.length) return
-    for (const selected of selecteds) {
-      const response = await axios.post('/conversation/addMember',{
-        memberId: selected.id
-      },{
-        headers: {token: user.token},
-        params: {
-          userId: user.id,
-          conversationId: currentConversation.id
-        },
-      });
-      console.log(response.data.data);
-    }
+    const response = await axios.post('/conversation/addMember',{
+      memberIds: selecteds.map(selected => selected.id)
+    },{
+      headers: {token: user.token},
+      params: {
+        userId: user.id,
+        conversationId: currentConversation.id
+      },
+    });
+    console.log(response.data.data);
     
     
     setSearchQuery('');

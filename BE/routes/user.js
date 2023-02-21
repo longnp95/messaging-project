@@ -27,7 +27,7 @@ routes.get('/users', isUser, accountUserController.getAllUser);
 routes.get('/user/search', isUser, userController.getFindUser);
 routes.post('/user/profile', isUser, accountUserController.postUpdateUser);
 routes.post('/user/media/images', isUser, userController.getImagesByUserId);
-routes.post('/user/media/images/uploads', isUser, multerError, userController.postUploadImage);
+routes.post('/user/media/images/uploads', multerError, userController.postUploadImage);
 
 routes.get('/role', userController.getRoles);
 

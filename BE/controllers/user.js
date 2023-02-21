@@ -22,6 +22,7 @@ const apiData = (async (res, status, message, data) => {
 
 const checkStatusAccount = (async (res, id, table) => {
   if (id) {
+    console.log(id);
     const data = await table.findOne({
       where: {
         id: id
@@ -226,8 +227,24 @@ exports.postCreateConversation = (async (req, res, next) => {
       return await apiData(res, 500, 'Create conversation fail!', data);
     }
 
+    const conversationToSend = await Conversation.findOne({
+      where: {
+        id: conversation.id
+      },
+      include: [
+        {
+          model: User,
+          as: 'creator',
+          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+        }, {
+          model: User,
+          as: 'partner',
+          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+        }
+      ]
+    });
     const data = {
-      conversation: conversation
+      conversation: conversationToSend
     };
 
     io.getIO().in("user" + user.id).socketsJoin(["conversation" + conversation.id]);
@@ -1005,16 +1022,15 @@ exports.getImagesByUserId = (async (req, res, next) => {
 });
 
 exports.postUploadImage = (async (req, res, next) => {
-  const userId = req.userId;
   const files = req.files;
   const images = [];
 
   for (let i = 0; i < files.length; i++) {
-    var file = req.files[0];
+    var file = req.files[i];
     var path = await pathFileInUrl(file);
     var image = await Image.create({
       path: path,
-      userId: userId
+      userId: req.query.userId
     });
     images.push(image);
   }

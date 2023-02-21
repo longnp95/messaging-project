@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import Card from 'react-bootstrap/Card';
-import Image from 'react-bootstrap/Image';
-import Blank_Avatar from '../public/Blank-Avatar.png';
+import ImageLoader from '../services/ImageLoader.services';
 import axios from 'axios';
 import moment from 'moment';
 
@@ -111,10 +110,6 @@ const MessageListContent = ({socket, currentConversation, user}) => {
     const newDay = isNewDay(message, index);
     const firstInGroup = isFirstOfSenderGroup(message, index);
     const createdAt = new Date(message.createdAt);
-    const errorHandler = (event) => {
-      console.log('ImgErrorHandler');
-      event.currentTarget.src = Blank_Avatar;
-    };
     return (
       <div 
         id="message_list-container-content-item-wrapper" 
@@ -148,12 +143,11 @@ const MessageListContent = ({socket, currentConversation, user}) => {
           >
             {/*Avatar*/}
             {message.userId!=user.id && (newDay || firstInGroup) && (
-              <Image
+              <ImageLoader
                 roundedCircle
-                src={message.user.avatar||Blank_Avatar}
+                src={message.user.avatar}
                 alt="avatar"
                 style={{ width: "40px", height: "40px", position: "absolute"}}
-                onError={(event)=>errorHandler(event)}
               />
             )}
             {/*senderName, message */}
