@@ -144,14 +144,14 @@ exports.postUpdateUser = (async (req, res, next) => {
   const firstName = body.firstName;
   const lastName = body.lastName;
   const gender = body.gender;
-  const avatarUrl = body.avatarUrl;
+  const avatarPath = body.avatarPath;
   const dob = body.dateOfBirth;
   const mobile = body.phoneNumber;
   const email = body.email;
   const address = body.address;
   const userId = req.query.userId;
 
-  if (!(id && username && password && firstName && lastName && gender && avatarUrl && dob && mobile && email)) {
+  if (!(id && username && firstName && lastName && gender && avatarPath && dob && mobile && email)) {
     const data = {};
     await apiData(res, 500, 'Where your feild ?', data);
   }
@@ -184,7 +184,7 @@ exports.postUpdateUser = (async (req, res, next) => {
     firstName: firstName,
     lastName: lastName,
     gender: gender,
-    avatar: avatarUrl,
+    avatar: avatarPath,
     dob: dob,
     mobile: mobile,
     email: email,
@@ -196,7 +196,7 @@ exports.postUpdateUser = (async (req, res, next) => {
     user: user
   };
 
-  io.getIO().to("user" + user.id).emit("profile", {
+  io.getIO().to("user" + user.id).emit("user", {
     action: "update",
     data: data
   });
