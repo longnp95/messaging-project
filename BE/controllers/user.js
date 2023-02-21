@@ -227,8 +227,24 @@ exports.postCreateConversation = (async (req, res, next) => {
       return await apiData(res, 500, 'Create conversation fail!', data);
     }
 
+    const conversationToSend = await Conversation.findOne({
+      where: {
+        id: conversation.id
+      },
+      include: [
+        {
+          model: User,
+          as: 'creator',
+          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+        }, {
+          model: User,
+          as: 'partner',
+          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+        }
+      ]
+    });
     const data = {
-      conversation: conversation
+      conversation: conversationToSend
     };
 
     io.getIO().in("user" + user.id).socketsJoin(["conversation" + conversation.id]);

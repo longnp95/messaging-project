@@ -8,6 +8,7 @@ const NewConversationForm = ({user, isCreating, setIsCreating, setCurrentConvers
   const initialForm = {
     conversationName: "",
     conversationAvatarUrl: "",
+    conversationAvatar: null,
     typeConversation: 2
   }
   
@@ -15,10 +16,27 @@ const NewConversationForm = ({user, isCreating, setIsCreating, setCurrentConvers
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    let conversationAvatarUrl=form.conversationAvatarUrl;
+    if (form.conversationAvatar) {
+      var formData = new FormData();
+      formData.append("images", form.conversationAvatar);
+      const imgUploadRes = await axios.post('/user/media/images/uploads', formData,{
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          token: user.token
+        },
+      });
+      if (imgUploadRes.data.error.status == 500) {
+        alert(imgUploadRes.data.error.message);
+      }
+      console.log(imgUploadRes.data);
+      conversationAvatarUrl = imgUploadRes.data.data.images[0].path
+      setForm({...form, ["conversationAvatarUrl"]:conversationAvatarUrl})
+    }
 
     const response = await axios.post('/conversation/create',{
       conversationName: form.conversationName,
-      conversationAvatarUrl: form.conversationAvatarUrl,
+      conversationAvatarUrl: conversationAvatarUrl,
       typeConversation: form.typeConversation
     },{
       headers: {token: user.token},
@@ -57,9 +75,9 @@ const NewConversationForm = ({user, isCreating, setIsCreating, setCurrentConvers
           <Form.Label>Group Name</Form.Label>
           <Form.Control type="text" placeholder="Enter group name" required/>
         </Form.Group>
-        <Form.Group className="mb-3" controlId="conversationAvatarUrl" onChange={handleChange}>
-          <Form.Label>Avatar Url</Form.Label>
-          <Form.Control type="text" placeholder="Avatar Url" />
+        <Form.Group className="mb-3" controlId="conversationAvatar" onChange={(e)=>setForm({...form, conversationAvatar:e.target.files[0]})}>
+          <Form.Label>Avatar</Form.Label>
+          <Form.Control type="file" placeholder="Avatar" size="sm" accept="image/*"/>
         </Form.Group>
         <Button variant="primary" type="submit">
           Create

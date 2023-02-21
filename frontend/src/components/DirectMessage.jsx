@@ -14,9 +14,9 @@ const DirectMessage = ({user, setCurrentConversation, conversations, isDMing, se
 
   useEffect(() => {
     setSuggestions([]);
-    if (searchQuery.length>0) axios.get('/user', {
+    axios.get('/user/search', {
       headers: {token: user.token},
-      params: {username: searchQuery}})
+      params: {search: searchQuery}})
     .then((response)=>{
       if (response.data.error.status === 500) {
         return (
@@ -28,7 +28,7 @@ const DirectMessage = ({user, setCurrentConversation, conversations, isDMing, se
     }).catch((err)=>{
       console.log(err)
     })
-  },[searchQuery,user])
+  },[searchQuery,user,isDMing])
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -50,6 +50,7 @@ const DirectMessage = ({user, setCurrentConversation, conversations, isDMing, se
         alert(response.data.error.message);
         return;
       }
+      setCurrentConversation(response.data.data.conversation);
     }
     setIsDMing(false);
     setSearchQuery('');
@@ -102,7 +103,6 @@ const DirectMessage = ({user, setCurrentConversation, conversations, isDMing, se
       aria-labelledby="contained-modal-title-vcenter"
     >
       <div className= "d-flex flex-column"
-        style={{height: '75vh'}}
       >
         <Modal.Header closeButton>
           <Modal.Title id="contained-modal-title-vcenter">
@@ -111,7 +111,7 @@ const DirectMessage = ({user, setCurrentConversation, conversations, isDMing, se
         </Modal.Header>
         <Modal.Body className="flex-grow-1">
         <form onSubmit={handleSubmit} className='d-flex flex-column'
-          style={{height: '100%'}}
+          style={{height: '70vh'}}
         >
           <Form.Group controlId="memberId" onChange={handleChange}>
             <Form.Control type="text" placeholder="Search for username" autoComplete="off"/>
