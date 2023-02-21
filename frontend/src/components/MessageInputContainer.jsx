@@ -43,8 +43,8 @@ const MessageInputContainer = ({currentConversation, user})=>{
           onChange={handleChange}
           autoComplete="off"
         ></input>
-        <i className="mx-1 text-muted material-icons">attach_file</i>
-        <i className="mx-1 text-muted material-icons">sentiment_satisfied</i>
+        {/* <i className="mx-1 text-muted material-icons">attach_file</i>
+        <i className="mx-1 text-muted material-icons">sentiment_satisfied</i> */}
         <button 
           type="submit" 
           className="p-0 my-0 mx-1 material-icons"

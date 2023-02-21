@@ -29,7 +29,7 @@ function LeftNavBar({setSearchText, user, setCurrentConversation, conversations,
                 onChange={(e) => setSearchText(e.target.value)}
               />
             </Form>
-            <Offcanvas show={showOffcanvas} onHide={()=>setShowOffcanvas(false)}>
+            <Offcanvas show={showOffcanvas} onHide={()=>setShowOffcanvas(false)} style={{ maxWidth: "75vw"}}>
               <Offcanvas.Header>
                 <div className='d-flex flex-row justify-content-start align-items-center'>
                   <ImageLoader

@@ -14,9 +14,9 @@ const DirectMessage = ({user, setCurrentConversation, conversations, isDMing, se
 
   useEffect(() => {
     setSuggestions([]);
-    axios.get('/user/search', {
+    axios.get('/users', {
       headers: {token: user.token},
-      params: {search: searchQuery}})
+    })
     .then((response)=>{
       if (response.data.error.status === 500) {
         return (
@@ -28,12 +28,12 @@ const DirectMessage = ({user, setCurrentConversation, conversations, isDMing, se
     }).catch((err)=>{
       console.log(err)
     })
-  },[searchQuery,user,isDMing])
+  },[user,isDMing])
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const conversation = conversations.find(el => el.partnerId == selected.id || el.creatorId == selected.id);
+    const conversation = conversations.find(el => el.typeId==1 && (el.partnerId == selected.id || el.creatorId == selected.id));
     if (conversation) {
       setCurrentConversation(conversation);
     } else {
@@ -66,7 +66,10 @@ const DirectMessage = ({user, setCurrentConversation, conversations, isDMing, se
   }
 
   const listSuggestions = suggestions.map(suggestion => {
-    if (suggestion.id == user.id) return <div key={suggestion.id} className="d-none"></div>;
+    if (suggestion.id == user.id) return <></>;
+    if (!suggestion.username.toLowerCase().includes(searchQuery.toLowerCase())
+      && ![suggestion.firstName, suggestion.lastName].join(' ').toLowerCase().includes(searchQuery.toLowerCase())
+    ) return <></>;
     return <Row
       key={suggestion.id}
       id="suggestion-item-container"
@@ -106,7 +109,7 @@ const DirectMessage = ({user, setCurrentConversation, conversations, isDMing, se
       >
         <Modal.Header closeButton>
           <Modal.Title id="contained-modal-title-vcenter">
-            Direct Messaging
+            All Users
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="flex-grow-1">

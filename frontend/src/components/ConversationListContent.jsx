@@ -6,7 +6,9 @@ import Col from 'react-bootstrap/Col';
 import Stack from 'react-bootstrap/Stack';
 import ImageLoader from '../services/ImageLoader.services';
 
-const ConversationListContent = ({socket, conversations, setConversations, currentConversation, setCurrentConversation, user, searchText}) => {
+const ConversationListContent = ({socket, conversations, setConversations, currentConversation, setCurrentConversation, user, searchText, setSearchText}) => {
+  const [suggestions, setSuggestions] = useState([]);
+  
   useEffect(() => {
     console.log('getting conversations list');
     axios.get('/conversation', {
@@ -25,6 +27,25 @@ const ConversationListContent = ({socket, conversations, setConversations, curre
     })
     
   },[user])
+
+
+  useEffect(() => {
+    setSuggestions([]);
+    axios.get('/user/search', {
+      headers: {token: user.token},
+      params: {search: searchText}})
+    .then((response)=>{
+      if (response.data.error.status === 500) {
+        return (
+          console.log(response.data.error.message)
+        )
+      }
+      console.log(response.data.data.users)
+      setSuggestions(response.data.data.users);
+    }).catch((err)=>{
+      console.log(err)
+    })
+  },[searchText,user])
 
   useEffect(() => {
     console.log('listening conversation socket')
@@ -65,9 +86,44 @@ const ConversationListContent = ({socket, conversations, setConversations, curre
     }
   }, [socket]);
 
+  useEffect(() => {
+    const currentConversationItem = document.getElementById('current_conversation-container');
+    if (!currentConversationItem) return;
+    const scrollAreaRect = document.getElementById('conversation_list-container-content').getBoundingClientRect();
+    const currentConversationRect = currentConversationItem.getBoundingClientRect();
+    if (currentConversationRect.top < scrollAreaRect.top) {
+      currentConversationItem.scrollIntoView({ behavior: "smooth" });
+    } else if (currentConversationRect.bottom > scrollAreaRect.bottom) {
+      currentConversationItem.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest"});  
+    }
+  }, [currentConversation])
+
   const handleClick = (conversation) => {
     setCurrentConversation(conversation);
     return;
+  }
+
+  const handleClickSuggestion = async (suggestion) => {
+
+    const conversation = conversations.find(el => el.typeId==1 && (el.partnerId == suggestion.id || el.creatorId == suggestion.id));
+    if (conversation) {
+      setCurrentConversation(conversation);
+    } else {
+      const response = await axios.post('/conversation/create',{
+        conversationName: 'DirectMessage',
+        conversationAvatarUrl: '',
+        typeConversation: 1,
+        partnerId: suggestion.id
+      },{
+        headers: {token: user.token},
+        params: {userId: user.id},
+      });
+      if (response.data.error.status == 500) {
+        alert(response.data.error.message);
+        return;
+      }
+      setCurrentConversation(response.data.data.conversation);
+    }
   }
   const conversationItems = conversations
   .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
@@ -87,7 +143,7 @@ const ConversationListContent = ({socket, conversations, setConversations, curre
     return (
       <Row
         key={conversation.id}
-        id="conversation-item-container"
+        id={`${conversation.id==currentConversation.id? 'current_conversation-container' : 'conversation-item-container'}`}
         onClick={() => handleClick(conversation)}
         className={`mx-0 py-1 ps-1 flex-nowrap ${conversation.id==currentConversation.id? 'bg-info' : ''}`}
       >
@@ -112,12 +168,51 @@ const ConversationListContent = ({socket, conversations, setConversations, curre
     )
   });
 
+  const suggestionItems = suggestions
+  .map((suggestion) => {
+    if (suggestion.id == user.id) return <></>;
+    if (!suggestion.username.toLowerCase().includes(searchText.toLowerCase())
+      && ![suggestion.firstName, suggestion.lastName].join(' ').toLowerCase().includes(searchText.toLowerCase())
+    ) return <></>;
+    return (
+      <Row
+        key={suggestion.id}
+        id="conversation-item-container"
+        onClick={() => handleClickSuggestion(suggestion)}
+        className={`mx-0 py-1 ps-1 flex-nowrap`}
+      >
+        <Col className="g-0 border-right">
+          <ImageLoader
+            roundedCircle alt="Avatar" 
+            src={suggestion.avatar}
+            style={{ width: "50px", height: "auto", aspectRatio: "1"}}
+          />
+        </Col>
+        <Col xs={8} className="ms-1 flex-grow-1 px-0 px-sm-1">
+          <div id='conversation-name'>
+            {[suggestion.firstName, suggestion.lastName].join(' ')}
+          </div>
+          <div id='conversation-preview'
+            className='text-truncate'
+          >
+            {`@${suggestion.username}`}
+          </div>
+        </Col>
+      </Row>
+    )
+  });
+
   return (
     <div id="conversation_list-container-content"
     className='flex-grow-1'
     style={{overflowY: 'auto'}}
     >
       {conversationItems}
+      <hr className='my-0'/>
+      <div className='text-truncate text-info'>
+        User suggestions
+      </div>
+      {suggestionItems}
     </div>
   );
 }
