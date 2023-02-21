@@ -32,7 +32,7 @@ const ConversationContentContainer = ({currentConversation, user, socket, setCur
       <Card 
         id='conversation_content-card' 
         className='g-0 border-0' 
-        style={{ borderRadius: "0" , height: "100vh"}}>
+        style={{ borderRadius: "0" , height: "100dvh"}}>
         <ConversationContentHeader
           setConversations={setConversations}
           setCurrentConversation={setCurrentConversation}

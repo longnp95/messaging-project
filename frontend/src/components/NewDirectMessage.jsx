@@ -14,9 +14,9 @@ const NewDirectMessage = ({user, currentConversation, isAdding, setIsAdding, set
 
   useEffect(() => {
     setSuggestions([]);
-    if (searchQuery.length>0) axios.get('/user', {
+    axios.get('/user/search', {
       headers: {token: user.token},
-      params: {username: searchQuery}})
+      params: {search: searchQuery}})
     .then((response)=>{
       if (response.data.error.status === 500) {
         return (
@@ -85,7 +85,7 @@ const NewDirectMessage = ({user, currentConversation, isAdding, setIsAdding, set
       >
         <Modal.Header closeButton>
           <Modal.Title id="contained-modal-title-vcenter">
-            Direct Message
+            Direct Message haha
           </Modal.Title>
         </Modal.Header>
         <Modal.Body className="flex-grow-1">

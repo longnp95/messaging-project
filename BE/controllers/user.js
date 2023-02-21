@@ -22,6 +22,7 @@ const apiData = (async (res, status, message, data) => {
 
 const checkStatusAccount = (async (res, id, table) => {
   if (id) {
+    console.log(id);
     const data = await table.findOne({
       where: {
         id: id
