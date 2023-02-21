@@ -48,6 +48,7 @@ const NewConversationForm = ({user, isCreating, setIsCreating, setCurrentConvers
     }
     setCurrentConversation(response.data.data.conversation)
     console.log(response.data.data);
+    setForm(initialForm);
     setIsCreating(false);
     setIsAdding(true);
   }

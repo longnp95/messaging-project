@@ -3,9 +3,9 @@ import Image from 'react-bootstrap/Image';
 import { useEffect, useState } from 'react';
 
 const ImageLoader = ({src, ...props}) => {
-  const [imgSrc, setImgSrc] = useState(src);
+  const [imgSrc, setImgSrc] = useState("");
   useEffect(()=>{
-    setImgSrc(src);
+    setImgSrc("http://" + window.location.hostname + ":8080" + src);
   },[src])
   const handleError = (currentTarget) => {
     setImgSrc(Blank_Avatar);

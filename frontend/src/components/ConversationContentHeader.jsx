@@ -2,11 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Card from 'react-bootstrap/Card';
 import Dropdown from 'react-bootstrap/Dropdown'
-import Image from 'react-bootstrap/Image';
-import Blank_Avatar from '../public/Blank-Avatar.png';
 import AddMemberForm from './AddMemberForm';
 import MemberList from './MemberList';
 import ConfirmationModal from './ConfirmationModal';
+import ImageLoader from '../services/ImageLoader.services';
 
 const ConversationContentHeader = ({currentConversation, user, roles, setCurrentConversation, setConversations, isAdding, setIsAdding}) => {
   const [showMembers, setShowMembers] = useState(false);
@@ -76,9 +75,6 @@ const ConversationContentHeader = ({currentConversation, user, roles, setCurrent
     setConfirmMessage('Are you sure?');
   }
 
-  const errorHandler = (event) => {
-    event.currentTarget.src = Blank_Avatar;
-  };
   let nameToDisplay = currentConversation.name;
   let avatarToDisplay = currentConversation.avatar;
   if (currentConversation.typeId==1) {
@@ -96,12 +92,11 @@ const ConversationContentHeader = ({currentConversation, user, roles, setCurrent
       style={{ borderRadius: "0" }}
     >
       <i id="currentConversationToggle" className="material-icons d-sm-none" onClick={()=>setCurrentConversation([])}>arrow_back</i>
-      <Image 
+      <ImageLoader 
         roundedCircle alt="Avatar" 
-        src={avatarToDisplay||Blank_Avatar} 
+        src={avatarToDisplay} 
         style={{ width: "30px", height: "auto", aspectRatio: "1" }}
         className="d-none d-sm-block"
-        onError={(event)=>errorHandler(event)}
       />
       <p className="mb-0 fw-bold">{nameToDisplay}</p>
       <Dropdown>

@@ -94,7 +94,7 @@ const ConversationListContent = ({socket, conversations, setConversations, curre
         <Col className="g-0 border-right">
           <ImageLoader
             roundedCircle alt="Avatar" 
-            src={"http://" + window.location.hostname + ":8080" + avatarToDisplay}
+            src={avatarToDisplay}
             style={{ width: "50px", height: "auto", aspectRatio: "1"}}
           />
         </Col>

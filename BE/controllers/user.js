@@ -1022,16 +1022,15 @@ exports.getImagesByUserId = (async (req, res, next) => {
 });
 
 exports.postUploadImage = (async (req, res, next) => {
-  const userId = req.userId;
   const files = req.files;
   const images = [];
 
   for (let i = 0; i < files.length; i++) {
-    var file = req.files[0];
+    var file = req.files[i];
     var path = await pathFileInUrl(file);
     var image = await Image.create({
       path: path,
-      userId: userId
+      userId: req.query.userId
     });
     images.push(image);
   }
