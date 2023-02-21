@@ -18,7 +18,7 @@ const MenuContainer = ({setShowOffcanvas, setIsCreating, setIsDMing}) => {
         */}
         <Navbar.Text onClick={() => {setShowOffcanvas(false); setIsCreating(true)}}>Create Group</Navbar.Text>
         
-        <Navbar.Text onClick={() => {setShowOffcanvas(false); setIsDMing(true)}}>Direct Message</Navbar.Text>
+        <Navbar.Text onClick={() => {setShowOffcanvas(false); setIsDMing(true)}}>All Users</Navbar.Text>
        
         <Navbar.Text onClick={Logout}>Log Out</Navbar.Text>
       </Nav>

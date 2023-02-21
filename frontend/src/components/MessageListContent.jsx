@@ -61,11 +61,11 @@ const MessageListContent = ({socket, currentConversation, user}) => {
     return () => {
       socket.off("message");
     }
-  }, [socket, currentConversation, user]);
+  }, [socket, currentConversation, user, messageEnd]);
 
   useEffect(() => {
     messageEnd && messageEnd.scrollIntoView({ behavior: "smooth" });
-  },[messageEnd])
+  },[messages])
   const isFirstOfSenderGroup = (message, index) => {
     return index===0 || messages[currentConversation.id][index-1].userId !== message.userId
   }
