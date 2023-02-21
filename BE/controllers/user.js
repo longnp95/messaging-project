@@ -571,9 +571,12 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
         continue;
       }
 
-      const member = await checkStatusAccount(res, memberId, User);
+      const member = await User.findOne({
+        id: memberId,
+        status: 1
+      });
 
-      if (member) {
+      if (!member) {
         continue;
       }
 
