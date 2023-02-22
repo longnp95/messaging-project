@@ -54,6 +54,31 @@ const MessageListContent = ({socket, currentConversation, user}) => {
             return prevMessages;
           });
           break
+        case 'update':
+          setMessages(prevMessages => {
+            console.log(data);
+            console.log(prevMessages);
+            let conversation = null
+            if (!data.chat.conversationId) return prevMessages;
+            conversation = prevMessages[data.chat.conversationId];
+            if (!conversation) {
+              console.log('Not loaded yet');
+              return prevMessages;
+            }
+            console.log(conversation);
+            const existedIndex = conversation.findIndex(message => message.id == data.chat.id);
+            if (existedIndex==-1){
+              console.log('new message');
+              return {...prevMessages, [data.chat.conversationId]:[...(prevMessages[data.chat.conversationId]||[]), data.chat]}
+            } else {
+              return {...prevMessages, 
+                [data.chat.conversationId]:prevMessages[data.chat.conversationId].map((message => {
+                  if (message.id == data.chat.id) return data.chat;
+                  return message;
+                }))
+              }
+            }
+          });
         default:
       }
     });
@@ -64,10 +89,16 @@ const MessageListContent = ({socket, currentConversation, user}) => {
   }, [socket, currentConversation, user, messageEnd]);
 
   useEffect(() => {
-    messageEnd && messageEnd.scrollIntoView({ behavior: "smooth" });
-  },[messages])
+    console.log(messageEnd);
+    messageEnd && messageEnd.scrollIntoView();
+  },[messageEnd])
+
   const isFirstOfSenderGroup = (message, index) => {
     return index===0 || messages[currentConversation.id][index-1].userId !== message.userId
+  }
+
+  const isLastMessage = (message, index) => {
+    return index == messages[currentConversation.id].length - 1;
   }
 
   const isNewDay = (message, index) => {
@@ -110,10 +141,13 @@ const MessageListContent = ({socket, currentConversation, user}) => {
     const newDay = isNewDay(message, index);
     const firstInGroup = isFirstOfSenderGroup(message, index);
     const createdAt = new Date(message.createdAt);
+    const lastMessage = isLastMessage(message, index);
+    console.log(lastMessage);
     return (
       <div 
         id="message_list-container-content-item-wrapper" 
         key={message.id}
+        ref={(el) => { if (lastMessage) setMessageEnd(el)}}
       >
         {/*Display date*/}
         {newDay && (
@@ -171,6 +205,20 @@ const MessageListContent = ({socket, currentConversation, user}) => {
             </div>
           </div>
         }
+        {message.group_members && (
+          <div className='d-flex flex-row justify-content-end'>
+            {message.group_members.map((member) => {
+              return <ImageLoader
+                key={member.id}
+                roundedCircle
+                src={member.user.avatar}
+                alt="avatar"
+                style={{ width: "15px", height: "auto", aspectRatio: "1" }}
+              />
+            })}
+          </div>
+          
+        )}
       </div>
     )
   });
@@ -182,9 +230,6 @@ const MessageListContent = ({socket, currentConversation, user}) => {
       style={{overflowY: 'scroll'}}
     >
       {listItems}
-      <div style={{ float:"left", clear: "both" }}
-        ref={(el) => { setMessageEnd(el)}}>
-      </div>
     </Card.Body>
   );
 }

@@ -30,10 +30,13 @@ exports.init = (() => {
   Chat.belongsTo(Conversation, { constraints: true, onDelete: 'CASCADE' });
   User.hasMany(Image);
   Image.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
+  Chat.hasMany(Group_Member, { foreignKey: 'lastSeenId' });
+  Group_Member.belongsTo(Chat, { as: 'lastSeen' });
+  Group_Member.belongsTo(User);
 
   sequelize
-    .sync({ force: true })
-    // .sync({ alter: true })
+    // .sync({ force: true })
+    .sync({ alter: true })
     .then(async () => {
       const permissions = [
         {

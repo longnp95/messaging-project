@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from "axios";
 import Container from 'react-bootstrap/Container';
 import Row from 'react-bootstrap/Row';
@@ -139,7 +139,7 @@ const ConversationListContent = ({socket, conversations, setConversations, curre
         avatarToDisplay = conversation.creator.avatar;
       }
     }
-    if (!nameToDisplay.toLowerCase().includes(searchText.toLowerCase())) return <></>;
+    if (!nameToDisplay.toLowerCase().includes(searchText.toLowerCase())) return <React.Fragment key={conversation.id}/>;
     return (
       <Row
         key={conversation.id}
@@ -170,10 +170,10 @@ const ConversationListContent = ({socket, conversations, setConversations, curre
 
   const suggestionItems = suggestions
   .map((suggestion) => {
-    if (suggestion.id == user.id) return <></>;
+    if (suggestion.id == user.id) return <React.Fragment key={suggestion.id}/>;
     if (!suggestion.username.toLowerCase().includes(searchText.toLowerCase())
       && ![suggestion.firstName, suggestion.lastName].join(' ').toLowerCase().includes(searchText.toLowerCase())
-    ) return <></>;
+    ) return <React.Fragment key={suggestion.id}/>;
     return (
       <Row
         key={suggestion.id}
