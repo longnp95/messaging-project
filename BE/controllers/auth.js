@@ -105,7 +105,7 @@ exports.postSignUp = (async (req, res, next) => {
   const mobile = body.phoneNumber;
   const email = body.email;
 
-  if (!(username && password && firstName && lastName && gender && avatarUrl && dob && mobile && email)) {
+  if ((username && password && firstName && lastName)) {
     const existsUsername = await User.findOne({
       where: {
         username: username
