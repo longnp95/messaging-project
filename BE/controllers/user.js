@@ -584,63 +584,78 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
     }
 
     for (var memberId of memberIds) {
-      const member = await checkStatusAccount(res, memberId, User);
-
-      if (member) {
-        const memberInGroup = await Group_Member.findOne({
-          where: {
-            conversationId: group.id,
-            userId: member.id
-          }
-        });
-
-        if (!memberInGroup) {
-          const newMember = await Group_Member.create({
-            conversationId: conversationId,
-            userId: memberId,
-            roleId: 2
-          });
-
-          if (newMember) {
-            var message = '@' + member.username + ' was added by ' + '@' + user.username;
-
-            const newMessage = await Chat.create({
-              conversationId: group.id,
-              status: 1,
-              message: message
-            });
-
-            if (!newMessage) {
-              const data = {};
-              await newMember.destroy();
-              await newMember.save();
-            } else {
-              membersUpdated.push(member);
-
-              group.update({
-                last_message: message
-              });
-              group.save();
-
-              const data = {
-                conversation: group
-              };
-
-              io.getIO().in("user" + member.id).socketsJoin(["conversation" + group.id]);
-              io.getIO().to("conversation" + group.id).emit('message', {
-                action: 'newMessage',
-                data: {
-                  chat: newMessage
-                }
-              });
-              io.getIO().to("conversation" + group.id).emit('conversation', {
-                action: 'update',
-                data: data
-              });
-            }
-          }
-        }
+      if (typeof (memberId) != "number") {
+        continue;
       }
+
+      const member = await User.findOne({
+        id: memberId,
+        status: 1
+      });
+
+      if (!member) {
+        continue;
+      }
+
+      const memberInGroup = await Group_Member.findOne({
+        where: {
+          conversationId: group.id,
+          userId: member.id
+        }
+      });
+
+      if (memberInGroup) {
+        continue;
+      }
+
+      const newMember = await Group_Member.create({
+        conversationId: conversationId,
+        userId: memberId,
+        roleId: 2
+      });
+
+      if (!newMember) {
+        continue;
+      }
+
+      var message = '@' + member.username + ' was added by ' + '@' + user.username;
+
+      const newMessage = await Chat.create({
+        conversationId: group.id,
+        status: 1,
+        message: message
+      });
+
+      if (!newMessage) {
+        const data = {};
+        await newMember.destroy();
+        await newMember.save();
+
+        continue;
+      }
+
+      membersUpdated.push(member);
+
+      group.update({
+        last_message: message
+      });
+      group.save();
+
+      const data = {
+        conversation: group
+      };
+
+      io.getIO().in("user" + member.id).socketsJoin(["conversation" + group.id]);
+      io.getIO().to("conversation" + group.id).emit('message', {
+        action: 'newMessage',
+        data: {
+          chat: newMessage
+        }
+      });
+      io.getIO().to("conversation" + group.id).emit('conversation', {
+        action: 'update',
+        data: data
+      });
     }
 
     const data = {
@@ -1011,7 +1026,7 @@ exports.postLeaveGroup = (async (req, res, next) => {
 
 exports.getImagesByUserId = (async (req, res, next) => {
   const userId = req.userId;
-  
+
   const images = await Image.findAll({
     where: userId
   });

@@ -14,16 +14,16 @@ const Image = require('../models/image');
 
 // Run database and run server
 exports.init = (() => {
-  Admin.belongsToMany(Permission, { through: Admin_Permission });
-  Permission.belongsToMany(Admin, { through: Admin_Permission });
+  Admin.belongsToMany(Permission, { through: Admin_Permission, onDelete: 'CASCADE' });
+  Permission.belongsToMany(Admin, { through: Admin_Permission, onDelete: 'CASCADE' });
   Role.hasMany(Group_Member);
   Group_Member.belongsTo(Role, { constraints: true, onDelete: 'CASCADE' });
   Type.hasMany(Conversation);
   Conversation.belongsTo(Type, { constraints: true, onDelete: 'CASCADE' });
   User.belongsToMany(Conversation, { through: Group_Member });
   Conversation.belongsToMany(User, { through: Group_Member });
-  Conversation.belongsTo(User, {as: 'creator'});
-  Conversation.belongsTo(User, {as: 'partner'});
+  Conversation.belongsTo(User, { as: 'creator' });
+  Conversation.belongsTo(User, { as: 'partner' });
   User.hasMany(Chat);
   Chat.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
   Conversation.hasMany(Chat);
@@ -32,9 +32,9 @@ exports.init = (() => {
   Image.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
 
   sequelize
-    // .sync({ force: true })
-    .sync({ alter: true })
-    .then(() => {
+    .sync({ force: true })
+    // .sync({ alter: true })
+    .then(async () => {
       const permissions = [
         {
           name: 'View infomation of user'
@@ -112,31 +112,27 @@ exports.init = (() => {
       ];
 
       // init data for option table and option datas
-      initDataForTable(Permission, permissions);
-      initDataForTable(Role, roles);
-      initDataForTable(Type, types);
-      initDataForTable(User, users);
-      initDataForTable(Admin, admins);
-      initDataForTable(Admin_Permission, admin_permissions);
+      await initDataForTable(Permission, permissions);
+      await initDataForTable(Role, roles);
+      await initDataForTable(Type, types);
+      await initDataForTable(User, users);
+      await initDataForTable(Admin, admins);
+      await initDataForTable(Admin_Permission, admin_permissions);
 
     })
     .catch(err => console.log(err));
 });
 
-function initDataForTable(table, arrayObject) {
-  return table.findAll()
-    .then(data => {
-      if (data.length < 1) {
-        for (let object of arrayObject) {
-          table.create(object)
-            .then(newData => {
-              if (newData) {
-                console.log('Init Data: ' + JSON.stringify(object) + ' for table: ' + table.name + ' successfully!');
-              }
-            })
-            .catch(err => console.log(err));
-        }
+const initDataForTable = (async (table, arrayObject) => {
+  const data = await table.findAll();
+
+  if (data.length < 1) {
+    for (let object of arrayObject) {
+      const newData = await table.create(object);
+
+      if (newData) {
+        console.log('Init Data: ' + JSON.stringify(object) + ' for table: ' + table.name + ' successfully!');
       }
-    })
-    .catch(err => console.log(err));
-}
+    }
+  }
+});

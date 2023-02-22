@@ -25,7 +25,8 @@ routes.post('/conversation/leaveGroup', isUser, haveBody, userInGroup, userContr
 
 routes.get('/users', isUser, accountUserController.getAllUser);
 routes.get('/user/search', isUser, userController.getFindUser);
-routes.post('/user/profile', isUser, accountUserController.postUpdateUser);
+routes.post('/user/profile', isUser, accountUserController.getUser);
+routes.post('/user/profile/update', isUser, accountUserController.postUpdateUser);
 routes.post('/user/media/images', isUser, userController.getImagesByUserId);
 routes.post('/user/media/images/uploads', multerError, userController.postUploadImage);
 
