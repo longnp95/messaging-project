@@ -69,6 +69,71 @@ const pathFileInUrl = (async (file) => {
   return path;
 });
 
+const updateLastSeen = (async (conversation, groupMember, message) => {
+  if (!(conversation && groupMember && message)) return;
+  if (conversation.id != groupMember.conversationId) return;
+  if (conversation.id != message.conversationId) return;
+  if (groupMember.lastSeenId != message.id) {
+    const prevLastSeenId = groupMember.lastSeenId;
+    if (prevLastSeenId) {
+      const prevMessage = await Chat.findOne({
+        where: { id: prevLastSeenId },
+      });
+      if (prevMessage) {
+        const prevTime = new Date(prevMessage.createdAt).getTime();
+        const newTime = new Date(message.createdAt).getTime();
+        if (prevTime > newTime) return;
+        if (prevTime == newTime && prevMessage.id > message.id) return;
+      }
+    }
+    await groupMember.update({
+      lastSeenId: message.id
+    });
+    await groupMember.save();
+    if (prevLastSeenId) {
+      const messageToSend1 = await Chat.findOne({
+        where: { id: prevLastSeenId },
+        include: [{
+          model: User,
+          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender'],
+        }, {
+          model: Group_Member,
+          include: {
+            model: User,
+            attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender'],
+          }
+        }]
+      });
+      if (messageToSend1) io.getIO().to("conversation" + conversation.id).emit("message", {
+        action: "update",
+        data: {
+          chat: messageToSend1
+        }
+      });
+    }
+    
+    const messageToSend2 = await Chat.findOne({
+      where: { id: message.id },
+      include: [{
+        model: User,
+        attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender'],
+      }, {
+        model: Group_Member,
+        include: {
+          model: User,
+          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender'],
+        }
+      }]
+    });
+    if (messageToSend2) io.getIO().to("conversation" + conversation.id).emit("message", {
+      action: "update",
+      data: {
+        chat: messageToSend2
+      }
+    });
+  }
+});
+
 exports.getConversationsByUserId = (async (req, res, next) => {
   const userId = req.userId;
 
@@ -673,7 +738,6 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
 });
 
 exports.getMessageByConversationId = (async (req, res, next) => {
-  const userId = req.userId;
   const conversationId = req.query.conversationId;
 
   if (!(conversationId)) {
@@ -704,48 +768,24 @@ exports.getMessageByConversationId = (async (req, res, next) => {
     if (!conversation) {
       const data = {};
 
-      return await apiData(res, 500, 'Please create conversaion!', data);
+      return await apiData(res, 500, 'Please create conversation!', data);
     }
 
-    const groupMember = await Group_Member.findOne({
-      where: {
-        conversationId: conversationId,
-        userId: userId
-      }
-    })
+    const groupMember = req.userInGroup;
 
     if (!groupMember) {
-      return await apiData(res, 500, 'Please create conversaion!', {});
+      return await apiData(res, 500, 'Please create conversation!', {});
     }
     const lastMessage = await Chat.findOne({
-      where: { conversationId: conversationId },
-      order: [ [ 'createdAt', 'DESC' ]],
+      order: [
+        ['createdAt', 'desc'],
+        ['id', 'desc']
+      ],
+      where: {
+        conversationId: conversationId
+      }
     });
-    if (!lastMessage) return await apiData(res, 200, 'OK', {chats: []});
-    if (groupMember.lastSeenId != lastMessage.id) {
-      await groupMember.update({
-        lastSeenId: lastMessage.id
-      })
-      const messageToSend = await Chat.findOne({
-        where: { id: lastMessage.id },
-        include: [{
-          model: User,
-          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender'],
-        }, {
-          model: Group_Member,
-          include: {
-            model: User,
-            attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender'],
-          }
-        }]
-      });
-      if (messageToSend) io.getIO().to("conversation" + conversation.id).emit("message", {
-        action: "update",
-        data: {
-          chat: messageToSend
-        }
-      });
-    }
+    if (lastMessage && groupMember.lastSeenId != lastMessage.id) await updateLastSeen(conversation, groupMember, lastMessage);
 
     const data = {
       chats: conversation.chats
@@ -760,9 +800,10 @@ exports.getMessageByConversationId = (async (req, res, next) => {
 });
 
 exports.postSendMessage = (async (req, res, next) => {
-  const userId = req.query.userId;
+  const userId = req.userId;
   const conversationId = req.query.conversationId;
   const message = req.body.message;
+  const groupMember = req.userInGroup;
 
   if (!(message && conversationId)) {
     const data = {};
@@ -797,13 +838,13 @@ exports.postSendMessage = (async (req, res, next) => {
     if (!conversation) {
       const data = {};
 
-      return await apiData(res, 500, 'Please create conversaion!', data);
+      return await apiData(res, 500, 'Please create conversation!', data);
     }
 
-    conversation.update({
+    await conversation.update({
       last_message: message
     });
-    conversation.save();
+    await conversation.save();
 
     const newMessage = await Chat.create({
       message: message,
@@ -811,15 +852,47 @@ exports.postSendMessage = (async (req, res, next) => {
       userId: user.id,
       conversationId: conversation.id
     });
+    if (newMessage && groupMember.lastSeenId != newMessage.id) {
+      prevLastSeenId = groupMember.lastSeenId;
+      await groupMember.update({
+        lastSeenId: newMessage.id
+      });
+      await groupMember.save();
+      const messageToSend1 = await Chat.findOne({
+        where: { id: prevLastSeenId },
+        include: [{
+          model: User,
+          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender'],
+        }, {
+          model: Group_Member,
+          include: {
+            model: User,
+            attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender'],
+          }
+        }]
+      });
+      if (messageToSend1) io.getIO().to("conversation" + conversation.id).emit("message", {
+        action: "update",
+        data: {
+          chat: messageToSend1
+        }
+      });
+    }
 
     const messageToSend = await Chat.findOne({
       where: {
         id: newMessage.id
       },
-      include: {
+      include: [{
         model: User,
-        attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender']
-      }
+        attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender'],
+      }, {
+        model: Group_Member,
+        include: {
+          model: User,
+          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender'],
+        }
+      }]
     });
 
     const data = {
@@ -1089,13 +1162,14 @@ exports.getImagesByUserId = (async (req, res, next) => {
 exports.postUploadImage = (async (req, res, next) => {
   const files = req.files;
   const images = [];
+  const userId = req.userId;
 
   for (let i = 0; i < files.length; i++) {
     var file = req.files[i];
     var path = await pathFileInUrl(file);
     var image = await Image.create({
       path: path,
-      userId: req.query.userId
+      userId: userId
     });
     images.push(image);
   }
@@ -1106,4 +1180,46 @@ exports.postUploadImage = (async (req, res, next) => {
 });
 
 exports.postDeleteImage = (async (req, res, next) => {
+});
+
+exports.postSetLastSeen = (async (req, res, next) => {
+  const userId = req.userId;
+  const conversationId = req.query.conversationId;
+  const groupMember = req.userInGroup;
+  if (!(conversationId)) {
+    const data = {};
+
+    return await apiData(res, 500, 'Where is your params ?', data);
+  }
+  try {
+    const conversation = await Conversation.findOne({
+      where: {
+        id: conversationId
+      }
+    });
+    if (!conversation) {
+      const data = {};
+
+      return await apiData(res, 500, 'No such conversation!', data);
+    }
+    const groupMember = req.userInGroup;
+
+    if (!groupMember) {
+      return await apiData(res, 500, 'Not a member in group', {});
+    }
+    const lastMessage = await Chat.findOne({
+      order: [
+        ['createdAt', 'desc'],
+        ['id', 'desc']
+      ],
+      where: {
+        conversationId: conversationId
+      }
+    });
+    if (lastMessage && groupMember.lastSeenId != lastMessage.id) await updateLastSeen(conversation, groupMember, lastMessage);
+    return await apiData(res, 200, 'OK', {});
+  } catch (err) {
+    console.log(new Date(), err);
+    return await apiData(res, 401, 'Fail', {});
+  }
 });

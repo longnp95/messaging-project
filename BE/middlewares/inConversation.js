@@ -14,6 +14,6 @@ module.exports = (async (req, res, next) => {
   if (!userInGroup) {
     return await apiData(res, 500, 'Don\'t have permission in group!', {});
   }
-
+  req.userInGroup = userInGroup;
   next();
 });

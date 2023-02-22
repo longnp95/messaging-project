@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Card from 'react-bootstrap/Card';
 import ImageLoader from '../services/ImageLoader.services';
 import axios from 'axios';
@@ -8,6 +8,7 @@ import moment from 'moment';
 const MessageListContent = ({socket, currentConversation, user}) => {
   const [messages, setMessages] = useState([]);
   const [messageEnd, setMessageEnd] = useState();
+  const [notSeenConversation, setNotSeenConversation] = useState({});
   useEffect(() => {
     if (!messages[currentConversation.id]) {
       console.log('fetching');
@@ -30,9 +31,44 @@ const MessageListContent = ({socket, currentConversation, user}) => {
     }
   },[currentConversation, user, messages]);
 
+  const postLastSeen = async (user, conversationId) => {
+    const response = await axios.post('/conversation/lastSeen',{},{
+      headers: {token: user.token},
+      params: {conversationId: conversationId},
+    });
+    if (response.data.error.status == 500) {
+      alert(response.data.error.message);
+    } else {
+      console.log(response.data.data);
+    }
+  }
+
+  const handleVisibilityChange = async () => {
+    if (!document.hidden && currentConversation && notSeenConversation[currentConversation.id]) {
+      await postLastSeen(user, currentConversation.id);
+      setNotSeenConversation(prevList => {return {...prevList, [currentConversation.id]: true}});
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }
+  })
+
+  useEffect(() => {
+    if (!document.hidden && currentConversation && notSeenConversation[currentConversation.id]) {
+      postLastSeen(user, currentConversation.id).then(() => {
+        setNotSeenConversation(prevList => {return {...prevList, [currentConversation.id]: true}});
+      });
+    }
+  },[currentConversation, user])
+  
   useEffect(() => {
     console.log(`listening message ${currentConversation.id}`);
-    socket.on("message", ({action, data}) => {
+    socket.on("message", async ({action, data}) => {
       console.log(data);
       switch (action) {
         case 'newMessage': 
@@ -80,6 +116,11 @@ const MessageListContent = ({socket, currentConversation, user}) => {
             }
           });
         default:
+      }
+      if (!document.hidden && data.chat && currentConversation && data.chat.conversationId == currentConversation.id) {
+        postLastSeen(user, currentConversation.id);
+      } else {
+        if (data.chat && data.chat.conversationId)setNotSeenConversation(prevList => {return {...prevList, [data.chat.conversationId]: true}});
       }
     });
 
@@ -145,7 +186,8 @@ const MessageListContent = ({socket, currentConversation, user}) => {
     console.log(lastMessage);
     return (
       <div 
-        id="message_list-container-content-item-wrapper" 
+        id="message_list-container-content-item-wrapper"
+        className='message-wrapper' 
         key={message.id}
         ref={(el) => { if (lastMessage) setMessageEnd(el)}}
       >
@@ -208,8 +250,11 @@ const MessageListContent = ({socket, currentConversation, user}) => {
         {message.group_members && (
           <div className='d-flex flex-row justify-content-end'>
             {message.group_members.map((member) => {
-              return <ImageLoader
+              return member.userId == user.id
+              ? <React.Fragment key={member.id}/>
+              : <ImageLoader
                 key={member.id}
+                className="seen-avatar"
                 roundedCircle
                 src={member.user.avatar}
                 alt="avatar"

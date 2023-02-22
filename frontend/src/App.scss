@@ -2,6 +2,7 @@ $blue: #74b9ff;
 $bs-info-rgb: rgb(13,202,240);
 
 body {
+  height: 100vh;
   height: 100dvh;
   background-color: #3498db;
   -webkit-font-smoothing: antialiased;
@@ -79,4 +80,9 @@ img[alt~="avatar"] {
 
 .material-icons:hover{
   cursor: pointer;
+}
+
+.message-wrapper, .seen-avatar {
+  transition-property: all;
+  transition-duration: 500ms;
 }

@@ -10,7 +10,7 @@ const ConversationListContainer = ({socket, isAdding, setIsAdding, conversations
   return (
     <Col sm={4} lg={3} id="conversation_list-container" 
     className={`flex flex-column g-0 border-right bg-light d-${currentConversation.length==0 ? 'flex': 'none'} d-sm-flex`}
-    style={{ borderRadius: "0" , height: "100dvh"}}
+    style={{ borderRadius: "0" , height: "100vh", height: "100dvh"}}
     >
       <LeftNavBar 
         setSearchText={setSearchText}
