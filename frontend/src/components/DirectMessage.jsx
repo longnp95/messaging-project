@@ -66,7 +66,7 @@ const DirectMessage = ({user, setCurrentConversation, conversations, isDMing, se
   }
 
   const listSuggestions = suggestions.map(suggestion => {
-    if (suggestion.id == user.id) return <></>;
+    if (suggestion.id == user.id) return <React.Fragment key={suggestion.id}/>;
     if (!suggestion.username.toLowerCase().includes(searchQuery.toLowerCase())
       && ![suggestion.firstName, suggestion.lastName].join(' ').toLowerCase().includes(searchQuery.toLowerCase())
     ) return <></>;

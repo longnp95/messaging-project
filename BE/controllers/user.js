@@ -589,8 +589,10 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
       }
 
       const member = await User.findOne({
-        id: memberId,
-        status: 1
+        where: {
+          id: memberId,
+          status: 1
+        }
       });
 
       if (!member) {
@@ -671,6 +673,7 @@ exports.postAddMemberInGroup = (async (req, res, next) => {
 });
 
 exports.getMessageByConversationId = (async (req, res, next) => {
+  const userId = req.userId;
   const conversationId = req.query.conversationId;
 
   if (!(conversationId)) {
@@ -685,10 +688,16 @@ exports.getMessageByConversationId = (async (req, res, next) => {
       },
       include: {
         model: Chat,
-        include: {
+        include: [{
           model: User,
           attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender'],
-        }
+        }, {
+          model: Group_Member,
+          include: {
+            model: User,
+            attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender'],
+          }
+        }]
       }
     });
 
@@ -696,14 +705,55 @@ exports.getMessageByConversationId = (async (req, res, next) => {
       const data = {};
 
       return await apiData(res, 500, 'Please create conversaion!', data);
-    } else {
-      const data = {
-        chats: conversation.chats
-      };
-
-      return await apiData(res, 200, 'OK', data);
     }
+
+    const groupMember = await Group_Member.findOne({
+      where: {
+        conversationId: conversationId,
+        userId: userId
+      }
+    })
+
+    if (!groupMember) {
+      return await apiData(res, 500, 'Please create conversaion!', {});
+    }
+    const lastMessage = await Chat.findOne({
+      where: { conversationId: conversationId },
+      order: [ [ 'createdAt', 'DESC' ]],
+    });
+    if (!lastMessage) return await apiData(res, 200, 'OK', {chats: []});
+    if (groupMember.lastSeenId != lastMessage.id) {
+      await groupMember.update({
+        lastSeenId: lastMessage.id
+      })
+      const messageToSend = await Chat.findOne({
+        where: { id: lastMessage.id },
+        include: [{
+          model: User,
+          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender'],
+        }, {
+          model: Group_Member,
+          include: {
+            model: User,
+            attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender'],
+          }
+        }]
+      });
+      if (messageToSend) io.getIO().to("conversation" + conversation.id).emit("message", {
+        action: "update",
+        data: {
+          chat: messageToSend
+        }
+      });
+    }
+
+    const data = {
+      chats: conversation.chats
+    };
+
+    return await apiData(res, 200, 'OK', data);
   } catch (err) {
+    console.log(err);
     var data = {};
     return await apiData(res, 401, 'Fail', data);
   }
