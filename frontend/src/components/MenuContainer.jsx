@@ -12,7 +12,7 @@ const MenuContainer = ({setShowOffcanvas, setIsCreating, setIsDMing}) => {
 
   return (
     <>
-      <Nav className="justify-content-end flex-grow-1 px-0">
+      <Nav className="justify-content-end flex-grow-1 px-2">
         {/*
         <Navbar.Text >Current User</Navbar.Text>
         */}
