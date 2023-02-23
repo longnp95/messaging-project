@@ -131,11 +131,11 @@ const Auth = () => {
               name='username'
               type="text"
               placeholder='Username'
-              pattern='[A-Za-z0-9_@.]*'
+              pattern='[A-Za-z0-9_]*'
               onChange={handleChange}
               autoComplete="off"
               required
-              title='Use character A-Z, a-z, _, @, or .'
+              title='Use character A-Z, a-z, or _'
             />
           </Form.Group>
           <Form.Group controlId='password'>

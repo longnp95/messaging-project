@@ -145,20 +145,20 @@ exports.postUpdateUser = (async (req, res, next) => {
   const lastName = body.lastName;
   const gender = body.gender;
   const avatarPath = body.avatarPath;
-  const dob = body.dateOfBirth;
-  const mobile = body.phoneNumber;
+  const dob = body.dob;
+  const mobile = body.mobile;
   const email = body.email;
   const address = body.address;
-  const userId = req.query.userId;
+  const userId = req.userId;
 
-  if (!(id && username && firstName && lastName && gender && avatarPath && dob && mobile && email)) {
+  if (!(id && username && firstName && lastName)) {
     const data = {};
-    await apiData(res, 500, 'Where your feild ?', data);
+    return await apiData(res, 500, 'Where your feild ?', data);
   }
 
   if (id != userId) {
     const data = {};
-    await apiData(res, 500, 'Id and userId wrong!', data);
+    return await apiData(res, 500, 'Id and userId wrong!', data);
   }
 
   const user = await checkStatusAccount(res, userId, User);

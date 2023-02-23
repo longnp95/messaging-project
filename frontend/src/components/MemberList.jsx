@@ -8,7 +8,7 @@ import Modal from 'react-bootstrap/Modal';
 import ImageLoader from "../services/ImageLoader.services";
 import Dropdown from "react-bootstrap/Dropdown";
 
-const MemberList = ({user, currentConversation, members, setMembers, showMembers, setShowMembers, setIsAdding, roles, setConfirmMessage, setConfirmAction, setConfirming, setConversations, setCurrentConversation}) => {
+const MemberList = ({user, currentConversation, members, setMembers, showMembers, setShowMembers, setIsAdding, roles, setShowInfo, setUserToDisplay}) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleChange = (e) => {
@@ -26,6 +26,11 @@ const MemberList = ({user, currentConversation, members, setMembers, showMembers
       key={member.group_member.id}
       id="suggestion-item-container"
       className="mx-0 py-1 ps-1 flex-nowrap"
+      onClick={()=>{
+        setUserToDisplay(member);
+        setShowInfo(true);
+        setShowMembers(false);
+      }}
     >
       <Col xs="auto" className="g-0 border-right">
         <ImageLoader

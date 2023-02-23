@@ -3,7 +3,7 @@ import Card from 'react-bootstrap/Card';
 import ImageLoader from '../services/ImageLoader.services';
 import axios from 'axios';
 
-const MessageInputContainer = ({currentConversation, user})=>{
+const MessageInputContainer = ({currentConversation, user, currentUserInfo})=>{
   const [message, setMessage] = useState('');
   const handleSubmit = async (e)=>{
     e.preventDefault();
@@ -30,7 +30,7 @@ const MessageInputContainer = ({currentConversation, user})=>{
     <Card.Footer id="message_input-container" className="text-muted d-flex justify-content-start align-items-center p-1">
       <ImageLoader
         roundedCircle
-        src={user.avatar}
+        src={currentUserInfo.avatar}
         alt="avatar"
         style={{ width: "45px", height: "45px" }}
       />

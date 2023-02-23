@@ -8,7 +8,7 @@ import DirectMessage from './DirectMessage';
 import ImageLoader from '../services/ImageLoader.services';
 import { useState } from 'react';
 
-function LeftNavBar({setSearchText, user, setCurrentConversation, conversations, isAdding, setIsAdding}) {
+function LeftNavBar({setSearchText, user, setCurrentConversation, conversations, isAdding, setIsAdding, setUserToDisplay, setShowInfo, currentUserInfo}) {
   const [showOffcanvas, setShowOffcanvas] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isDMing, setIsDMing] = useState(false);
@@ -31,15 +31,22 @@ function LeftNavBar({setSearchText, user, setCurrentConversation, conversations,
             </Form>
             <Offcanvas show={showOffcanvas} onHide={()=>setShowOffcanvas(false)} style={{ maxWidth: "75vw"}}>
               <Offcanvas.Header>
-                <div className='d-flex flex-row justify-content-start align-items-center'>
+                <div 
+                  className='d-flex flex-row justify-content-start align-items-center'
+                  onClick={()=>{
+                    setUserToDisplay(currentUserInfo);
+                    setShowInfo(true);
+                    setShowOffcanvas(false);
+                  }}
+                >
                   <ImageLoader
                     roundedCircle
-                    src={user.avatar}
+                    src={currentUserInfo.avatar}
                     alt="avatar"
                     style={{ width: "50px", height: "50px"}}
                   />
                   <Offcanvas.Title id={`offcanvasNavbarLabel-expand-${expand}`} className="ms-3">
-                    {`${user.firstName} ${user.lastName}`}
+                    {`${currentUserInfo.firstName} ${currentUserInfo.lastName}`}
                   </Offcanvas.Title>
                 </div>
               </Offcanvas.Header>
@@ -51,6 +58,9 @@ function LeftNavBar({setSearchText, user, setCurrentConversation, conversations,
                   user={user}
                   setCurrentConversation={setCurrentConversation}
                   conversations={conversations}
+                  setShowInfo={setShowInfo}
+                  setUserToDisplay={setUserToDisplay}
+                  currentUserInfo={currentUserInfo}
                 />
               </Offcanvas.Body>
             </Offcanvas>

@@ -9,6 +9,7 @@ import Col from 'react-bootstrap/Col';
 import MenuContainer from './components/MenuContainer';
 import ConversationListContainer from './components/ConversationListContainer';
 import ConversationContentContainer from './components/ConversationContentContainer';
+import UserInfo from './components/UserInfo';
 import Auth from './components/Auth';
 
 console.log(window.location.hostname);
@@ -44,9 +45,29 @@ function App() {
   const [conversations, setConversations] = useState([]);
   const [currentConversation, setCurrentConversation] = useState([]);
   const [isAdding, setIsAdding] = useState(false);
+  const [showInfo, setShowInfo] = useState(false);
+  const [userToDisplay, setUserToDisplay] = useState([]);
+  const [currentUserInfo, setCurrentUserInfo] = useState(user);
+
+  useEffect(() => {
+    if (!user) return;
+    axios.get('/user/profile', {
+      headers: {token: user.token},
+      params: {userId: user.id}})
+    .then((response)=>{
+      if (response.data.error.status === 500) {
+        return (
+          console.log(response.data.error.message)
+        )
+      }
+      console.log(response.data.data.user);
+      setCurrentUserInfo(response.data.data.user);
+    }).catch((err)=>{
+      console.log(err)
+    })
+  },[user])  
 
   if(!socket) return <Auth />
-    
   return (
     <Container fluid id="App" className="App g-0">
       <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
@@ -65,6 +86,9 @@ function App() {
           user={user}
           isAdding={isAdding}
           setIsAdding={setIsAdding}
+          setShowInfo={setShowInfo}
+          setUserToDisplay={setUserToDisplay}
+          currentUserInfo={currentUserInfo}
         />
 
         {currentConversation.length==0
@@ -87,9 +111,21 @@ function App() {
             user={user}
             isAdding={isAdding}
             setIsAdding={setIsAdding}
+            setShowInfo={setShowInfo}
+            setUserToDisplay={setUserToDisplay}
+            currentUserInfo={currentUserInfo}
           />
         }
       </Row>
+      <UserInfo
+        user={user}
+        userToDisplay={userToDisplay}
+        showInfo={showInfo}
+        setShowInfo={setShowInfo}
+        setCurrentUserInfo={setCurrentUserInfo}
+        conversations={conversations}
+        setCurrentConversation={setCurrentConversation}
+      />
     </Container>
   );
 }

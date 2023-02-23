@@ -6,6 +6,7 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 import ImageLoader from "../services/ImageLoader.services";
+import UserTooltip from "./UserTooltip";
 
 const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, members, setMembers}) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -13,6 +14,7 @@ const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, member
   const [selecteds, setSelecteds] = useState([]);
 
   useEffect(() => {
+    if (!isAdding) return;
     setSuggestions([]);
     axios.get('/user/search', {
       headers: {token: user.token},
@@ -103,7 +105,7 @@ const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, member
   
   return (
     <Modal
-      onHide={() => {setIsAdding(false); setSearchQuery(''); setSelecteds([]); setMembers([])}}
+      onHide={() => {setIsAdding(false); setSearchQuery(''); setSelecteds([])}}
       show={isAdding}
       size="lg"
       aria-labelledby="contained-modal-title-vcenter"
@@ -121,7 +123,7 @@ const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, member
           style={{height: '75vh'}}
         >
           <Form.Group controlId="memberId" onChange={handleChange}>
-            <Form.Control type="text" placeholder="Search for username" autocomplete="off"/>
+            <Form.Control type="text" placeholder="Search for username" autoComplete="off"/>
           </Form.Group>
           <div className="flex-grow-1" style={{overflowY: 'auto'}}>
             {listSuggestions}
@@ -132,7 +134,7 @@ const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, member
             <div className="d-flex flex-row flex-wrap py-2">
               {selecteds.map((selected) => <div 
                   key={selected.id}
-                  className="bg-info p-1 d-flex flex-row flex-nowrap me-1 my-1 align-items-center text-white"
+                  className="bg-info p-1 d-flex flex-row flex-nowrap me-1 my-1 align-items-center text-white tooltipHover"
                   style={{borderRadius: "2rem"}}
                 >
                   <ImageLoader
@@ -146,6 +148,7 @@ const AddMemberForm = ({user, currentConversation, isAdding, setIsAdding, member
                     style={{fontSize: "15px", verticalAlign: "middle"}}
                     onClick={() => handleRemove(selected)}
                   >close</div>
+                  <UserTooltip user={selected}/>
                 </div>
               )}
             </div>

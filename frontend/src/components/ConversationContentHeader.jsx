@@ -7,7 +7,7 @@ import MemberList from './MemberList';
 import ConfirmationModal from './ConfirmationModal';
 import ImageLoader from '../services/ImageLoader.services';
 
-const ConversationContentHeader = ({currentConversation, user, roles, setCurrentConversation, setConversations, isAdding, setIsAdding}) => {
+const ConversationContentHeader = ({currentConversation, user, roles, setCurrentConversation, setConversations, isAdding, setIsAdding, setShowInfo, setUserToDisplay}) => {
   const [showMembers, setShowMembers] = useState(false);
   const [confirming, setConfirming] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState('Are you sure?');
@@ -24,8 +24,6 @@ const ConversationContentHeader = ({currentConversation, user, roles, setCurrent
           console.log(response.data.error.message)
         )
       }
-      console.log(response.data.data)
-      console.log(response.data.data.conversation.users);
       setMembers(response.data.data.conversation.users);
     }).catch((err)=>{
       console.log(err)
@@ -155,6 +153,8 @@ const ConversationContentHeader = ({currentConversation, user, roles, setCurrent
         setConfirming={setConfirming}
         setConversations={setConversations}
         setCurrentConversation={setCurrentConversation}
+        setShowInfo={setShowInfo}
+        setUserToDisplay={setUserToDisplay}
       />
       <ConfirmationModal
         message={confirmMessage}
