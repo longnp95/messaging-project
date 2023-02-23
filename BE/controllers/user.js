@@ -918,7 +918,7 @@ exports.postSendMessage = (async (req, res, next) => {
 });
 
 exports.getFindUser = (async (req, res, next) => {
-  let limitReturnData = 10;
+  let limitReturnData = 20;
   let searchQuery = req.query.search;
   let users;
   // try {
@@ -954,8 +954,7 @@ exports.getFindUser = (async (req, res, next) => {
           }
         ]
       },
-      attributes: ["id", "username", "firstName", "lastName", "avatar", "status"],
-      limit: limitReturnData
+      attributes: ["id", "username", "firstName", "lastName", "avatar", "status"]
     });
   }
 

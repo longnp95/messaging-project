@@ -27,8 +27,13 @@ body {
   height: 100%;
 }
 
+.offcanvas-header:hover {
+  cursor: pointer;
+}
+
 .navbar-text:hover {
   background: $blue;
+  cursor: pointer;
 }
 
 #conversation-item-container .col {
@@ -49,6 +54,10 @@ body {
 
 img[alt~="avatar"] {
   background: #74b9ff;
+}
+
+img[alt~="avatar"]:hover {
+  cursor: pointer;
 }
 
 .card-footer button:hover {
@@ -85,4 +94,43 @@ img[alt~="avatar"] {
 .message-wrapper, .seen-avatar {
   transition-property: all;
   transition-duration: 500ms;
+}
+.tooltipHover {
+  position: relative;
+}
+/* Tooltip text */
+.tooltipHover .userTooltip {
+  visibility: hidden;
+  background-color: black;
+  max-width: 40vw;
+  color: #fff;
+  text-align: left;
+  padding: 5px 0;
+  border-radius: 10px;
+  opacity: 70%;
+  bottom: 105%;
+  left: 0;
+
+  &--right {
+    left: auto;
+    right: 0;
+  }
+ 
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 1;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltipHover:hover .userTooltip {
+  visibility: visible;
+}
+
+.tooltip-rightBorder {
+  left: auto !important;
+  right: 0 !important;
+}
+
+input:disabled:hover {
+  cursor: default;
 }

@@ -5,8 +5,10 @@ import Row from 'react-bootstrap/Row';
 import Col from 'react-bootstrap/Col';
 import Stack from 'react-bootstrap/Stack';
 import ImageLoader from '../services/ImageLoader.services';
+import UserTooltip from './UserTooltip';
+import moment from 'moment';
 
-const ConversationListContent = ({socket, conversations, setConversations, currentConversation, setCurrentConversation, user, searchText, setSearchText}) => {
+const ConversationListContent = ({socket, conversations, setConversations, currentConversation, setCurrentConversation, user, searchText, setUserToDisplay, setShowInfo}) => {
   const [suggestions, setSuggestions] = useState([]);
   
   useEffect(() => {
@@ -92,9 +94,9 @@ const ConversationListContent = ({socket, conversations, setConversations, curre
     const scrollAreaRect = document.getElementById('conversation_list-container-content').getBoundingClientRect();
     const currentConversationRect = currentConversationItem.getBoundingClientRect();
     if (currentConversationRect.top < scrollAreaRect.top) {
-      currentConversationItem.scrollIntoView({ behavior: "smooth" });
+      currentConversationItem.scrollIntoView(/* { behavior: "smooth" } */);
     } else if (currentConversationRect.bottom > scrollAreaRect.bottom) {
-      currentConversationItem.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest"});  
+      currentConversationItem.scrollIntoView({ /* behavior: "smooth",  */block: "end", inline: "nearest"});  
     }
   }, [currentConversation])
 
@@ -125,18 +127,34 @@ const ConversationListContent = ({socket, conversations, setConversations, curre
       setCurrentConversation(response.data.data.conversation);
     }
   }
+
+  const isToday = (date) => {
+    const now = new Date();
+    if (now.toDateString() === date.toDateString()){
+      return true;
+    } else {
+      return false;
+    }
+  }
+
   const conversationItems = conversations
   .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
   .map((conversation) => {
+    const updatedAt = new Date(conversation.updatedAt);
     let nameToDisplay = conversation.name;
     let avatarToDisplay = conversation.avatar;
+    let userToDisplay;
+    let conversationType = "Group";
     if (conversation.typeId==1) {
+      conversationType = "Direct";
       if (conversation.partnerId != user.id && conversation.partner) {
         nameToDisplay = [conversation.partner.firstName, conversation.partner.lastName].join(' ');
         avatarToDisplay = conversation.partner.avatar;
+        userToDisplay = conversation.partner;
       } else if (conversation.creatorId != user.id && conversation.creator) {
         nameToDisplay = [conversation.creator.firstName, conversation.creator.lastName].join(' ');
         avatarToDisplay = conversation.creator.avatar;
+        userToDisplay = conversation.creator;
       }
     }
     if (!nameToDisplay.toLowerCase().includes(searchText.toLowerCase())) return <React.Fragment key={conversation.id}/>;
@@ -145,7 +163,8 @@ const ConversationListContent = ({socket, conversations, setConversations, curre
         key={conversation.id}
         id={`${conversation.id==currentConversation.id? 'current_conversation-container' : 'conversation-item-container'}`}
         onClick={() => handleClick(conversation)}
-        className={`mx-0 py-1 ps-1 flex-nowrap ${conversation.id==currentConversation.id? 'bg-info' : ''}`}
+        className={`mx-0 py-1 ps-1 flex-nowrap ${conversation.id==currentConversation.id? 'bg-info' : ''} ${userToDisplay ? 'tooltipHover' : ''}`}
+        style={{ position: "relative" }}
       >
         <Col className="g-0 border-right">
           <ImageLoader
@@ -155,13 +174,21 @@ const ConversationListContent = ({socket, conversations, setConversations, curre
           />
         </Col>
         <Col xs={8} className="ms-1 flex-grow-1 px-0 px-sm-1">
-          <div id='conversation-name'>
-            {nameToDisplay}
+          <div id='conversation-name' className='d-flex flex-row justify-content-between flex-nowrap'>
+            <div
+              className='text-truncate'
+            >
+              {nameToDisplay}
+            </div>
+            <span id='conversation-preview' className=''>{conversationType}</span>
           </div>
-          <div id='conversation-preview'
-            className='text-truncate'
-          >
-            {conversation.last_message}
+          <div id='conversation-preview' className='d-flex flex-row justify-content-between flex-nowrap'>
+            <div
+              className='text-truncate'
+            >
+              {conversation.last_message}
+            </div>
+            <span className=''>{isToday(updatedAt)? moment(updatedAt).format("hh:mm") : moment(updatedAt).format("DD/MM/YY")}</span>
           </div>
         </Col>
       </Row>
@@ -178,7 +205,10 @@ const ConversationListContent = ({socket, conversations, setConversations, curre
       <Row
         key={suggestion.id}
         id="conversation-item-container"
-        onClick={() => handleClickSuggestion(suggestion)}
+        onClick={()=>{
+          setUserToDisplay(suggestion);
+          setShowInfo(true);
+        }}
         className={`mx-0 py-1 ps-1 flex-nowrap`}
       >
         <Col className="g-0 border-right">

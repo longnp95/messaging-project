@@ -16,23 +16,21 @@ const apiData = (async (res, status, message, data) => {
 const checkConversation = (async (res, id) => {
   if (!id) {
     const data = {};
-    await apiData(res, 500, 'Where params ?', data);
+    return await apiData(res, 500, 'Where params ?', data);
   }
 
   const conversation = await Conversation.findOne({
     where: {
       id: id
-    },
-    include: {
-      all: true,
-      nested: true
     }
   });
 
   if (!conversation) {
+    console.log('no conversation');
     const data = {};
-    await apiData(res, 500, 'THis conversation doesn\'t exists!', data);
+    return await apiData(res, 500, 'THis conversation doesn\'t exists!', data);
   } else {
+    console.log('conversation existed');
     return conversation;
   }
 });
@@ -79,7 +77,6 @@ exports.getConversation = (async (req, res, next) => {
 
 exports.postDeleteConversation = (async (req, res, next) => {
   const conversationId = req.query.conversationId;
-
   if (!conversationId) {
     const data = {};
     return await apiData(res, 500, 'Where your params ?', data);
@@ -88,15 +85,12 @@ exports.postDeleteConversation = (async (req, res, next) => {
   try {
     const conversation = await checkConversation(res, conversationId);
 
-    if (!conversation) {
-      return conversation;
-    }
-
     await Group_Member.destroy({
       where: {
         conversationId: conversation.id
       }
     });
+    console.log('deleted');
 
     await Chat.destroy({
       where: {

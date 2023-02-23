@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import Card from 'react-bootstrap/Card';
 import ImageLoader from '../services/ImageLoader.services';
+import UserTooltip from './UserTooltip';
 import axios from 'axios';
 import moment from 'moment';
 
 
-const MessageListContent = ({socket, currentConversation, user}) => {
+const MessageListContent = ({socket, currentConversation, user, setUserToDisplay, setShowInfo}) => {
   const [messages, setMessages] = useState([]);
   const [messageEnd, setMessageEnd] = useState();
   const [notSeenConversation, setNotSeenConversation] = useState({});
@@ -131,7 +132,7 @@ const MessageListContent = ({socket, currentConversation, user}) => {
 
   useEffect(() => {
     console.log(messageEnd);
-    messageEnd && messageEnd.scrollIntoView();
+    messageEnd && messageEnd.scrollIntoView(/* { behavior: "smooth" } */);
   },[messageEnd])
 
   const isFirstOfSenderGroup = (message, index) => {
@@ -183,7 +184,6 @@ const MessageListContent = ({socket, currentConversation, user}) => {
     const firstInGroup = isFirstOfSenderGroup(message, index);
     const createdAt = new Date(message.createdAt);
     const lastMessage = isLastMessage(message, index);
-    console.log(lastMessage);
     return (
       <div 
         id="message_list-container-content-item-wrapper"
@@ -219,12 +219,21 @@ const MessageListContent = ({socket, currentConversation, user}) => {
           >
             {/*Avatar*/}
             {message.userId!=user.id && (newDay || firstInGroup) && (
-              <ImageLoader
-                roundedCircle
-                src={message.user.avatar}
-                alt="avatar"
-                style={{ width: "40px", height: "40px", position: "absolute"}}
-              />
+              <div style={{ position: "absolute" }} className="tooltipHover">
+                <ImageLoader
+                  roundedCircle
+                  src={message.user.avatar}
+                  alt="avatar"
+                  style={{ width: "40px", height: "40px"}}
+                  onClick={()=>{
+                    setUserToDisplay(message.user);
+                    setShowInfo(true);
+                  }}
+                />
+                <UserTooltip
+                  user={message.user}
+                />
+              </div>
             )}
             {/*senderName, message */}
             <div>
@@ -236,7 +245,7 @@ const MessageListContent = ({socket, currentConversation, user}) => {
                 }}
               >
                 {message.userId!=user.id && (newDay || firstInGroup) && (
-                  <div className="senderName">{message.user.firstName}</div>
+                  <div className="senderName">{[message.user.firstName, message.user.lastName].filter(e=>e).join(' ')}</div>
                 )}
                 <div>{message.message}</div>
               </div>
@@ -258,6 +267,10 @@ const MessageListContent = ({socket, currentConversation, user}) => {
                 roundedCircle
                 src={member.user.avatar}
                 alt="avatar"
+                onClick={()=>{
+                  setUserToDisplay(member.user);
+                  setShowInfo(true);
+                }}
                 style={{ width: "15px", height: "auto", aspectRatio: "1" }}
               />
             })}
