@@ -122,6 +122,10 @@ exports.init = (() => {
       await initDataForTable(Admin, admins);
       await initDataForTable(Admin_Permission, admin_permissions);
 
+      User.addScope('userBasicInfo', {
+        model: User,
+        attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+      });
     })
     .catch(err => console.log(err));
 });
