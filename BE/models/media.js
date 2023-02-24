@@ -3,7 +3,7 @@ const Sequelize = require('sequelize');
 const sequelize = require('../config/db');
 
 // Create database with define model of Sequelize
-const Image = sequelize.define('images', {
+const Media = sequelize.define('media', {
   // field primary key and type is INTEGER
   id: {
     type: Sequelize.INTEGER,
@@ -12,11 +12,26 @@ const Image = sequelize.define('images', {
     primaryKey: true
   },
 
+  originalName: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+
   // field cannot be null and type is String
   path: {
     type: Sequelize.STRING,
     allowNull: false
+  },
+
+  mimeType: {
+    type: Sequelize.STRING,
+    allowNull: false
+  },
+
+  size: {
+    type: Sequelize.INTEGER,
+    allowNull: false
   }
 });
 
-module.exports = Image;
+module.exports = Media;

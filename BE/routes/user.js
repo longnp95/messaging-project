@@ -1,6 +1,5 @@
 const express = require('express');
 const routes = express.Router();
-const uploadImage = require('../config/uploadImage');
 
 const haveBody = require('../middlewares/haveBody');
 const isUser = require('../middlewares/isUser');
@@ -28,8 +27,8 @@ routes.get('/users', isUser, accountUserController.getAllUser);
 routes.get('/user/search', isUser, userController.getFindUser);
 routes.get('/user/profile', isUser, accountUserController.getUser);
 routes.post('/user/profile/update', isUser, accountUserController.postUpdateUser);
-routes.get('/user/media/images', isUser, userController.getImagesByUserId);
-routes.post('/user/media/images/uploads', isUser, multerError, userController.postUploadImage);
+routes.get('/user/media', isUser, userController.getFilesByUserId);
+routes.post('/user/media/uploads', isUser, multerError, userController.postUploadFiles);
 
 
 routes.get('/role', userController.getRoles);

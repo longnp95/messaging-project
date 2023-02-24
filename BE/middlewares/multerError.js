@@ -1,9 +1,10 @@
 const multer = require('multer');
-const uploadImage = require('../config/uploadImage');
+const upload = require('../config/upload');
 
 module.exports = (req, res, next) => {
-  uploadImage(req, res, function (err) {
+  upload(req, res, function (err) {
     if (err instanceof multer.MulterError) {
+      console.log(err);
       // A Multer error occurred when uploading.
       return res.status(200).json({
         error: {

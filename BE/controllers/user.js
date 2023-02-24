@@ -2,7 +2,7 @@ const io = require('../socket');
 const User = require('../models/user');
 const Group_Member = require('../models/group_member');
 const Conversation = require('../models/conversation');
-const Image = require('../models/image');
+const Media = require('../models/media');
 const Role = require('../models/role');
 const Type = require('../models/type');
 const Chat = require('../models/chat');
@@ -1153,35 +1153,44 @@ exports.postLeaveGroup = (async (req, res, next) => {
   // }
 });
 
-exports.getImagesByUserId = (async (req, res, next) => {
+exports.getFilesByUserId = (async (req, res, next) => {
   const userId = req.userId;
 
-  const images = await Image.findAll({
-    where: userId
+  const medias = await Media.findAll({
+    where: userId,
   });
 
   return await apiData(res, 200, 'OK', {
-    images: images
+    medias: medias
   });
 });
 
-exports.postUploadImage = (async (req, res, next) => {
+exports.postUploadFiles = (async (req, res, next) => {
   const files = req.files;
-  const images = [];
+  const medias = [];
   const userId = req.userId;
 
   for (let i = 0; i < files.length; i++) {
     var file = req.files[i];
     var path = await pathFileInUrl(file);
-    var image = await Image.create({
+    var media = await Media.create({
+      originalName: file.originalname,
       path: path,
-      userId: userId
+      userId: userId,
+      mimeType: file.mimetype,
+      size: file.size
     });
-    images.push(image);
+
+    if(!media) {
+      continue;
+    }
+
+    medias.push(media);
   }
 
-  return await apiData(res, 200, 'Upload avatar successfully', {
-    images: images
+  return await apiData(res, 200, 'Upload files successfully', {
+    medias: medias,
+    filesUploaded: files.length + "/" + medias.length
   });
 });
 
