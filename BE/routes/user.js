@@ -18,6 +18,8 @@ routes.post('/conversation/delete', isUser, haveBody, userInGroup, isOwnerInGrou
 routes.post('/conversation/setrole', isUser, haveBody, userInGroup, userController.postSetRole);
 routes.get('/conversation/getMessage', isUser, userInGroup, userController.getMessageByConversationId);
 routes.post('/conversation/sendMessage', isUser, haveBody, userInGroup, userController.postSendMessage);
+routes.post('/conversation/editMessage', isUser, haveBody, userInGroup, userController.postEditMessage);
+routes.post('/conversation/deleteMessage', isUser, haveBody, userInGroup, userController.postDeleteMessage);
 routes.get('/conversation/getMember', isUser, haveBody, userInGroup, userController.getMembersInGroup);
 routes.post('/conversation/addMember', isUser, haveBody, userInGroup, userController.postAddMemberInGroup);
 routes.post('/conversation/leaveGroup', isUser, haveBody, userInGroup, userController.postLeaveGroup);
