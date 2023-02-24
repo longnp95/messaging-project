@@ -131,7 +131,7 @@ const Auth = () => {
               name='username'
               type="text"
               placeholder='Username'
-              pattern='[A-Za-z0-9_]*'
+              pattern={isSignup? '[A-Za-z0-9_]*' : "*"}
               onChange={handleChange}
               autoComplete="off"
               required

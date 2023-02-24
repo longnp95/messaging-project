@@ -7,6 +7,7 @@ import Stack from 'react-bootstrap/Stack';
 import ImageLoader from '../services/ImageLoader.services';
 import UserTooltip from './UserTooltip';
 import moment from 'moment';
+import Badge from 'react-bootstrap/Badge';
 
 const ConversationListContent = ({socket, conversations, setConversations, currentConversation, setCurrentConversation, user, searchText, setUserToDisplay, setShowInfo}) => {
   const [suggestions, setSuggestions] = useState([]);
@@ -66,7 +67,7 @@ const ConversationListContent = ({socket, conversations, setConversations, curre
             const nextConversations = prevConversations.map(conversation => {
               if (conversation.id == data.conversation.id) {
                 found = true;
-                return data.conversation;
+                return {...data.conversation, n_messages:conversation.n_messages};
               } else {
                 return conversation;
               }
@@ -180,7 +181,7 @@ const ConversationListContent = ({socket, conversations, setConversations, curre
             >
               {nameToDisplay}
             </div>
-            <span id='conversation-preview' className=''>{conversationType}</span>
+            <span id='conversation-preview' className=''>{isToday(updatedAt)? moment(updatedAt).format("hh:mm") : moment(updatedAt).format("DD/MM/YY")}</span>
           </div>
           <div id='conversation-preview' className='d-flex flex-row justify-content-between flex-nowrap'>
             <div
@@ -188,7 +189,10 @@ const ConversationListContent = ({socket, conversations, setConversations, curre
             >
               {conversation.last_message}
             </div>
-            <span className=''>{isToday(updatedAt)? moment(updatedAt).format("hh:mm") : moment(updatedAt).format("DD/MM/YY")}</span>
+            {conversation.n_messages
+            ? <Badge pill bg="secondary">{conversation.n_messages}</Badge>
+            : <span className=''>{conversationType}</span>
+            }
           </div>
         </Col>
       </Row>
