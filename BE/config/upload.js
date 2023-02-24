@@ -5,7 +5,7 @@ const fileStorage = multer.diskStorage({
     cb(null, 'public/uploads');
   },
   filename: (req, file, cb) => {
-    cb(null, 'userId.' + req.userId + '-' + '-' + Date.now() + '-' + file.originalname);
+    cb(null, 'userId.' + req.userId + '-' + file.mimetype.split('/')[0] + '.' + file.mimetype.split('/')[1] + '-' + Date.now() + '-' + file.originalname);
   }
 });
 
