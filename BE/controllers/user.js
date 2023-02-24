@@ -153,6 +153,12 @@ exports.getConversationsByUserId = (async (req, res, next) => {
             model: User,
             as: 'partner',
             attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+          // }, {
+          //   model: Chat,
+          //   attributes: [
+          //     'id',
+          //     [sequelize.fn('COUNT', sequelize.col('id')), 'n_notSeen']
+          //   ]
           }
         ]
       }
@@ -168,6 +174,7 @@ exports.getConversationsByUserId = (async (req, res, next) => {
 
     return await apiData(res, 200, 'OK', data);
   } catch (err) {
+    console.log(err);
     const data = {};
     return await apiData(res, 500, 'Fail', data);
   }

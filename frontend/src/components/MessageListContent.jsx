@@ -9,6 +9,8 @@ import moment from 'moment';
 const MessageListContent = ({socket, currentConversation, user, setUserToDisplay, setShowInfo}) => {
   const [messages, setMessages] = useState([]);
   const [messageEnd, setMessageEnd] = useState();
+  const [messageEndConversationId, setMessageEndConversationId] = useState();
+  const [prevConversationId, setPrevConversationId] = useState();
   const [notSeenConversation, setNotSeenConversation] = useState({});
   useEffect(() => {
     if (!messages[currentConversation.id]) {
@@ -74,8 +76,6 @@ const MessageListContent = ({socket, currentConversation, user, setUserToDisplay
       switch (action) {
         case 'newMessage': 
           setMessages(prevMessages => {
-            console.log(data);
-            console.log(prevMessages);
             let conversation = null
             if (data.chat.conversationId) conversation = prevMessages[data.chat.conversationId];
             if (!conversation) {
@@ -131,9 +131,19 @@ const MessageListContent = ({socket, currentConversation, user, setUserToDisplay
   }, [socket, currentConversation, user, messageEnd]);
 
   useEffect(() => {
-    console.log(messageEnd);
-    messageEnd && messageEnd.scrollIntoView(/* { behavior: "smooth" } */);
-  },[messageEnd])
+    if (messageEnd && 
+    messageEndConversationId &&
+    messageEndConversationId === currentConversation.id) {
+      if (prevConversationId !== currentConversation.id) {
+        messageEnd.scrollIntoView(/* { behavior: "smooth" } */);
+        setPrevConversationId(currentConversation.id);
+      } else {
+        const messageEndRect = messageEnd.getBoundingClientRect();
+        const messagesContainerRect = document.getElementById('message_list-container-content').getBoundingClientRect();
+        if (messageEndRect.top < messagesContainerRect.bottom && messageEndRect.bottom > messagesContainerRect.bottom) messageEnd.scrollIntoView({ behavior: 'smooth' });
+      }
+    }
+  },[messageEnd, currentConversation, messageEndConversationId, prevConversationId])
 
   const isFirstOfSenderGroup = (message, index) => {
     return index===0 || messages[currentConversation.id][index-1].userId !== message.userId
@@ -162,7 +172,7 @@ const MessageListContent = ({socket, currentConversation, user, setUserToDisplay
       return false;
     }
   }
-  console.log(messages);
+
   if (!(messages[currentConversation.id]&&messages[currentConversation.id].length)) return (
     <Card.Body 
       id="message_list-container-content"
@@ -189,7 +199,7 @@ const MessageListContent = ({socket, currentConversation, user, setUserToDisplay
         id="message_list-container-content-item-wrapper"
         className='message-wrapper' 
         key={message.id}
-        ref={(el) => { if (lastMessage) setMessageEnd(el)}}
+        ref={(el) => { if (lastMessage) {setMessageEnd(el); setMessageEndConversationId(message.conversationId)}}}
       >
         {/*Display date*/}
         {newDay && (
@@ -261,9 +271,8 @@ const MessageListContent = ({socket, currentConversation, user, setUserToDisplay
             {message.group_members.map((member) => {
               return member.userId == user.id
               ? <React.Fragment key={member.id}/>
-              : <div className='tooltipHover'>
+              : <div key={member.id} className='tooltipHover'>
                 <ImageLoader
-                  key={member.id}
                   className="seen-avatar"
                   roundedCircle
                   src={member.user.avatar}
