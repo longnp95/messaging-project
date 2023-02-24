@@ -6,7 +6,7 @@ const Image = require('../models/image');
 const Role = require('../models/role');
 const Type = require('../models/type');
 const Chat = require('../models/chat');
-const { Op } = require('sequelize');
+const { Op, where } = require('sequelize');
 const Sequelize = require('sequelize');
 const sequelize = require('../config/db');
 
@@ -139,11 +139,28 @@ exports.getConversationsByUserId = (async (req, res, next) => {
 
   try {
     const user = await User.findOne({
+      group: ['conversations.id'],
       where: {
         id: userId
       },
       include: {
         model: Conversation,
+        attributes: {
+          include: [
+            [
+              // Note the wrapping parentheses in the call below!
+              sequelize.literal(`(
+                SELECT COUNT(*)
+                FROM chats AS chat
+                WHERE 
+                  chat.conversationId = conversations.id
+                  AND
+                  chat.id > \`conversations->group_member\`.\`lastSeenId\`
+              )`),
+              'n_messages'
+            ]
+          ],
+        },
         include: [
           {
             model: User,
@@ -153,12 +170,9 @@ exports.getConversationsByUserId = (async (req, res, next) => {
             model: User,
             as: 'partner',
             attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
-          // }, {
-          //   model: Chat,
-          //   attributes: [
-          //     'id',
-          //     [sequelize.fn('COUNT', sequelize.col('id')), 'n_notSeen']
-          //   ]
+          }, {
+            model: Chat,
+            attributes: []
           }
         ]
       }
