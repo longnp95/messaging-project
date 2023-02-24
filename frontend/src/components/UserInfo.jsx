@@ -253,15 +253,15 @@ const UserInfo = ({user, userToDisplay, showInfo, setShowInfo, setCurrentUserInf
               disabled={isEditing ? false : true}
             />
           </Form.Group>
-          {(userToDisplay.id==user.id && !isEditing)
-          ? <div className="d-flex flex-row justify-content-start">
-                <Button variant="info" className='mt-2 me-0' onClick={()=> setIsEditing(true)}>Edit Profile</Button>
-            </div>
-          : <div className="d-flex flex-row justify-content-end">
+          {(userToDisplay.id!=user.id) && <div className="d-flex flex-row justify-content-end">
               <Button variant="info" className='mt-2 me-0' onClick={()=> handleDirectMessage(userToDisplay)}>DirectMessage</Button>
             </div>
           }
-          {isEditing && 
+          {(userToDisplay.id==user.id && !isEditing) && <div className="d-flex flex-row justify-content-start">
+                <Button variant="info" className='mt-2 me-0' onClick={()=> setIsEditing(true)}>Edit Profile</Button>
+            </div> 
+          }
+          {userToDisplay.id==user.id && isEditing && 
           <div className="d-flex flex-row justify-content-end">
             <div>
                 <Button variant="primary" type="submit" className='mt-2 me-0'>Submit</Button>

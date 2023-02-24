@@ -224,7 +224,7 @@ const MessageListContent = ({socket, currentConversation, user, setUserToDisplay
                   roundedCircle
                   src={message.user.avatar}
                   alt="avatar"
-                  style={{ width: "40px", height: "40px"}}
+                  style={{ width: "40px", height: "auto", aspectRatio: "1"}}
                   onClick={()=>{
                     setUserToDisplay(message.user);
                     setShowInfo(true);
@@ -261,18 +261,25 @@ const MessageListContent = ({socket, currentConversation, user, setUserToDisplay
             {message.group_members.map((member) => {
               return member.userId == user.id
               ? <React.Fragment key={member.id}/>
-              : <ImageLoader
-                key={member.id}
-                className="seen-avatar"
-                roundedCircle
-                src={member.user.avatar}
-                alt="avatar"
-                onClick={()=>{
-                  setUserToDisplay(member.user);
-                  setShowInfo(true);
-                }}
-                style={{ width: "15px", height: "auto", aspectRatio: "1" }}
-              />
+              : <div className='tooltipHover'>
+                <ImageLoader
+                  key={member.id}
+                  className="seen-avatar"
+                  roundedCircle
+                  src={member.user.avatar}
+                  alt="avatar"
+                  onClick={()=>{
+                    setUserToDisplay(member.user);
+                    setShowInfo(true);
+                  }}
+                  style={{ width: "15px", height: "auto", aspectRatio: "1" }}
+                />
+                <UserTooltip
+                  user={member.user}
+                  rightBorder={true}
+                />
+              </div>
+              
             })}
           </div>
           
@@ -285,7 +292,7 @@ const MessageListContent = ({socket, currentConversation, user, setUserToDisplay
   return (
     <Card.Body 
       id="message_list-container-content"
-      style={{overflowY: 'scroll'}}
+      style={{overflowY: 'scroll', overflowX: 'hidden'}}
     >
       {listItems}
     </Card.Body>
