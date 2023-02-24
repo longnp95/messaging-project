@@ -5,6 +5,7 @@ import Form from 'react-bootstrap/Form';
 import Modal from 'react-bootstrap/Modal';
 
 const NewConversationForm = ({user, isCreating, setIsCreating, setCurrentConversation, setIsAdding}) => {
+  const [loadMessage, setLoadMessage] = useState('');
   const initialForm = {
     conversationName: "",
     conversationAvatarUrl: "",
@@ -16,10 +17,12 @@ const NewConversationForm = ({user, isCreating, setIsCreating, setCurrentConvers
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoadMessage("Creating Group...");
     let conversationAvatarUrl=form.conversationAvatarUrl;
     if (form.conversationAvatar) {
       var formData = new FormData();
       formData.append("images", form.conversationAvatar);
+      setLoadMessage('Uploading Images...');
       const imgUploadRes = await axios.post('/user/media/images/uploads', formData,{
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -27,8 +30,9 @@ const NewConversationForm = ({user, isCreating, setIsCreating, setCurrentConvers
         },
       });
       if (imgUploadRes.data.error.status == 500) {
-        alert(imgUploadRes.data.error.message);
+        setLoadMessage(imgUploadRes.data.error.message);
       }
+      setLoadMessage("Creating Group...");
       console.log(imgUploadRes.data);
       conversationAvatarUrl = imgUploadRes.data.data.images[0].path
       setForm({...form, ["conversationAvatarUrl"]:conversationAvatarUrl})
@@ -43,11 +47,12 @@ const NewConversationForm = ({user, isCreating, setIsCreating, setCurrentConvers
       params: {userId: user.id},
     });
     if (response.data.error.status == 500) {
-      alert(response.data.error.message);
+      setLoadMessage(response.data.error.message);
       return;
     }
     setCurrentConversation(response.data.data.conversation)
     console.log(response.data.data);
+    setLoadMessage('');
     setForm(initialForm);
     setIsCreating(false);
     setIsAdding(true);
@@ -74,13 +79,14 @@ const NewConversationForm = ({user, isCreating, setIsCreating, setCurrentConvers
       <form onSubmit={handleSubmit}>
         <Form.Group className="mb-3" controlId="conversationName" onChange={handleChange}>
           <Form.Label>Group Name</Form.Label>
-          <Form.Control type="text" placeholder="Enter group name" required/>
+          <Form.Control type="text" placeholder="Enter group name" required autoComplete="off"/>
         </Form.Group>
         <Form.Group className="mb-3" controlId="conversationAvatar" onChange={(e)=>setForm({...form, conversationAvatar:e.target.files[0]})}>
           <Form.Label>Avatar</Form.Label>
           <Form.Control type="file" placeholder="Avatar" size="sm" accept="image/*"/>
         </Form.Group>
-        <Button variant="primary" type="submit">
+        <div className="text-info text-truncate">{loadMessage}</div>
+        <Button variant="primary" type="submit" disabled={loadMessage ? true : false}>
           Create
         </Button>
       </form>
