@@ -10,7 +10,7 @@ const Group_Member = require('../models/group_member');
 const Role = require('../models/role');
 const Type = require('../models/type');
 const User = require('../models/user');
-const Image = require('../models/image');
+const Media = require('../models/media');
 
 // Run database and run server
 exports.init = (() => {
@@ -28,8 +28,8 @@ exports.init = (() => {
   Chat.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
   Conversation.hasMany(Chat);
   Chat.belongsTo(Conversation, { constraints: true, onDelete: 'CASCADE' });
-  User.hasMany(Image);
-  Image.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
+  User.hasMany(Media);
+  Media.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
   Chat.hasMany(Group_Member, { foreignKey: 'lastSeenId' });
   Group_Member.belongsTo(Chat, { as: 'lastSeen' });
   Group_Member.belongsTo(User);
@@ -122,6 +122,10 @@ exports.init = (() => {
       await initDataForTable(Admin, admins);
       await initDataForTable(Admin_Permission, admin_permissions);
 
+      User.addScope('userBasicInfo', {
+        model: User,
+        attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+      });
     })
     .catch(err => console.log(err));
 });

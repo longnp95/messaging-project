@@ -1,6 +1,5 @@
 const express = require('express');
 const routes = express.Router();
-const uploadImage = require('../config/uploadImage');
 
 const haveBody = require('../middlewares/haveBody');
 const isUser = require('../middlewares/isUser');
@@ -19,6 +18,8 @@ routes.post('/conversation/delete', isUser, haveBody, userInGroup, isOwnerInGrou
 routes.post('/conversation/setrole', isUser, haveBody, userInGroup, userController.postSetRole);
 routes.get('/conversation/getMessage', isUser, userInGroup, userController.getMessageByConversationId);
 routes.post('/conversation/sendMessage', isUser, haveBody, userInGroup, userController.postSendMessage);
+routes.post('/conversation/editMessage', isUser, haveBody, userInGroup, userController.postEditMessage);
+routes.post('/conversation/deleteMessage', isUser, haveBody, userInGroup, userController.postDeleteMessage);
 routes.get('/conversation/getMember', isUser, haveBody, userInGroup, userController.getMembersInGroup);
 routes.post('/conversation/addMember', isUser, haveBody, userInGroup, userController.postAddMemberInGroup);
 routes.post('/conversation/leaveGroup', isUser, haveBody, userInGroup, userController.postLeaveGroup);
@@ -28,8 +29,8 @@ routes.get('/users', isUser, accountUserController.getAllUser);
 routes.get('/user/search', isUser, userController.getFindUser);
 routes.get('/user/profile', isUser, accountUserController.getUser);
 routes.post('/user/profile/update', isUser, accountUserController.postUpdateUser);
-routes.get('/user/media/images', isUser, userController.getImagesByUserId);
-routes.post('/user/media/images/uploads', isUser, multerError, userController.postUploadImage);
+routes.get('/user/media', isUser, userController.getFilesByUserId);
+routes.post('/user/media/uploads', isUser, multerError, userController.postUploadFiles);
 
 
 routes.get('/role', userController.getRoles);
