@@ -4,7 +4,7 @@ module.exports = (async (req, res, next) => {
   const userId = req.userId;
   const conversationId = req.query.conversationId;
 
-  if (!userInGroup) {
+  if (!conversationId) {
     return await apiData(res, 500, 'No conversationId provided', {});
   }
 

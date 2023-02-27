@@ -164,7 +164,7 @@ const ConversationListContent = ({socket, conversations, setConversations, curre
         key={conversation.id}
         id={`${conversation.id==currentConversation.id? 'current_conversation-container' : 'conversation-item-container'}`}
         onClick={() => handleClick(conversation)}
-        className={`mx-0 py-1 ps-1 flex-nowrap ${conversation.id==currentConversation.id? 'bg-info' : ''} ${userToDisplay ? 'tooltipHover' : ''}`}
+        className={`mx-0 px-1 py-1 flex-nowrap ${conversation.id==currentConversation.id? 'bg-info' : ''} ${userToDisplay ? 'tooltipHover' : ''}`}
         style={{ position: "relative" }}
       >
         <Col className="g-0 border-right">
@@ -213,7 +213,7 @@ const ConversationListContent = ({socket, conversations, setConversations, curre
           setUserToDisplay(suggestion);
           setShowInfo(true);
         }}
-        className={`mx-0 py-1 ps-1 flex-nowrap`}
+        className={`mx-0 p-1 flex-nowrap`}
       >
         <Col className="g-0 border-right">
           <ImageLoader

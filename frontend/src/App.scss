@@ -74,7 +74,7 @@ img[alt~="avatar"]:hover {
   font-size: small;
 }
 
-#suggestion-item-container:hover {
+#suggestion-item-container:hover, .emoji_icon:hover{
   background: $blue;
   cursor: pointer;
 }
@@ -133,4 +133,8 @@ img[alt~="avatar"]:hover {
 
 input:disabled:hover {
   cursor: default;
+}
+
+#message_input-container .material-icons:hover {
+  color: $blue !important;
 }
