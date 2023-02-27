@@ -159,6 +159,14 @@ const MessageListContent = ({socket, currentConversation, user, setUserToDisplay
                 {message.userId!=user.id && (newDay || firstInGroup) && (
                   <div className="senderName">{[message.user.firstName, message.user.lastName].filter(e=>e).join(' ')}</div>
                 )}
+                {message.media && message.media.length &&
+                  <div>{message.media.map((el) => {
+                    return <div key={el.id}>
+                      <a href={`http://${window.location.hostname}:8080${el.path}`} className="text-dark" target="_blank">{el.originalName}</a>
+                      
+                    </div>
+                  })}</div>
+                }
                 <div>{message.message}</div>
               </div>
             </div>

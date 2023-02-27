@@ -9,6 +9,7 @@ const Chat = require('../models/chat');
 const { Op, where } = require('sequelize');
 const Sequelize = require('sequelize');
 const sequelize = require('../config/db');
+const Chat_Media = require('../models/chat_media');
 
 const apiData = (async (res, status, message, data) => {
   return res.status(200).json({
@@ -102,6 +103,8 @@ const updateLastSeen = (async (conversation, groupMember, message) => {
             model: User,
             attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender'],
           }
+        }, {
+          model: Media,
         }]
       });
       if (messageToSend1) io.getIO().to("conversation" + conversation.id).emit("message", {
@@ -123,6 +126,8 @@ const updateLastSeen = (async (conversation, groupMember, message) => {
           model: User,
           attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender'],
         }
+      }, {
+        model: Media,
       }]
     });
     if (messageToSend2) io.getIO().to("conversation" + conversation.id).emit("message", {
@@ -782,6 +787,8 @@ exports.getMessageByConversationId = (async (req, res, next) => {
             model: User,
             attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender'],
           }
+        }, {
+          model: Media
         }]
       }
     });
@@ -824,9 +831,10 @@ exports.postSendMessage = (async (req, res, next) => {
   const userId = req.userId;
   const conversationId = req.query.conversationId;
   const message = req.body.message;
+  const mediaIds = req.body.mediaIds;
   const groupMember = req.userInGroup;
 
-  if (!(message && conversationId)) {
+  if (!((message||(mediaIds && mediaIds.length)) && conversationId)) {
     const data = {};
 
     return await apiData(res, 500, 'Where your params ?', data);
@@ -859,11 +867,18 @@ exports.postSendMessage = (async (req, res, next) => {
 
       return await apiData(res, 500, 'Please create conversation!', data);
     }
-
-    await conversation.update({
-      last_message: message
-    });
-    await conversation.save();
+    if (message) {
+      await conversation.update({
+        last_message: message
+      });
+      await conversation.save();
+    } else if (mediaIds && mediaIds.length) {
+      await conversation.update({
+        last_message: [user.firstName, user.lastName].join(' ') + " uploaded files"
+      });
+      await conversation.save();
+    }
+    
 
     const newMessage = await Chat.create({
       message: message,
@@ -871,6 +886,19 @@ exports.postSendMessage = (async (req, res, next) => {
       userId: user.id,
       conversationId: conversation.id
     });
+    for (let mediaId of mediaIds) {
+      const media = await Media.findOne({
+        where: {
+          id: mediaId
+        }
+      });
+      if (media) {
+        const chat_media = await Chat_Media.create({
+          chatId: newMessage.id,
+          mediumId: mediaId
+        });
+      }
+    }
     if (newMessage && groupMember.lastSeenId != newMessage.id) {
       prevLastSeenId = groupMember.lastSeenId;
       await groupMember.update({
@@ -886,6 +914,8 @@ exports.postSendMessage = (async (req, res, next) => {
           include: {
             model: User.scope('userBasicInfo'),
           }
+        }, {
+          model: Media,
         }]
       });
       if (messageToSend1) io.getIO().to("conversation" + conversation.id).emit("message", {
@@ -907,6 +937,8 @@ exports.postSendMessage = (async (req, res, next) => {
         include: {
           model: User.scope('userBasicInfo'),
         }
+      }, {
+        model: Media,
       }]
     });
 
@@ -952,6 +984,8 @@ exports.postEditMessage = (async (req, res, next) => {
       include: {
         model: User.scope('userBasicInfo'),
       }
+    }, {
+      model: Media,
     }]
   });
 

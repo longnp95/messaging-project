@@ -11,9 +11,10 @@ import axios from 'axios';
 const MessageInputContainer = ({currentConversation, user, currentUserInfo})=>{
   const [message, setMessage] = useState('');
   const [files, setFiles] = useState();
-  const [filesArray, setFilesArray] = useState();
+  const [filesArray, setFilesArray] = useState([]);
   const [sendingFile, setSendingFile] = useState(false);
   const emojiByCategories = unicodeEmoji.getEmojisGroupedBy('category');
+  const [caption, setCaption] = useState('');
   const categories = [
     {
       category: 'face-emotion',
@@ -53,16 +54,9 @@ const MessageInputContainer = ({currentConversation, user, currentUserInfo})=>{
     },
   ];
 
-  useEffect(() => {
-    if (files) {
-      setFilesArray(Array.from(files));
-      setSendingFile(true);
-      setFiles();
-    }
-    console.log(files);
-  },[files])
   const handleSubmit = async (e)=>{
     e.preventDefault();
+    setMessage('');
     if (!message.length>0) return;
     const response = await axios.post('/conversation/sendMessage',{
       message: message,
@@ -75,7 +69,6 @@ const MessageInputContainer = ({currentConversation, user, currentUserInfo})=>{
       return;
     }
     console.log(response.data.data);
-    setMessage('');
   }
   const handleChange= (e) => {
     setMessage(e.target.value);
@@ -99,7 +92,19 @@ const MessageInputContainer = ({currentConversation, user, currentUserInfo})=>{
           onChange={handleChange}
           autoComplete="off"
         ></input>
-        <input type="file" id="imgupload" className='d-none' multiple files={files} onChange={(e)=>setFiles(e.target.files)}/>
+        <input 
+          type="file" 
+          id="imgupload" 
+          className='d-none' 
+          multiple
+          onChange={(e)=>{ 
+              console.log(e.target.files);
+              setFilesArray([...(e.target.files)]);
+              setSendingFile(true);
+              e.target.value = null;
+            }
+          }
+        />
         <label htmlFor='imgupload' className="p-0 mx-1 material-icons">
           attach_file
         </label>
@@ -137,10 +142,16 @@ const MessageInputContainer = ({currentConversation, user, currentUserInfo})=>{
       </form>
       <SendFileModal
         user={user}
+        setFiles={setFiles}
         filesArray={filesArray}
         setFilesArray={setFilesArray}
         sendingFile={sendingFile}
         setSendingFile={setSendingFile}
+        message={message}
+        setMessage={setMessage}
+        currentConversation={currentConversation}
+        caption={caption}
+        setCaption={setCaption}
       />
     </Card.Footer>
   )

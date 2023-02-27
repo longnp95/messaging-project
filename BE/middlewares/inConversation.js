@@ -1,5 +1,15 @@
 const Group_Member = require('../models/group_member');
 
+const apiData = (async (res, status, message, data) => {
+  return res.status(200).json({
+    error: {
+      status: status,
+      message: message
+    },
+    data: data
+  });
+});
+
 module.exports = (async (req, res, next) => {
   const userId = req.userId;
   const conversationId = req.query.conversationId;
