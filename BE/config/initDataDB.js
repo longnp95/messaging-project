@@ -11,6 +11,7 @@ const Role = require('../models/role');
 const Type = require('../models/type');
 const User = require('../models/user');
 const Media = require('../models/media');
+const Chat_Media = require('../models/chat_media');
 
 // Run database and run server
 exports.init = (() => {
@@ -33,6 +34,8 @@ exports.init = (() => {
   Chat.hasMany(Group_Member, { foreignKey: 'lastSeenId' });
   Group_Member.belongsTo(Chat, { as: 'lastSeen' });
   Group_Member.belongsTo(User);
+  Chat.belongsToMany(Media, { through: Chat_Media });
+  Media.belongsToMany(Chat, { through: Chat_Media });
 
   sequelize
     // .sync({ force: true })

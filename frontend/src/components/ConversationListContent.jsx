@@ -190,7 +190,7 @@ const ConversationListContent = ({socket, conversations, setConversations, curre
               {conversation.last_message}
             </div>
             {conversation.n_messages
-            ? <Badge pill bg="secondary">{conversation.n_messages}</Badge>
+            ? <Badge pill bg='danger'>{conversation.n_messages}</Badge>
             : <span className=''>{conversationType}</span>
             }
           </div>

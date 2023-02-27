@@ -23,6 +23,10 @@ const Chat = sequelize.define('chat', {
     type: Sequelize.INTEGER,
     allowNull: false
   },
+  
+  type: {
+    type: Sequelize.STRING(8)
+  }
 });
 
 module.exports = Chat;
