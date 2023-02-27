@@ -140,6 +140,13 @@ function App() {
       }
       if (!document.hidden && data.chat && currentConversation && data.chat.conversationId == currentConversation.id) {
         postLastSeen(user, currentConversation.id);
+        // reset unseen count to 0
+        setConversations(prevConversations => {
+          return prevConversations.map(conversation=>{
+            if (conversation.id != currentConversation.id) return conversation;
+            return {...conversation, n_messages: 0};
+          })
+        })
       } else {
         if (data.chat && data.chat.conversationId)setNotSeenConversation(prevList => {return {...prevList, [data.chat.conversationId]: true}});
       }
@@ -153,15 +160,29 @@ function App() {
   const handleVisibilityChange = async () => {
     if (!document.hidden && currentConversation && notSeenConversation[currentConversation.id]) {
       await postLastSeen(user, currentConversation.id);
-      setNotSeenConversation(prevList => {return {...prevList, [currentConversation.id]: true}});
+      // reset unseen count to 0
+      setConversations(prevConversations => {
+        return prevConversations.map(conversation=>{
+          if (conversation.id != currentConversation.id) return conversation;
+          return {...conversation, n_messages: 0};
+        })
+      })
+      setNotSeenConversation(prevList => {return {...prevList, [currentConversation.id]: false}});
     }
   };
 
   useEffect(() => {
     if (!document.hidden && currentConversation && notSeenConversation[currentConversation.id]) {
       postLastSeen(user, currentConversation.id).then(() => {
-        setNotSeenConversation(prevList => {return {...prevList, [currentConversation.id]: true}});
+        setNotSeenConversation(prevList => {return {...prevList, [currentConversation.id]: false}});
       });
+      // reset unseen count to 0
+      setConversations(prevConversations => {
+        return prevConversations.map(conversation=>{
+          if (conversation.id != currentConversation.id) return conversation;
+          return {...conversation, n_messages: 0};
+        })
+      })
     }
   },[currentConversation, user])
 
