@@ -49,7 +49,6 @@ const ConversationContentHeader = ({currentConversation, user, roles, setCurrent
       console.log(err)
     })
   }
-  console.log("currentConversation:",currentConversation);
   const leaveConversation = () => {
     axios.post('/conversation/leaveGroup',{}, {
       headers: {token: user.token},

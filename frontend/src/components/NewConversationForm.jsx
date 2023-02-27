@@ -21,9 +21,9 @@ const NewConversationForm = ({user, isCreating, setIsCreating, setCurrentConvers
     let conversationAvatarUrl=form.conversationAvatarUrl;
     if (form.conversationAvatar) {
       var formData = new FormData();
-      formData.append("images", form.conversationAvatar);
+      formData.append("files", form.conversationAvatar);
       setLoadMessage('Uploading Images...');
-      const imgUploadRes = await axios.post('/user/media/images/uploads', formData,{
+      const imgUploadRes = await axios.post('/user/media/uploads', formData,{
         headers: {
           'Content-Type': 'multipart/form-data',
           token: user.token
@@ -34,7 +34,7 @@ const NewConversationForm = ({user, isCreating, setIsCreating, setCurrentConvers
       }
       setLoadMessage("Creating Group...");
       console.log(imgUploadRes.data);
-      conversationAvatarUrl = imgUploadRes.data.data.images[0].path
+      conversationAvatarUrl = imgUploadRes.data.data.medias[0].path
       setForm({...form, ["conversationAvatarUrl"]:conversationAvatarUrl})
     }
 

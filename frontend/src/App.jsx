@@ -48,6 +48,8 @@ function App() {
   const [showInfo, setShowInfo] = useState(false);
   const [userToDisplay, setUserToDisplay] = useState([]);
   const [currentUserInfo, setCurrentUserInfo] = useState(user);
+  const [messages, setMessages] = useState([]);
+  const [notSeenConversation, setNotSeenConversation] = useState({});
 
   useEffect(() => {
     if (!user) return;
@@ -66,6 +68,131 @@ function App() {
       console.log(err)
     })
   },[user])  
+
+  const postLastSeen = async (user, conversationId) => {
+    const response = await axios.post('/conversation/lastSeen',{},{
+      headers: {token: user.token},
+      params: {conversationId: conversationId},
+    });
+    if (response.data.error.status == 500) {
+      alert(response.data.error.message);
+    } else {
+      console.log(response.data.data);
+    }
+  }
+
+  useEffect(() => {
+    if (!socket) return;
+    console.log(`listening message ${currentConversation.id}`);
+    socket.on("message", async ({action, data}) => {
+      console.log(data);
+      switch (action) {
+        case 'newMessage': 
+          setMessages(prevMessages => {
+            let conversation = null
+            if (data.chat.conversationId) conversation = prevMessages[data.chat.conversationId];
+            if (!conversation) {
+              console.log('Not loaded yet');
+              return prevMessages;
+            }
+            console.log(conversation);
+            const existed = conversation.find(message => message.id == data.chat.id);
+            if (!existed){
+              console.log('new message');
+              return {...prevMessages, [data.chat.conversationId]:[...(prevMessages[data.chat.conversationId]||[]), data.chat]}
+            }
+            return prevMessages;
+          });
+          // increment unseen count by 1
+          setConversations(prevConversations => {
+            return prevConversations.map(conversation=>{
+              if (conversation.id != data.chat.conversationId) return conversation;
+              return {...conversation, n_messages: conversation.n_messages + 1};
+            })
+          })
+          break
+        case 'update':
+          setMessages(prevMessages => {
+            console.log(data);
+            console.log(prevMessages);
+            let conversation = null
+            if (!data.chat.conversationId) return prevMessages;
+            conversation = prevMessages[data.chat.conversationId];
+            if (!conversation) {
+              console.log('Not loaded yet');
+              return prevMessages;
+            }
+            console.log(conversation);
+            const existedIndex = conversation.findIndex(message => message.id == data.chat.id);
+            if (existedIndex==-1){
+              console.log('new message');
+              return {...prevMessages, [data.chat.conversationId]:[...(prevMessages[data.chat.conversationId]||[]), data.chat]}
+            } else {
+              return {...prevMessages, 
+                [data.chat.conversationId]:prevMessages[data.chat.conversationId].map((message => {
+                  if (message.id == data.chat.id) return data.chat;
+                  return message;
+                }))
+              }
+            }
+          });
+        default:
+      }
+      if (!document.hidden && data.chat && currentConversation && data.chat.conversationId == currentConversation.id) {
+        postLastSeen(user, currentConversation.id);
+        // reset unseen count to 0
+        setConversations(prevConversations => {
+          return prevConversations.map(conversation=>{
+            if (conversation.id != currentConversation.id) return conversation;
+            return {...conversation, n_messages: 0};
+          })
+        })
+      } else {
+        if (data.chat && data.chat.conversationId)setNotSeenConversation(prevList => {return {...prevList, [data.chat.conversationId]: true}});
+      }
+    });
+
+    return () => {
+      socket.off("message");
+    }
+  }, [socket, currentConversation, user]);
+
+  const handleVisibilityChange = async () => {
+    if (!document.hidden && currentConversation && notSeenConversation[currentConversation.id]) {
+      await postLastSeen(user, currentConversation.id);
+      // reset unseen count to 0
+      setConversations(prevConversations => {
+        return prevConversations.map(conversation=>{
+          if (conversation.id != currentConversation.id) return conversation;
+          return {...conversation, n_messages: 0};
+        })
+      })
+      setNotSeenConversation(prevList => {return {...prevList, [currentConversation.id]: false}});
+    }
+  };
+
+  useEffect(() => {
+    if (!document.hidden && currentConversation && notSeenConversation[currentConversation.id]) {
+      postLastSeen(user, currentConversation.id).then(() => {
+        setNotSeenConversation(prevList => {return {...prevList, [currentConversation.id]: false}});
+      });
+      // reset unseen count to 0
+      setConversations(prevConversations => {
+        return prevConversations.map(conversation=>{
+          if (conversation.id != currentConversation.id) return conversation;
+          return {...conversation, n_messages: 0};
+        })
+      })
+    }
+  },[currentConversation, user])
+
+  useEffect(() => {
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    }
+  })
 
   if(!socket) return <Auth />
   return (
@@ -114,6 +241,8 @@ function App() {
             setShowInfo={setShowInfo}
             setUserToDisplay={setUserToDisplay}
             currentUserInfo={currentUserInfo}
+            messages={messages}
+            setMessages={setMessages}
           />
         }
       </Row>
