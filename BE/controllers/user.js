@@ -2,7 +2,7 @@ const io = require('../socket');
 const User = require('../models/user');
 const Group_Member = require('../models/group_member');
 const Conversation = require('../models/conversation');
-const Image = require('../models/image');
+const Media = require('../models/media');
 const Role = require('../models/role');
 const Type = require('../models/type');
 const Chat = require('../models/chat');
@@ -111,7 +111,7 @@ const updateLastSeen = (async (conversation, groupMember, message) => {
         }
       });
     }
-    
+
     const messageToSend2 = await Chat.findOne({
       where: { id: message.id },
       include: [{
@@ -845,13 +845,11 @@ exports.postSendMessage = (async (req, res, next) => {
       },
       include: [
         {
-          model: User,
-          as: 'creator',
-          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+          model: User.scope('userBasicInfo'),
+          as: 'creator'
         }, {
-          model: User,
-          as: 'partner',
-          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+          model: User.scope('userBasicInfo'),
+          as: 'partner'
         }
       ]
     });
@@ -882,13 +880,11 @@ exports.postSendMessage = (async (req, res, next) => {
       const messageToSend1 = await Chat.findOne({
         where: { id: prevLastSeenId },
         include: [{
-          model: User,
-          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender'],
+          model: User.scope('userBasicInfo'),
         }, {
           model: Group_Member,
           include: {
-            model: User,
-            attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender'],
+            model: User.scope('userBasicInfo'),
           }
         }]
       });
@@ -905,13 +901,11 @@ exports.postSendMessage = (async (req, res, next) => {
         id: newMessage.id
       },
       include: [{
-        model: User,
-        attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender'],
+        model: User.scope('userBasicInfo'),
       }, {
         model: Group_Member,
         include: {
-          model: User,
-          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender'],
+          model: User.scope('userBasicInfo'),
         }
       }]
     });
@@ -936,6 +930,92 @@ exports.postSendMessage = (async (req, res, next) => {
     var data = {};
     return await apiData(res, 401, 'Send message fail!', data);
   }
+});
+
+exports.postEditMessage = (async (req, res, next) => {
+  const userInGroup = req.userInGroup;
+  const messageId = req.body.messageId;
+  const messageContent = req.body.messageContent;
+
+  if (!(messageId && userInGroup && messageContent)) {
+    return await apiData(res, 500, 'Where your field ?', {});
+  }
+
+  const messageToSend = await Chat.findOne({
+    where: {
+      id: messageId
+    },
+    include: [{
+      model: User.scope('userBasicInfo'),
+    }, {
+      model: Group_Member,
+      include: {
+        model: User.scope('userBasicInfo'),
+      }
+    }]
+  });
+
+  if (!messageToSend) {
+    return await apiData(res, 500, 'This message doesn\'t exists?', {});
+  }
+
+  await messageToSend.update({
+    message: messageContent
+  });
+  await messageToSend.save();
+
+  const data = {
+    chat: messageToSend
+  };
+
+  io.getIO().to("conversation" + userInGroup.conversationId).emit("message", {
+    action: "update",
+    data: data
+  });
+
+  await apiData(res, 200, 'Send message successfully!', data);
+});
+
+exports.postDeleteMessage = (async (req, res, next) => {
+  const userInGroup = req.userInGroup;
+  const messageId = req.body.messageId;
+
+  if (!(messageId && userInGroup)) {
+    return await apiData(res, 500, 'Where your field ?', {});
+  }
+
+  const message = await Chat.findOne({
+    where: {
+      id: messageId
+    },
+    include: [{
+      model: User.scope('userBasicInfo'),
+    }, {
+      model: Group_Member,
+      include: {
+        model: User.scope('userBasicInfo'),
+      }
+    }]
+  });
+
+  if (!message) {
+    return await apiData(res, 500, 'This message doesn\'t exists?', {});
+  }
+
+  if( message.status == 0 ) {
+    return await apiData(res, 500, 'This message deleted?', {});
+  }
+
+  await messageToSend.update({
+    status: 0
+  });
+  await messageToSend.save();
+  
+  io.getIO().to("conversation" + userInGroup.conversationId).emit("message", {
+    action: "update",
+    data: data
+  });
+  await apiData(res, 200, 'This message has been deleted?', {});
 });
 
 exports.getFindUser = (async (req, res, next) => {
@@ -1167,35 +1247,44 @@ exports.postLeaveGroup = (async (req, res, next) => {
   // }
 });
 
-exports.getImagesByUserId = (async (req, res, next) => {
+exports.getFilesByUserId = (async (req, res, next) => {
   const userId = req.userId;
 
-  const images = await Image.findAll({
-    where: userId
+  const medias = await Media.findAll({
+    where: userId,
   });
 
   return await apiData(res, 200, 'OK', {
-    images: images
+    medias: medias
   });
 });
 
-exports.postUploadImage = (async (req, res, next) => {
+exports.postUploadFiles = (async (req, res, next) => {
   const files = req.files;
-  const images = [];
+  const medias = [];
   const userId = req.userId;
 
   for (let i = 0; i < files.length; i++) {
     var file = req.files[i];
     var path = await pathFileInUrl(file);
-    var image = await Image.create({
+    var media = await Media.create({
+      originalName: file.originalname,
       path: path,
-      userId: userId
+      userId: userId,
+      mimeType: file.mimetype,
+      size: file.size
     });
-    images.push(image);
+
+    if (!media) {
+      continue;
+    }
+
+    medias.push(media);
   }
 
-  return await apiData(res, 200, 'Upload avatar successfully', {
-    images: images
+  return await apiData(res, 200, 'Upload files successfully', {
+    medias: medias,
+    filesUploaded: files.length + "/" + medias.length
   });
 });
 

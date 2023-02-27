@@ -45,8 +45,8 @@ const UserInfo = ({user, userToDisplay, showInfo, setShowInfo, setCurrentUserInf
     let avatarPath = userInfo.avatar;
     if (form.avatar) {
       var formData = new FormData();
-      formData.append("images", form.avatar);
-      const imgUploadRes = await axios.post('/user/media/images/uploads', formData,{
+      formData.append("files", form.avatar);
+      const imgUploadRes = await axios.post('/user/media/uploads', formData,{
         headers: {
           'Content-Type': 'multipart/form-data',
           token: user.token
@@ -55,7 +55,7 @@ const UserInfo = ({user, userToDisplay, showInfo, setShowInfo, setCurrentUserInf
       if (imgUploadRes.data.error.status == 500) {
         alert(imgUploadRes.data.error.message);
       } else {
-        avatarPath = imgUploadRes.data.data.images[0].path;
+        avatarPath = imgUploadRes.data.data.medias[0].path;
       }
       console.log(imgUploadRes.data);
     }
