@@ -1,11 +1,29 @@
 import React, { useState, useContext, useEffect } from 'react';
-import ConversationSearch from './ConversationSearch';
 import ConversationListContent from './ConversationListContent';
 import LeftNavBar from './LeftNavBar';
 import Col from 'react-bootstrap/Col';
+import axios from 'axios';
 
-const ConversationListContainer = ({socket, isAdding, setIsAdding, conversations, setConversations, setCurrentConversation, currentConversation, user, setUserToDisplay, setShowInfo, currentUserInfo}) => {
+const ConversationListContainer = ({socket, isAdding, setIsAdding, conversations, setConversations, 
+  setCurrentConversation, currentConversation, user, setUserToDisplay, 
+  setShowInfo, currentUserInfo, setReactions}) => {
   const [searchText, setSearchText] = useState('');
+
+  useEffect(() => {
+    axios.get('/reaction', {
+      headers: {token: user.token}})
+    .then((response)=>{
+      if (response.data.error.status === 500) {
+        return (
+          console.log(response.data.error.message)
+        )
+      }
+      console.log(response.data.data)
+      setReactions(response.data.data.reactions);
+    }).catch((err)=>{
+      console.log(err)
+    })
+  },[user])
 
   return (
     <Col sm={4} lg={3} id="conversation_list-container" 

@@ -50,6 +50,7 @@ function App() {
   const [currentUserInfo, setCurrentUserInfo] = useState(user);
   const [messages, setMessages] = useState([]);
   const [notSeenConversation, setNotSeenConversation] = useState({});
+  const [reactions, setReactions] = useState([]);
 
   useEffect(() => {
     if (!user) return;
@@ -216,6 +217,7 @@ function App() {
           setShowInfo={setShowInfo}
           setUserToDisplay={setUserToDisplay}
           currentUserInfo={currentUserInfo}
+          setReactions={setReactions}
         />
 
         {currentConversation.length==0
@@ -243,6 +245,7 @@ function App() {
             currentUserInfo={currentUserInfo}
             messages={messages}
             setMessages={setMessages}
+            reactions={reactions}
           />
         }
       </Row>

@@ -100,16 +100,25 @@ img[alt~="avatar"]:hover {
 }
 /* Tooltip text */
 .tooltipHover .userTooltip {
-  visibility: hidden;
   background-color: black;
-  max-width: 40vw;
+  opacity: 70%;
   color: #fff;
+  bottom: 105%;
+  left: 0;
+}
+
+.tooltipHover .emojiTooltip {
+  background-color: white;
+  bottom: 100%;
+  right: 0;
+  width: 23rem;
+}
+.tooltipHover .userTooltip, .tooltipHover .emojiTooltip {
+  visibility: hidden;
+  max-width: 40vw;
   text-align: left;
   padding: 5px 0;
   border-radius: 10px;
-  opacity: 70%;
-  bottom: 105%;
-  left: 0;
 
   &--right {
     left: auto;
@@ -122,7 +131,7 @@ img[alt~="avatar"]:hover {
 }
 
 /* Show the tooltip text when you mouse over the tooltip container */
-.tooltipHover:hover .userTooltip {
+.tooltipHover:hover .userTooltip, .tooltipHover:hover .emojiTooltip {
   visibility: visible;
 }
 
@@ -137,4 +146,20 @@ input:disabled:hover {
 
 #message_input-container .material-icons:hover {
   color: $blue !important;
+}
+
+#editing-title {
+  font-weight: 700;
+}
+
+#file-preview {
+  text-decoration: underline;
+}
+
+#file-preview:hover {
+  cursor: default;
+}
+
+#emoji-reaction:hover {
+  cursor: pointer;
 }

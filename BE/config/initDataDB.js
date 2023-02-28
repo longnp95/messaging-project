@@ -1,5 +1,6 @@
 const sequelize = require('./db');
 const bcrypt = require('bcryptjs');
+const reactions = require('./reaction');
 
 const Admin = require('../models/admin');
 const Permission = require('../models/permission');
@@ -12,6 +13,9 @@ const Type = require('../models/type');
 const User = require('../models/user');
 const Media = require('../models/media');
 const Chat_Media = require('../models/chat_media');
+const Reaction = require('../models/reaction');
+const Chat_Reaction = require('../models/chat_reaction');
+
 
 // Run database and run server
 exports.init = (() => {
@@ -25,8 +29,8 @@ exports.init = (() => {
   Conversation.belongsToMany(User, { through: Group_Member });
   Conversation.belongsTo(User, { as: 'creator' });
   Conversation.belongsTo(User, { as: 'partner' });
-  User.hasMany(Chat);
   Chat.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
+  User.hasMany(Chat);
   Conversation.hasMany(Chat);
   Chat.belongsTo(Conversation, { constraints: true, onDelete: 'CASCADE' });
   User.hasMany(Media);
@@ -36,6 +40,9 @@ exports.init = (() => {
   Group_Member.belongsTo(User);
   Chat.belongsToMany(Media, { through: Chat_Media });
   Media.belongsToMany(Chat, { through: Chat_Media });
+  Chat.hasMany(Chat_Reaction);
+  Chat_Reaction.belongsTo(User);
+  Chat_Reaction.belongsTo(Reaction);
 
   sequelize
     // .sync({ force: true })
@@ -124,6 +131,7 @@ exports.init = (() => {
       await initDataForTable(User, users);
       await initDataForTable(Admin, admins);
       await initDataForTable(Admin_Permission, admin_permissions);
+      await initDataForTable(Reaction, reactions);
 
       User.addScope('userBasicInfo', {
         model: User,
