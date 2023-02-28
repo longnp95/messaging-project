@@ -1,34 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Card from 'react-bootstrap/Card';
-import Dropdown from 'react-bootstrap/Dropdown'
+import Dropdown from 'react-bootstrap/Dropdown';
 import AddMemberForm from './AddMemberForm';
 import MemberList from './MemberList';
 import ConfirmationModal from './ConfirmationModal';
 import ImageLoader from '../services/ImageLoader.services';
 
-const ConversationContentHeader = ({currentConversation, user, roles, setCurrentConversation, setConversations, isAdding, setIsAdding, setShowInfo, setUserToDisplay}) => {
-  const [showMembers, setShowMembers] = useState(false);
-  const [confirming, setConfirming] = useState(false);
-  const [confirmMessage, setConfirmMessage] = useState('Are you sure?');
-  const [confirmAction, setConfirmAction] = useState(() => () => {});
-  const [members, setMembers] = useState([]);
-
-  useEffect(() => {
-    axios.get('/conversation/getMember', {
-      headers: {token: user.token},
-      params: {conversationId: currentConversation.id}})
-    .then((response)=>{
-      if (response.data.error.status === 500) {
-        return (
-          console.log(response.data.error.message)
-        )
-      }
-      setMembers(response.data.data.conversation.users);
-    }).catch((err)=>{
-      console.log(err)
-    })
-  },[currentConversation,user,isAdding,showMembers])
+const ConversationContentHeader = ({currentConversation, confirming, setConfirming, confirmMessage, 
+  setConfirmMessage, confirmAction, setConfirmAction, user, roles, setCurrentConversation, 
+  setConversations, isAdding, setIsAdding, setShowInfo, setUserToDisplay, 
+  showMembers, setShowMembers, members, setMembers
+}) => {
 
   const isLeader = members.find(el=>el.id==user.id && el.group_member.roleId==1)
 
@@ -65,11 +48,6 @@ const ConversationContentHeader = ({currentConversation, user, roles, setCurrent
     }).catch((err)=>{
       console.log(err)
     })
-  }
-  
-  const cancelConfirm = () => {
-    setConfirmAction(() => () => {});
-    setConfirmMessage('Are you sure?');
   }
 
   let nameToDisplay = currentConversation.name;
@@ -117,10 +95,10 @@ const ConversationContentHeader = ({currentConversation, user, roles, setCurrent
               Leave Group
             </Dropdown.Item>
           }
-          {(currentConversation.typeId!=1)&&isLeader&&
+          {isLeader&&
             <Dropdown.Item 
             onClick={() => {
-              setConfirmMessage('Are you sure to delete group?'); 
+              setConfirmMessage('Are you sure to delete the conversation for everyone?'); 
               setConfirmAction(()=>deleteConversation); 
               setConfirming(true)
             }}
@@ -154,13 +132,6 @@ const ConversationContentHeader = ({currentConversation, user, roles, setCurrent
         setCurrentConversation={setCurrentConversation}
         setShowInfo={setShowInfo}
         setUserToDisplay={setUserToDisplay}
-      />
-      <ConfirmationModal
-        message={confirmMessage}
-        show={confirming}
-        setShow={setConfirming}
-        confirmAction={confirmAction}
-        cancelAction={cancelConfirm}
       />
     </Card.Header>
   )

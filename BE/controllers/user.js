@@ -6,6 +6,8 @@ const Media = require('../models/media');
 const Role = require('../models/role');
 const Type = require('../models/type');
 const Chat = require('../models/chat');
+const Reaction = require('../models/reaction');
+const Chat_Reaction = require('../models/chat_reaction');
 const { Op, where } = require('sequelize');
 const Sequelize = require('sequelize');
 const sequelize = require('../config/db');
@@ -105,6 +107,13 @@ const updateLastSeen = (async (conversation, groupMember, message) => {
           }
         }, {
           model: Media,
+        },{
+          model: Chat_Reaction,
+          attributes: ['reactionId'],
+          include: {
+            model: User,
+            attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+          }
         }]
       });
       if (messageToSend1) io.getIO().to("conversation" + conversation.id).emit("message", {
@@ -128,6 +137,13 @@ const updateLastSeen = (async (conversation, groupMember, message) => {
         }
       }, {
         model: Media,
+      },{
+        model: Chat_Reaction,
+        attributes: ['reactionId'],
+        include: {
+          model: User,
+          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+        }
       }]
     });
     if (messageToSend2) io.getIO().to("conversation" + conversation.id).emit("message", {
@@ -554,6 +570,20 @@ exports.getRoles = (async (req, res, next) => {
   }
 });
 
+exports.getReactions = (async (req, res, next) => {
+  try {
+    const reactions = await Reaction.findAll();
+    const data = {
+      reactions: reactions
+    };
+
+    return await apiData(res, 200, 'OK!', data);
+  } catch (err) {
+    const data = {};
+    return await apiData(res, 500, 'Fail', data);
+  }
+});
+
 exports.getMembersInGroup = (async (req, res, next) => {
   const conversationId = req.query.conversationId;
 
@@ -789,6 +819,13 @@ exports.getMessageByConversationId = (async (req, res, next) => {
           }
         }, {
           model: Media
+        },{
+          model: Chat_Reaction,
+          attributes: ['reactionId'],
+          include: {
+            model: User,
+            attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+          }
         }]
       }
     });
@@ -916,6 +953,13 @@ exports.postSendMessage = (async (req, res, next) => {
           }
         }, {
           model: Media,
+        },{
+          model: Chat_Reaction,
+          attributes: ['reactionId'],
+          include: {
+            model: User,
+            attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+          }
         }]
       });
       if (messageToSend1) io.getIO().to("conversation" + conversation.id).emit("message", {
@@ -939,6 +983,13 @@ exports.postSendMessage = (async (req, res, next) => {
         }
       }, {
         model: Media,
+      },{
+        model: Chat_Reaction,
+        attributes: ['reactionId'],
+        include: {
+          model: User,
+          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+        }
       }]
     });
 
@@ -968,6 +1019,7 @@ exports.postEditMessage = (async (req, res, next) => {
   const userInGroup = req.userInGroup;
   const messageId = req.body.messageId;
   const messageContent = req.body.messageContent;
+  const userId = req.userId;
 
   if (!(messageId && userInGroup && messageContent)) {
     return await apiData(res, 500, 'Where your field ?', {});
@@ -986,6 +1038,13 @@ exports.postEditMessage = (async (req, res, next) => {
       }
     }, {
       model: Media,
+    },{
+      model: Chat_Reaction,
+      attributes: ['reactionId'],
+      include: {
+        model: User,
+        attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+      }
     }]
   });
 
@@ -993,8 +1052,13 @@ exports.postEditMessage = (async (req, res, next) => {
     return await apiData(res, 500, 'This message doesn\'t exists?', {});
   }
 
+  if (messageToSend.userId !== userId) {
+    return await apiData(res, 500, 'You are not the message creator!', {});
+  }
+
   await messageToSend.update({
-    message: messageContent
+    message: messageContent,
+    status: 2
   });
   await messageToSend.save();
 
@@ -1013,6 +1077,7 @@ exports.postEditMessage = (async (req, res, next) => {
 exports.postDeleteMessage = (async (req, res, next) => {
   const userInGroup = req.userInGroup;
   const messageId = req.body.messageId;
+  const userId = req.userId;
 
   if (!(messageId && userInGroup)) {
     return await apiData(res, 500, 'Where your field ?', {});
@@ -1037,19 +1102,32 @@ exports.postDeleteMessage = (async (req, res, next) => {
   }
 
   if( message.status == 0 ) {
-    return await apiData(res, 500, 'This message deleted?', {});
+    return await apiData(res, 500, 'This message already deleted!', {});
   }
 
-  await messageToSend.update({
+  if (message.userId != userId && userInGroup.roleId != 1) {
+    return await apiData(res, 500, 'Not enough permission to delele this message!', {});
+  }
+
+  await message.update({
+    message: "",
     status: 0
   });
-  await messageToSend.save();
+  await message.save();
+
+  await Chat_Media.destroy({
+    where: {
+      chatId: message.id
+    }
+  });
   
   io.getIO().to("conversation" + userInGroup.conversationId).emit("message", {
     action: "update",
-    data: data
+    data: {
+      chat: message
+    }
   });
-  await apiData(res, 200, 'This message has been deleted?', {});
+  await apiData(res, 200, 'This message has been deleted!', {});
 });
 
 exports.getFindUser = (async (req, res, next) => {
@@ -1361,6 +1439,87 @@ exports.postSetLastSeen = (async (req, res, next) => {
     });
     if (lastMessage && groupMember.lastSeenId != lastMessage.id) await updateLastSeen(conversation, groupMember, lastMessage);
     return await apiData(res, 200, 'OK', {});
+  } catch (err) {
+    console.log(new Date(), err);
+    return await apiData(res, 401, 'Fail', {});
+  }
+});
+exports.postReaction = (async (req, res, next) => {
+  const userId = req.userId;
+  const conversationId = req.query.conversationId;
+  const messageId = req.query.messageId;
+  const groupMember = req.userInGroup;
+  const reactionId = req.body.reactionId;
+  if (!(conversationId)) {
+    const data = {};
+
+    return await apiData(res, 500, 'Where is your params ?', data);
+  }
+  try {
+    const conversation = await Conversation.findOne({
+      where: {
+        id: conversationId
+      }
+    });
+    if (!conversation) {
+      const data = {};
+
+      return await apiData(res, 500, 'No such conversation!', data);
+    }
+    const groupMember = req.userInGroup;
+
+    if (!groupMember) {
+      return await apiData(res, 500, 'Not a member in group', {});
+    }
+    const message = await Chat.findOne({
+      where: {
+        id: messageId,
+        conversationId: conversationId
+      }
+    });
+    if (!message) return await apiData(res, 500, 'Not a message in conversation', {});
+    const reaction = await Reaction.findOne({
+      where: {
+        id: reactionId
+      }
+    });
+    if (!reaction) return await apiData(res, 500, 'Not a valid reaction', {});
+    const chat_reaction = await Chat_Reaction.create({
+      userId: userId,
+      chatId: messageId,
+      reactionId: reactionId
+    })
+    if (!chat_reaction) return await apiData(res, 500, 'Failed to add a reaction!', {});
+
+    const messageToSend = await Chat.findOne({
+      where: { id: messageId },
+      include: [{
+        model: User,
+        attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+      }, {
+        model: Group_Member,
+        include: {
+          model: User,
+          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+        }
+      }, {
+        model: Media,
+      },{
+        model: Chat_Reaction,
+        attributes: ['reactionId'],
+        include: {
+          model: User,
+          attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
+        }
+      }]
+    });
+    if (messageToSend) io.getIO().to("conversation" + conversationId).emit("message", {
+      action: "update",
+      data: {
+        chat: messageToSend
+      }
+    });
+    return await apiData(res, 200, 'OK', {chat: messageToSend});
   } catch (err) {
     console.log(new Date(), err);
     return await apiData(res, 401, 'Fail', {});

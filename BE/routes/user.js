@@ -24,6 +24,7 @@ routes.get('/conversation/getMember', isUser, haveBody, userInGroup, userControl
 routes.post('/conversation/addMember', isUser, haveBody, userInGroup, userController.postAddMemberInGroup);
 routes.post('/conversation/leaveGroup', isUser, haveBody, userInGroup, userController.postLeaveGroup);
 routes.post('/conversation/lastSeen', isUser, haveBody, userInGroup, userController.postSetLastSeen);
+routes.post('/conversation/reaction', isUser, haveBody, userInGroup, userController.postReaction);
 
 routes.get('/users', isUser, accountUserController.getAllUser);
 routes.get('/user/search', isUser, userController.getFindUser);
@@ -32,7 +33,7 @@ routes.post('/user/profile/update', isUser, accountUserController.postUpdateUser
 routes.get('/user/media', isUser, userController.getFilesByUserId);
 routes.post('/user/media/uploads', isUser, multerError, userController.postUploadFiles);
 
-
+routes.get('/reaction', userController.getReactions);
 routes.get('/role', userController.getRoles);
 
 routes.get('/group/member', isUser, userController.getMembersInGroup);

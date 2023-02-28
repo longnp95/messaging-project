@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import Card from 'react-bootstrap/Card';
 import ImageLoader from '../services/ImageLoader.services';
+import Dropdown from 'react-bootstrap/Dropdown';
 import UserTooltip from './UserTooltip';
 import axios from 'axios';
 import moment from 'moment';
 
 
-const MessageListContent = ({socket, currentConversation, user, setUserToDisplay, setShowInfo, messages, setMessages}) => {
+const MessageListContent = ({socket, currentConversation, user, setUserToDisplay, setShowInfo, 
+  messages, setMessages, isEditing, setIsEditing, setEditingMessage, setEditingMessageText, 
+  setConfirming, setConfirmMessage, setConfirmAction, members, reactions
+}) => {
   const [messageEnd, setMessageEnd] = useState();
   const [messageEndConversationId, setMessageEndConversationId] = useState();
   const [prevConversationId, setPrevConversationId] = useState();
@@ -47,6 +51,8 @@ const MessageListContent = ({socket, currentConversation, user, setUserToDisplay
     }
   },[messageEnd, currentConversation, messageEndConversationId, prevConversationId])
 
+  const isLeader = members.find(el=>el.id==user.id && el.group_member.roleId==1)
+
   const isFirstOfSenderGroup = (message, index) => {
     return index===0 || messages[currentConversation.id][index-1].userId !== message.userId
   }
@@ -72,6 +78,44 @@ const MessageListContent = ({socket, currentConversation, user, setUserToDisplay
       return true;
     } else {
       return false;
+    }
+  }
+
+  const deleteMessage = (message) => {
+    axios.post('/conversation/deleteMessage',{
+      messageId: message.id
+    }, {
+      headers: {token: user.token},
+      params: {
+        conversationId: message.conversationId
+      }
+    })
+    .then((response)=>{
+      if (response.data.error.status === 500) {
+        return (
+          console.log(response.data.error.message)
+        )
+      }
+      console.log(response.data);
+    }).catch((err)=>{
+      console.log(err)
+    })
+  }
+
+  const postReaction = async (message, reaction) => {
+    const response = await axios.post('/conversation/reaction',{
+      reactionId: reaction.id
+    },{
+      headers: {token: user.token},
+      params: {
+        conversationId: message.conversationId,
+        messageId: message.id
+      },
+    });
+    if (response.data.error.status == 500) {
+      alert(response.data.error.message);
+    } else {
+      console.log(response.data.data);
     }
   }
 
@@ -126,12 +170,12 @@ const MessageListContent = ({socket, currentConversation, user, setUserToDisplay
             </p>
           </div>
         : <div 
-            className={`d-flex flex-row justify-content-${message.userId!=user.id ? 'start': 'end'}`}
+            className={`d-flex flex-row justify-content-${message.userId!=user.id ? 'start': 'end'} my-1`}
             style={{position: "relative"}}
           >
             {/*Avatar*/}
             {message.userId!=user.id && (newDay || firstInGroup) && (
-              <div style={{ position: "absolute" }} className="tooltipHover">
+              <div style={{ position: "absolute"}} className="tooltipHover">
                 <ImageLoader
                   roundedCircle
                   src={message.user.avatar}
@@ -150,7 +194,7 @@ const MessageListContent = ({socket, currentConversation, user, setUserToDisplay
             {/*senderName, message */}
             <div>
               <div
-                className={`small p-2 mb-1 rounded-3 ${message.userId==user.id ? 'text-white bg-primary': ''}`}
+                className={`small p-2 rounded-3 ${message.userId==user.id ? 'text-white bg-primary': ''} ${message.status==0 ? 'text-muted bg-white border border-dark': ''}`}
                 style={{ 
                   backgroundColor: "#f5f6f7", 
                   marginLeft: message.userId===user.id ? 'auto':"45px"
@@ -159,23 +203,135 @@ const MessageListContent = ({socket, currentConversation, user, setUserToDisplay
                 {message.userId!=user.id && (newDay || firstInGroup) && (
                   <div className="senderName">{[message.user.firstName, message.user.lastName].filter(e=>e).join(' ')}</div>
                 )}
-                {message.media && message.media.length &&
-                  <div>{message.media.map((el) => {
+                {message.media && message.media.length>0 &&
+                  <div>
+                    {message.media.map((el) => {
                     return <div key={el.id}>
-                      <a href={`http://${window.location.hostname}:8080${el.path}`} className="text-dark" target="_blank">{el.originalName}</a>
+                      <a href={`http://${window.location.hostname}:8080${el.path}`} className="text-secondary" target="_blank">{el.originalName}</a>
                       
                     </div>
                   })}</div>
                 }
-                <div>{message.message}</div>
+                <div>{message.status!=0 ? message.message : "Message deleted"}</div>
+                {/* Show reactions */}
+                {(message.chat_reactions && message.chat_reactions.length>0) &&
+                  <div 
+                    className={`d-flex flex-row justify-content-${message.userId==user.id ? 'end' : 'start'}`}
+                    style={{ position: "absolute", bottom: "-7px", 
+                      left: message.userId==user.id ? 'auto' : '0',
+                      right: message.userId==user.id ? '0' : 'auto',
+                      opacity: "90%"
+                    }}
+                  >
+                    {reactions.map((reaction) => {
+                      const chat_reactions = message.chat_reactions.filter((el) => el.reactionId === reaction.id);
+                      return chat_reactions.length>0
+                      ? <div key={reactions.id} className="rounded-pill bg-white px-1 d-flex flex-row flex-nowrap">
+                          <span id="emoji-reaction" onClick={()=>postReaction(message, reaction)}>{reaction.emoji}</span>
+                          {chat_reactions.map((chat_reaction)=>{
+                            return <span key={chat_reaction.id} className='tooltipHover'>
+                              <ImageLoader
+                                className="seen-avatar"
+                                roundedCircle
+                                src={chat_reaction.user.avatar}
+                                alt="avatar"
+                                onClick={()=>{
+                                  setUserToDisplay(chat_reaction.user);
+                                  setShowInfo(true);
+                                }}
+                                style={{ width: "15px", height: "auto", aspectRatio: "1" }}
+                              />
+                              <UserTooltip
+                                user={chat_reaction.user}
+                                rightBorder={true}
+                              />
+                            </span>
+                          })}
+                      </div>
+                      : <React.Fragment key={reactions.id}/>
+                    })}
+                  </div>
+                }
               </div>
             </div>
-            {/*SendTime*/}
-            <div className="small ms-2 rounded-3 text-muted align-self-end">
-              {moment(createdAt).format('hh:mm')}
-            </div>
+            {message.status!=0 && 
+            <Dropdown 
+              className='d-flex flex-column justify-content-between'
+              align={message.userId!=user.id ? 'start' : 'end'}
+              style={{ order: `${message.userId!=user.id ? 1 : -1}`}}
+            >
+              <Dropdown.Toggle 
+                id="dropdown-basic" 
+                variant="info" 
+                className={`p-0 align-self-${message.userId!=user.id ? 'start' : 'end'}`} 
+                style={{backgroundColor: "transparent", color: "gray", borderColor: "transparent", borderWidth: "0"}}>
+                <i className="material-icons" style={{ fontSize: "15px" }}>more_vert</i>
+              </Dropdown.Toggle>
+
+              <Dropdown.Menu className={`${message.userId == user.id || isLeader ? '':'bg-transparent border-0'}`}>
+                {(reactions.length > 0)
+                ? <div 
+                  className='d-flex flex-row p-1 flex-nowrap bg-white border border-secondary rounded'
+                  style={{position: "absolute", bottom: "105%", left: "0", right: "0"}}
+                >
+                  <div 
+                    className='d-flex flex-row flex-grow-1 flex-shrink-1'
+                    style={{ overflowX: 'hidden' }}
+                  >
+                    {reactions.map((reaction)=>{
+                      return <Dropdown.Item 
+                        key={reaction.id} 
+                        className="p-0"
+                        onClick={()=>postReaction(message, reaction)}
+                      >{reaction.emoji}</Dropdown.Item>
+                    })}
+                  </div>
+                  <div
+                    id="dropdown-basic" 
+                    variant="info" 
+                    className={`p-0 tooltipHover`} 
+                    style={{backgroundColor: "transparent", color: "gray", borderColor: "transparent", borderWidth: "0"}}>
+                    <i className="material-icons" style={{ fontSize: "20px" }}>expand_less</i>
+                    <div 
+                      className='d-flex flex-row flex-wrap emojiTooltip border border-secondary justify-content-left align-items-center'
+                    >
+                      {reactions.map((reaction)=>{
+                        return <Dropdown.Item 
+                          key={reaction.id} 
+                          className="p-0"
+                          onClick={()=>postReaction(message, reaction)}
+                          style={{ width: "auto" }}>{reaction.emoji}</Dropdown.Item>
+                      })}
+                    </div>
+                  </div>
+                </div>
+                : <div className='text-truncate text muted'>No reaction loaded</div>
+                }
+                {(message.userId == user.id)&&
+                  <Dropdown.Item onClick={() => {setEditingMessage(message); setEditingMessageText(message.message); setIsEditing(true)}}>
+                    Edit Message
+                  </Dropdown.Item>
+                }
+                {(message.userId == user.id || isLeader)&& 
+                <Dropdown.Item 
+                  onClick={() => {
+                    setConfirmMessage('Are you sure to delete the message for everyone?'); 
+                    setConfirmAction(()=>()=>deleteMessage(message)); 
+                    setConfirming(true)
+                  }}
+                >
+                  Delete Message
+                </Dropdown.Item>}
+              </Dropdown.Menu>
+              {/*SendTime*/}
+              <div className="small rounded-3 text-muted align-self-end px-2">
+                {moment(createdAt).format('hh:mm')}
+              </div>
+            </Dropdown>}
           </div>
         }
+        
+        {/* Show people seen */}
         {message.group_members && (
           <div className='d-flex flex-row justify-content-end'>
             {message.group_members.map((member) => {
