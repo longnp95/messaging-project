@@ -109,7 +109,7 @@ const updateLastSeen = (async (conversation, groupMember, message) => {
           model: Media,
         },{
           model: Chat_Reaction,
-          attributes: ['reactionId'],
+          attributes: ['id', 'reactionId'],
           include: {
             model: User,
             attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
@@ -139,7 +139,7 @@ const updateLastSeen = (async (conversation, groupMember, message) => {
         model: Media,
       },{
         model: Chat_Reaction,
-        attributes: ['reactionId'],
+        attributes: ['id', 'reactionId'],
         include: {
           model: User,
           attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
@@ -821,7 +821,7 @@ exports.getMessageByConversationId = (async (req, res, next) => {
           model: Media
         },{
           model: Chat_Reaction,
-          attributes: ['reactionId'],
+          attributes: ['id', 'reactionId'],
           include: {
             model: User,
             attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
@@ -955,7 +955,7 @@ exports.postSendMessage = (async (req, res, next) => {
           model: Media,
         },{
           model: Chat_Reaction,
-          attributes: ['reactionId'],
+          attributes: ['id', 'reactionId'],
           include: {
             model: User,
             attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
@@ -985,7 +985,7 @@ exports.postSendMessage = (async (req, res, next) => {
         model: Media,
       },{
         model: Chat_Reaction,
-        attributes: ['reactionId'],
+        attributes: ['id', 'reactionId'],
         include: {
           model: User,
           attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
@@ -1040,7 +1040,7 @@ exports.postEditMessage = (async (req, res, next) => {
       model: Media,
     },{
       model: Chat_Reaction,
-      attributes: ['reactionId'],
+      attributes: ['id', 'reactionId'],
       include: {
         model: User,
         attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],
@@ -1506,7 +1506,7 @@ exports.postReaction = (async (req, res, next) => {
         model: Media,
       },{
         model: Chat_Reaction,
-        attributes: ['reactionId'],
+        attributes: ['id', 'reactionId'],
         include: {
           model: User,
           attributes: ['id', 'username', 'avatar', 'firstName', 'lastName', 'gender', 'status'],

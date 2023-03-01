@@ -194,7 +194,7 @@ const MessageListContent = ({socket, currentConversation, user, setUserToDisplay
             {/*senderName, message */}
             <div>
               <div
-                className={`small p-2 rounded-3 ${message.userId==user.id ? 'text-white bg-primary': ''} ${message.status==0 ? 'text-muted bg-white border border-dark': ''}`}
+                className={`small px-2 py-1 rounded-3 ${message.userId==user.id ? 'text-white bg-primary': ''} ${message.status==0 ? 'text-muted bg-white border border-dark': ''}`}
                 style={{ 
                   backgroundColor: "#f5f6f7", 
                   marginLeft: message.userId===user.id ? 'auto':"45px"
@@ -217,16 +217,12 @@ const MessageListContent = ({socket, currentConversation, user, setUserToDisplay
                 {(message.chat_reactions && message.chat_reactions.length>0) &&
                   <div 
                     className={`d-flex flex-row justify-content-${message.userId==user.id ? 'end' : 'start'}`}
-                    style={{ position: "absolute", bottom: "-7px", 
-                      left: message.userId==user.id ? 'auto' : '0',
-                      right: message.userId==user.id ? '0' : 'auto',
-                      opacity: "90%"
-                    }}
+                    
                   >
                     {reactions.map((reaction) => {
                       const chat_reactions = message.chat_reactions.filter((el) => el.reactionId === reaction.id);
                       return chat_reactions.length>0
-                      ? <div key={reactions.id} className="rounded-pill bg-white px-1 d-flex flex-row flex-nowrap">
+                      ? <div key={reaction.id} className="rounded-pill bg-white px-1 d-flex flex-row flex-nowrap">
                           <span id="emoji-reaction" onClick={()=>postReaction(message, reaction)}>{reaction.emoji}</span>
                           {chat_reactions.map((chat_reaction)=>{
                             return <span key={chat_reaction.id} className='tooltipHover'>
@@ -248,7 +244,7 @@ const MessageListContent = ({socket, currentConversation, user, setUserToDisplay
                             </span>
                           })}
                       </div>
-                      : <React.Fragment key={reactions.id}/>
+                      : <React.Fragment key={reaction.id}/>
                     })}
                   </div>
                 }
