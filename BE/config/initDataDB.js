@@ -1,4 +1,4 @@
-const sequelize = require('./db');
+const db = require('./db');
 const bcrypt = require('bcryptjs');
 const reactions = require('./reaction');
 
@@ -18,33 +18,33 @@ const Chat_Reaction = require('../models/chat_reaction');
 
 
 // Run database and run server
-exports.init = (() => {
-  Admin.belongsToMany(Permission, { through: Admin_Permission, onDelete: 'CASCADE' });
-  Permission.belongsToMany(Admin, { through: Admin_Permission, onDelete: 'CASCADE' });
-  Role.hasMany(Group_Member);
-  Group_Member.belongsTo(Role, { constraints: true, onDelete: 'CASCADE' });
-  Type.hasMany(Conversation);
-  Conversation.belongsTo(Type, { constraints: true, onDelete: 'CASCADE' });
-  User.belongsToMany(Conversation, { through: Group_Member });
-  Conversation.belongsToMany(User, { through: Group_Member });
-  Conversation.belongsTo(User, { as: 'creator' });
-  Conversation.belongsTo(User, { as: 'partner' });
-  Chat.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
-  User.hasMany(Chat);
-  Conversation.hasMany(Chat);
-  Chat.belongsTo(Conversation, { constraints: true, onDelete: 'CASCADE' });
-  User.hasMany(Media);
-  Media.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
-  Chat.hasMany(Group_Member, { foreignKey: 'lastSeenId' });
-  Group_Member.belongsTo(Chat, { as: 'lastSeen' });
-  Group_Member.belongsTo(User);
-  Chat.belongsToMany(Media, { through: Chat_Media });
-  Media.belongsToMany(Chat, { through: Chat_Media });
-  Chat.hasMany(Chat_Reaction);
-  Chat_Reaction.belongsTo(User);
-  Chat_Reaction.belongsTo(Reaction);
+exports.init = (async () => {
+  await Admin.belongsToMany(Permission, { through: Admin_Permission, onDelete: 'CASCADE' });
+  await Permission.belongsToMany(Admin, { through: Admin_Permission, onDelete: 'CASCADE' });
+  await Role.hasMany(Group_Member);
+  await Group_Member.belongsTo(Role, { constraints: true, onDelete: 'CASCADE' });
+  await Type.hasMany(Conversation);
+  await Conversation.belongsTo(Type, { constraints: true, onDelete: 'CASCADE' });
+  await User.belongsToMany(Conversation, { through: Group_Member });
+  await Conversation.belongsToMany(User, { through: Group_Member });
+  await Conversation.belongsTo(User, { as: 'creator' });
+  await Conversation.belongsTo(User, { as: 'partner' });
+  await Chat.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
+  await User.hasMany(Chat);
+  await Conversation.hasMany(Chat);
+  await Chat.belongsTo(Conversation, { constraints: true, onDelete: 'CASCADE' });
+  await User.hasMany(Media);
+  await Media.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
+  await Chat.hasMany(Group_Member, { foreignKey: 'lastSeenId' });
+  await Group_Member.belongsTo(Chat, { as: 'lastSeen' });
+  await Group_Member.belongsTo(User);
+  await Chat.belongsToMany(Media, { through: Chat_Media });
+  await Media.belongsToMany(Chat, { through: Chat_Media });
+  await Chat.hasMany(Chat_Reaction);
+  await Chat_Reaction.belongsTo(User);
+  await Chat_Reaction.belongsTo(Reaction);
 
-  sequelize
+  await db
     // .sync({ force: true })
     .sync({ alter: true })
     .then(async () => {

@@ -4,9 +4,7 @@ const path = require('path');
 const bodyParser = require('body-parser');
 
 // Call database and models
-const sequelize = require('./config/db');
 const initDataDB = require('./config/initDataDB');
-const Conversation = require('./models/conversation');
 
 const app = express();
 
@@ -37,8 +35,12 @@ app.use('/auth', authRoutes);
 app.use(userRoutes);
 app.use(errorController.get404);
 
-// add relationship and init data for database
-initDataDB.init();
+const db_backupdb = (async () => {
+  // add relationship and init data for database
+  await initDataDB.init();
+});
+
+db_backupdb();
 
 // Test connection
 const socketFile = require('./socket');
