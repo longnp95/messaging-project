@@ -4,12 +4,16 @@ const path = require('path');
 const bodyParser = require('body-parser');
 
 // Call database and models
-const initDataDB = require('./config/initDataDB');
+const db = require('./config/db');
+const backupdb = require('./config/backupdb');
+const dataDb = require('./config/dataDb');
+const dataDbBackup = require('./config/dataDbBackup');
 
 const app = express();
 
 // Call Controller
 const errorController = require('./controllers/error');
+const backupController = require('./controllers/backup');
 
 // Call routes
 const authRoutes = require('./routes/auth');
@@ -35,25 +39,30 @@ app.use('/auth', authRoutes);
 app.use(userRoutes);
 app.use(errorController.get404);
 
-const db_backupdb = (async () => {
+(async () => {
   // add relationship and init data for database
-  await initDataDB.init();
-});
+  await dataDb.init();
+  
+  await dataDbBackup.init();
 
-db_backupdb();
+  await backupController.backupFromDb(db, backupdb);
+})();
 
-// Test connection
+// socket connection
 const socketFile = require('./socket');
 const server = app.listen(8080);
+// console.log(server);
 const io = socketFile.init(server);
 
-io.on('connection', socket => {
-  const token = socket.handshake.auth.token;
-
-  if (socketFile.checkToken(token)) {
-    socketFile.joinRoomByToken(socket, token);
-  } else {
-    socket.disconnect();
-    console.log('Token wrong');
-  }
-});
+(async () => {
+  await io.on('connection', socket => {
+    const token = socket.handshake.auth.token;
+  
+    if (socketFile.checkToken(token)) {
+      socketFile.joinRoomByToken(socket, token);
+    } else {
+      socket.disconnect();
+      console.log('Token wrong');
+    }
+  });
+})();

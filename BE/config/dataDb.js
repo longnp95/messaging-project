@@ -16,9 +16,8 @@ const Chat_Media = require('../models/chat_media');
 const Reaction = require('../models/reaction');
 const Chat_Reaction = require('../models/chat_reaction');
 
-
 // Run database and run server
-exports.init = (async () => {
+const init = (async () => {
   await Admin.belongsToMany(Permission, { through: Admin_Permission, onDelete: 'CASCADE' });
   await Permission.belongsToMany(Admin, { through: Admin_Permission, onDelete: 'CASCADE' });
   await Role.hasMany(Group_Member);
@@ -154,3 +153,8 @@ const initDataForTable = (async (table, arrayObject) => {
     }
   }
 });
+
+module.exports = {
+  init: init,
+  initDataForTable: initDataForTable
+}

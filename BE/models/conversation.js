@@ -1,9 +1,9 @@
 const Sequelize = require('sequelize');
 
-const sequelize = require('../config/db');
+const db = require('../config/db');
 
 // Create database with define model of Sequelize
-const Conversation = sequelize.define('conversation', {
+const Conversation = db.define('conversation', {
   // field primary key and type is INTEGER
   id: {
     type: Sequelize.INTEGER,
