@@ -1,6 +1,14 @@
 const Job = require('../models/backup/job');
 const { QueryTypes } = require('sequelize');
 
+const checkNullEmpty = ((val) => {
+  if (val && val != null) {
+    return true;
+  }
+
+  return false;
+});
+
 const getJobs = (async () => {
   const jobs = await Job.findAll();
 
@@ -59,8 +67,8 @@ const backupTableDbFromTableName = (async (db, backupdb, tableName) => {
     await backupdb
       .sync({ alter: true })
       .catch(err => console.log("Func: backupFromDb, Err:" + err));
+    const newJob = await createJob (tableName);
   }
-  const newJob = await createJob (tableName);
 });
 
 const backupColDbFromTableName = (async (db, backupdb, tableName) => {
@@ -86,27 +94,28 @@ const backupColDbFromTableName = (async (db, backupdb, tableName) => {
 
 const backupDataDbFromTablename = (async (db, backupdb, tableName) => {
   const job = await getJob({tableName: tableName});
-
-  var sql = "INSERT INTO ";
-  sql += backupdb.config.database + "." + tableName + " ";
-  sql += "(";
-
   const dbTableCols = await selectQuery (db, "SHOW FULL COLUMNS FROM `" + tableName + "`");
-  sql += getStringFieldsFromTableCols (dbTableCols);
-
-  sql += ") ";
-  sql += "select * from " + db.config.database + "." + tableName + " ";
-  sql += "where id > " + job.lastedId;
-
-  await db.query(sql);
-
-  const lastedIdObj = await selectQuery(backupdb, "SELECT MAX(id) as lastedId FROM " + tableName);
-  const lastedId = lastedIdObj[0] && lastedIdObj[0].lastedId && lastedIdObj[0].lastedId != null ? lastedIdObj[0].lastedId : 0;
-
-  await job.update({
-    lastedId: lastedId
-  });
-  await job.save();
+  const lastedId =  checkNullEmpty(job) && job.lastedId != null ? job.lastedId : null;
+  
+  if (lastedId != null) {
+    var sql = "INSERT INTO ";
+    sql += backupdb.config.database + "." + tableName + " ";
+    sql += "(";
+    sql += getStringFieldsFromTableCols (dbTableCols);
+    sql += ") ";
+    sql += "select * from " + db.config.database + "." + tableName + " ";
+    sql += "where id > " + lastedId;
+  
+    await backupdb.query(sql);
+  
+    const newLastedIdObj = await selectQuery(backupdb, "SELECT MAX(id) as lastedId FROM " + tableName);
+    const newLastedId = checkNullEmpty(newLastedIdObj[0]) && checkNullEmpty(newLastedIdObj[0].lastedId) ? newLastedIdObj[0].lastedId : 0;
+  
+    await job.update({
+      lastedId: newLastedId
+    });
+    await job.save();
+  }
 });
 
 const backupDbFronFunc = (async (db, backupdb, func) => {
@@ -119,8 +128,12 @@ const backupDbFronFunc = (async (db, backupdb, func) => {
 });
 
 const backupFromDb = (async (db, backupdb) => {
+  console.log("Backup is running...");
+  console.log("Backup Table is running...");
   await backupDbFronFunc (db, backupdb, backupTableDbFromTableName);
+  console.log("Backup Column is running...");
   await backupDbFronFunc (db, backupdb, backupColDbFromTableName);
+  console.log("Backup Data is running...");
   await backupDbFronFunc (db, backupdb, backupDataDbFromTablename);
 });
 

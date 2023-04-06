@@ -4,8 +4,6 @@ const path = require('path');
 const bodyParser = require('body-parser');
 
 // Call database and models
-const db = require('./config/db');
-const backupdb = require('./config/backupdb');
 const dataDb = require('./config/dataDb');
 const dataDbBackup = require('./config/dataDbBackup');
 
@@ -13,7 +11,6 @@ const app = express();
 
 // Call Controller
 const errorController = require('./controllers/error');
-const backupController = require('./controllers/backup');
 
 // Call routes
 const authRoutes = require('./routes/auth');
@@ -44,8 +41,6 @@ app.use(errorController.get404);
   await dataDb.init();
   
   await dataDbBackup.init();
-
-  await backupController.backupFromDb(db, backupdb);
 })();
 
 // socket connection
