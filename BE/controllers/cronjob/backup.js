@@ -2,7 +2,7 @@ const cron = require('cron');
 const db = require('../../config/db');
 const backupdb = require('../../config/backupdb');
 const backupController = require('../backup');
-
+const dataDbBackup = require('../../config/dataDbBackup');
 
 const backup = new cron.CronJob({
   /* 
@@ -14,11 +14,27 @@ const backup = new cron.CronJob({
    * Day of Week: 0-6 (Sun-Sat)
    */
   cronTime: '*/10 * * * * *',
-  onTick: async function() {
+  onTick: (async function() {const d_t = new Date();
+ 
+    let year = d_t.getFullYear();
+    let month = ("0" + (d_t.getMonth() + 1)).slice(-2);
+    let day = ("0" + d_t.getDate()).slice(-2);
+    let hour = d_t.getHours();
+    let minute = d_t.getMinutes();
+    let seconds = d_t.getSeconds();
+
+    console.log(hour + ":" + minute + ":" + seconds + " " + day + "-" + month + "-" + year);
     console.log("Cron Backup is running...");
-    await backupController.backupFromDb(db, backupdb);
+
+    try {
+      await dataDbBackup.init();
+      await backupController.backupFromDb(db, backupdb);
+    } catch (err) {
+      console.log("Backup err: " + err);
+    }
+
     console.log("Cron Backup is close...");
-  },
+  }),
   start: true, 
   timeZone: 'Asia/Ho_Chi_Minh'
 });

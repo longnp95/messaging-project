@@ -5,7 +5,6 @@ const bodyParser = require('body-parser');
 
 // Call database and models
 const dataDb = require('./config/dataDb');
-const dataDbBackup = require('./config/dataDbBackup');
 
 const app = express();
 
@@ -39,8 +38,6 @@ app.use(errorController.get404);
 (async () => {
   // add relationship and init data for database
   await dataDb.init();
-  
-  await dataDbBackup.init();
 })();
 
 // socket connection
