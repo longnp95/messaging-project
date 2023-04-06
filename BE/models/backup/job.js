@@ -1,16 +1,24 @@
 const Sequelize = require('sequelize');
 
-const db = require('../config/db');
+const backupdb = require('../../config/backupdb');
 
 // Create database with define model of Sequelize
-const Admin_Permission = db.define('admin_permission', {
+const Job = backupdb.define('job', {
   // field primary key and type is INTEGER
   id: {
     type: Sequelize.INTEGER,
     autoIncrement: true,
     allowNull: false,
     primaryKey: true
+  },
+  lastedId: {
+    type: Sequelize.INTEGER,
+    allowNull: false
+  },
+  tableName: {
+    type: Sequelize.STRING,
+    allowNull: false
   }
 });
 
-module.exports = Admin_Permission;
+module.exports = Job;

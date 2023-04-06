@@ -4,9 +4,7 @@ const path = require('path');
 const bodyParser = require('body-parser');
 
 // Call database and models
-const sequelize = require('./config/db');
-const initDataDB = require('./config/initDataDB');
-const Conversation = require('./models/conversation');
+const dataDb = require('./config/dataDb');
 
 const app = express();
 
@@ -37,21 +35,26 @@ app.use('/auth', authRoutes);
 app.use(userRoutes);
 app.use(errorController.get404);
 
-// add relationship and init data for database
-initDataDB.init();
+(async () => {
+  // add relationship and init data for database
+  await dataDb.init();
+})();
 
-// Test connection
+// socket connection
 const socketFile = require('./socket');
 const server = app.listen(8080);
+// console.log(server);
 const io = socketFile.init(server);
 
-io.on('connection', socket => {
-  const token = socket.handshake.auth.token;
-
-  if (socketFile.checkToken(token)) {
-    socketFile.joinRoomByToken(socket, token);
-  } else {
-    socket.disconnect();
-    console.log('Token wrong');
-  }
-});
+(async () => {
+  await io.on('connection', socket => {
+    const token = socket.handshake.auth.token;
+  
+    if (socketFile.checkToken(token)) {
+      socketFile.joinRoomByToken(socket, token);
+    } else {
+      socket.disconnect();
+      console.log('Token wrong');
+    }
+  });
+})();

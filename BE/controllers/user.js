@@ -10,7 +10,7 @@ const Reaction = require('../models/reaction');
 const Chat_Reaction = require('../models/chat_reaction');
 const { Op, where } = require('sequelize');
 const Sequelize = require('sequelize');
-const sequelize = require('../config/db');
+const db = require('../config/db');
 const Chat_Media = require('../models/chat_media');
 
 const apiData = (async (res, status, message, data) => {
@@ -170,7 +170,7 @@ exports.getConversationsByUserId = (async (req, res, next) => {
           include: [
             [
               // Note the wrapping parentheses in the call below!
-              sequelize.literal(`(
+              db.literal(`(
                 SELECT COUNT(*)
                 FROM chats AS chat
                 WHERE 
